@@ -1,21 +1,11 @@
 \section{Larger runtime costs for Compressed Sensing Reconstructions}\label{hypo}
 The MeerKAT instrument produces a new magnitude of data volume. An image with several million pixels gets reconstructed from billions of Visibility measurements. Although MeerKAT measures a large set of Visibilities, the measurements are still incomplete. We do not have all the information available to reconstruct an image. Essentially, this introduces "fake" structures in the image, which a reconstruction algorithm has to remove. Additionally, the measurements are noisy.
 
-We require an image reconstruction algorithm which removes the "fake" structures from the image, and removes the noise from the measurements. 
+We require an image reconstruction algorithm which removes the "fake" structures from the image, and removes the noise from the measurements. The large data volume of MeerKAT requires the algorithm to be both scalable and distributable. Over the years, several reconstruction algorithms were developed, which can be separated into two classes: Algorithms based on CLEAN, which are cheaper to compute and algorithms based on Compressed Sensing, which create higher quality reconstructions.
 
+CLEAN based algorithms represent the reconstruction problem as a deconvolution. First, they calculate the "dirty" image, which is corrupted by noise and fake image structures. The incomplete measurements essentially convolve the image with a Point Spread Function ($PSF$). CLEAN estimates the $PSF$ and searches for a deconvolved version of the dirty image. In each CLEAN iteration, it searches for the highest pixel in the dirty image, subtracts a fraction $PSF$ at the location. It adds the fraction to the same pixel location of a the "cleaned" image. After several iterations, the cleaned image contains the deconvolved version of the dirty image. CLEAN accounts for noise by stopping early. It stops when the highest pixel value is smaller than a certain threshold. This results in a light-weight and robust reconstruction algorithm. CLEAN is comparatively cheap to compute, but does not produce the best reconstructions and is difficult to distribute on a large scale.
 
-
-The inteferometer introduces two forms of corruption into the measurements:
-
-The measurements are subjected to both noise and corruption from the instrument itself.  
-
- An image reconstruction algorithm should remove the 
-
-Noisy measurements, and the instrument itself introduces "fake" image structures. Large scale image reconstruction problem. Several different reconstruction algorithms were developed for this problem, which can be separated into two classes: Algorithms based on CLEAN, which are cheaper to compute and Compressed Sensing based algorithms, which create higher quality reconstructions.
-
-CLEAN uses a deconvolution
-
-Compressed Sensing based algorithms have an image regularization. 
+Compressed Sensing based algorithms represent the reconstruction as an optimization problem. They search for the optimal image which is as close to the Visibility measurements as possible, but also has the smallest regularization penalty. The regularization encodes our prior knowledge about the image. Image structures which were likely measured by the instrument result in a low regularization penalty. Image structures which were likely introduced by noise or the measurement instrument itself result in high penalty. Compressed Sensing based algorithms explicitly handle noise and create higher quality reconstructions than CLEAN. State-of-the-art Compressed Sensing algorithms show potential for distributed computing. However, they currently do not scale on MeerKATs data volume. They require too many computing resources compared to CLEAN based algorithms.
  
 This project searches for a way to reduce the runtime costs of Compressed Sensing based algorithms.
  One of the reasons is that both algorithms use the non-uniform FFT Approximation, but Compressed Sensing algorithms need more non-uniform FFT Approximation than CLEAN.

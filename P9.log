@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (MiKTeX 2.9.6600 64-bit) (preloaded format=pdflatex 2018.2.22)  28 FEB 2019 11:28
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (MiKTeX 2.9.6600 64-bit) (preloaded format=pdflatex 2018.2.22)  28 FEB 2019 12:22
 entering extended mode
 **./P9.tex
 (P9.tex
@@ -647,50 +647,49 @@ Package pdftex.def Info: ./fhnw_ht_e_10mm.jpg  used on input line 140.
 (pdftex.def)             Requested size: 237.91316pt x 22.77951pt.
  [1] (chapters/02.hypo/hypo.tex
 LaTeX Font Info:    Font shape `OT1/phv/bx/n' in size <12> not available
-(Font)              Font shape `OT1/phv/b/n' tried instead on input line 30.
+(Font)              Font shape `OT1/phv/b/n' tried instead on input line 20.
 LaTeX Font Info:    Font shape `OT1/phv/b/n' will be
-(Font)              scaled to size 11.03998pt on input line 30.
+(Font)              scaled to size 11.03998pt on input line 20.
 <./chapters/02.hypo/Major-Minor.png, id=51, 355.08168pt x 159.28899pt>
 File: ./chapters/02.hypo/Major-Minor.png Graphic file (type png)
 <use ./chapters/02.hypo/Major-Minor.png>
 Package pdftex.def Info: ./chapters/02.hypo/Major-Minor.png  used on input line
- 34.
+ 24.
 (pdftex.def)             Requested size: 386.95894pt x 173.59723pt.
 LaTeX Font Info:    Font shape `OT1/phv/m/it' in size <10.95> not available
-(Font)              Font shape `OT1/phv/m/sl' tried instead on input line 35.
+(Font)              Font shape `OT1/phv/m/sl' tried instead on input line 25.
 LaTeX Font Info:    Font shape `OT1/phv/m/sl' will be
-(Font)              scaled to size 10.07397pt on input line 35.
+(Font)              scaled to size 10.07397pt on input line 25.
 
-
-LaTeX Warning: `h' float specifier changed to `ht'.
-
-<./chapters/02.hypo/CS.png, id=54, 361.35pt x 155.97046pt>
-File: ./chapters/02.hypo/CS.png Graphic file (type png)
-<use ./chapters/02.hypo/CS.png>
-Package pdftex.def Info: ./chapters/02.hypo/CS.png  used on input line 51.
-(pdftex.def)             Requested size: 386.95894pt x 167.02478pt.
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
 File: ./fhnw_ht_e_10mm.jpg Graphic file (type jpg)
 <use ./fhnw_ht_e_10mm.jpg>
-Package pdftex.def Info: ./fhnw_ht_e_10mm.jpg  used on input line 57.
+Package pdftex.def Info: ./fhnw_ht_e_10mm.jpg  used on input line 32.
 (pdftex.def)             Requested size: 237.91316pt x 22.77951pt.
 pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has 
 been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.57 
-      [1]
+l.32 I
+      n the Major Cycle Architecture, we need several deconvolution attempts...
+[1]
+<./chapters/02.hypo/CS.png, id=61, 361.35pt x 155.97046pt>
+File: ./chapters/02.hypo/CS.png Graphic file (type png)
+<use ./chapters/02.hypo/CS.png>
+Package pdftex.def Info: ./chapters/02.hypo/CS.png  used on input line 41.
+(pdftex.def)             Requested size: 386.95894pt x 167.02478pt.
 File: ./fhnw_ht_e_10mm.jpg Graphic file (type jpg)
 <use ./fhnw_ht_e_10mm.jpg>
-Package pdftex.def Info: ./fhnw_ht_e_10mm.jpg  used on input line 64.
+Package pdftex.def Info: ./fhnw_ht_e_10mm.jpg  used on input line 52.
 (pdftex.def)             Requested size: 237.91316pt x 22.77951pt.
  [2 <./chapters/02.hypo/Major-Minor.png> <./chapters/02.hypo/CS.png>])
 File: ./fhnw_ht_e_10mm.jpg Graphic file (type jpg)
 <use ./fhnw_ht_e_10mm.jpg>
 Package pdftex.def Info: ./fhnw_ht_e_10mm.jpg  used on input line 147.
 (pdftex.def)             Requested size: 237.91316pt x 22.77951pt.
+
 [3] (chapters/98.conclusion/conclusion.tex)
 File: ./fhnw_ht_e_10mm.jpg Graphic file (type jpg)
 <use ./fhnw_ht_e_10mm.jpg>
@@ -745,19 +744,20 @@ Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 163.
 Here is how much of TeX's memory you used:
  11864 strings out of 493303
  174633 string characters out of 3130654
- 303675 words of memory out of 3000000
+ 304675 words of memory out of 3000000
  15162 multiletter control sequences out of 15000+200000
  27116 words of font info for 70 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
- 42i,16n,43p,770b,529s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 42i,17n,43p,1022b,529s stack positions out of 5000i,500n,10000p,200000b,50000s
 {C:/Users/Jon/AppData/Local/Programs/MiKTeX 2.9/fonts/enc/dvips/base/8r.enc}<
-C:/Users/Jon/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/urw/helvetic/uhvb8a.
-pfb><C:/Users/Jon/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/urw/helvetic/uh
-vr8a.pfb><C:/Users/Jon/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/urw/helvet
-ic/uhvro8a.pfb>
-Output written on P9.pdf (10 pages, 315196 bytes).
+C:/Users/Jon/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/c
+mmi10.pfb><C:/Users/Jon/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/urw/helve
+tic/uhvb8a.pfb><C:/Users/Jon/AppData/Local/Programs/MiKTeX 2.9/fonts/type1/urw/
+helvetic/uhvr8a.pfb><C:/Users/Jon/AppData/Local/Programs/MiKTeX 2.9/fonts/type1
+/urw/helvetic/uhvro8a.pfb>
+Output written on P9.pdf (10 pages, 324921 bytes).
 PDF statistics:
- 120 PDF objects out of 1000 (max. 8388607)
+ 124 PDF objects out of 1000 (max. 8388607)
  23 named destinations out of 1000 (max. 500000)
  64 words of extra memory for PDF output out of 10000 (max. 10000000)
 
