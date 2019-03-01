@@ -1,6 +1,0 @@
-\contentsline {section}{\numberline {1}Larger runtime costs for Compressed Sensing Reconstructions}{1}{section.1}
-\contentsline {subsection}{\numberline {1.1}CLEAN: The Major Cycle Architecture}{2}{subsection.1.1}
-\contentsline {subsection}{\numberline {1.2}Compressed Sensing Architecture}{2}{subsection.1.2}
-\contentsline {subsection}{\numberline {1.3}Hypothesis for reducing costs of Compressed Sensing Algorithms}{3}{subsection.1.3}
-\contentsline {section}{\numberline {2}Conclusion}{4}{section.2}
-\contentsline {section}{\numberline {3}Ehrlichkeitserkl\IeC {\"a}rung}{7}{section.3}
