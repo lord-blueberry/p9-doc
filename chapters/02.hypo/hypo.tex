@@ -32,7 +32,7 @@ In the Major Cycle Architecture, we need several deconvolution attempts before i
 
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=0.80\linewidth]{./chapters/02.hypo/CS.png}
+	\includegraphics[width=0.80\linewidth]{./chapters/02.hypo/CS2.png}
 	\caption{State-of-the-art Compressed Sensing Reconstruction Architecture}
 	\label{hypo:cs}
 \end{figure}
@@ -45,5 +45,27 @@ In this architecture, state-of-the-art Compressed Sensing algorithms need approx
 Compressed Sensing Algorithms are not bound to the Architecture presented in section \ref{hypo:CSArch}. For example, we can design a Compressed Sensing based deconvolution algorithm and use the Major Cycle Architecture instead. 
 
 Our hypothesis is: We can create a Compressed Sensing based deconvolution algorithm which is both distributable and creates higher quality reconstructions than CLEAN. Because it also uses the Major Cycle architecture, we reckon that the Compressed Sensing deconvolution requires a comparable number of non-uniform FFT cycles to CLEAN. This would result in a Compressed Sensing based reconstruction algorithm with similar runtime costs to CLEAN, but higher reconstruction quality and higher potential for distributed computing.
+
+
+
+\subsection{State of the art: WSCLEAN Software Package}
+
+
+\subsubsection{W-Stacking Major Cycle}
+
+\subsubsection{Deconvolution Algorithms}
+CLEAN
+MORESANE
+
+
+
+\subsection{Distributing the Image Reconstruction}
+\subsubsection{Distributing the Non-uniform FFT}
+
+
+\subsubsection{Distributing the Deconvolution}
+
+
+
 
 

@@ -1,0 +1,42 @@
+\section{Handling the new Data Volume}\label{volume}
+
+Powerful, single machines were used in the past. Algorithm development was mainly focused on reducing the runtime complexity.
+
+The new data volume is a challenge to process for both algorithms and computing infrastructure. For Radio Interferometer imaging, we require specialized algorithms. A non-uniform FFT and a deconvolution algorithm.
+
+The non-uniform FFT was historically what dominated the runtime \cite{}. Recently advances in non-uniform FFT for Radio Astronomy has produced the Image Domain Gridding\cite{veenboer2017image} algorithm. It managed to push the non-uniform FFT calculation together with Radio Interferometer specific corrections to the GPU. Speeding up the whole computation.
+
+Deconvolution algorithms of CLEAN were cheap to compute. It is a highly iterative algorithm, difficult for parallel computing, but the lightweight nature of it kept the wall-clock-time spent doing CLEAN low. But with the advent of the non-uniform FFT on the GPU, CLEAN has now been
+
+\subsection{The case for distributed computing}
+Eventually, the push to distributed computing. Not yet distributed. Difficult.
+
+
+Deconvolution algorithms which use the Theory of Compressed Sensing, producing higher quality results. The difficulty so far was to have a comparable runtime to CLEAN.
+
+
+
+
+
+
+
+More data requires more computational resources.
+
+Two parts, the non-uniform FFT, and the deconvolution algorithm.
+
+Non-uniform FFT
+
+Deconvolution
+
+ Historically, the deconvolution algorithm like CLEAN was light-weight. Although CLEAN is highly iterative, it was a cheap operation compared to the non-uniform FFT. The non-uniform FFT dominated the runtime \cite{}.
+
+
+
+
+Deconvolution
+Deconvolution is now the most runtime intensive operation. CLEAN has been trying to get to parallel computing. With compressed Sensing, we can also create parallel algorithm
+
+
+
+
+
