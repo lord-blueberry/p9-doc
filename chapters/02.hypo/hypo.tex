@@ -65,19 +65,20 @@ MORESANE
 
 \subsubsection{Distributing the Deconvolution}
 
+
+
+
+
+
+
 \pagebreak
 \section{Distributed Image Reconstruction for Radio Interferometers}
-In astronomy, instruments with higher angular resolution allows us to [see deeper] into space, find smaller emissions and further our understanding. For Radio frequencies, the angular resolution is bound to the antenna dish diameter, which puts practical and financial limitiations on the highest possible angular resolution. Radio Interferometers get around this limitation by using several smaller antennas instead. Together, they act as a single large antenna with a higher angular resolution at a cheaper cost.
+In Astronomy, instruments with higher angular resolution allows us to measure ever smaller structures in the sky. For Radio frequencies, the angular resolution is bound to the antenna dish diameter, which puts practical and financial limitations on the highest possible angular resolution. Radio Interferometers get around this limitation by using several smaller antennas instead. Together, they act as a single large antenna with higher angular resolution at lower financial costs compared to single dish instruments.
 
+Each antenna pair of an Interferometer measures a single Fourier component of the observed image. Retrieving the observed image from the measurements is essentially calculating the Fourier Transform. However, since the Interferometer only measured a limited number of Fourier components, the resulting image is "dirty". It is essentially the observed image convolved with a Point Spread Function ($PSF$).
+There are different ways of deconvolving the image. Find the most likely deconvolution of the dirty image. Deconvolution is not a unique solution. there are potentially many different deconvolved images, the reconstruction algorithm should find the most likely one.
 
-Radio astronomy, to achieve a high angular resolution 
-Radio Astronomy has the issue of angular resolution. 
-In Astronomy, Radio Interferometers use several 
-
-It measures Fourier components, incomplete set on a non-uniform sampling pattern.
-
-The image reconstruction problem
-
+Fastest architecture. Major Cycle \ref{hypo:major3} architecture. The Major Cycle contains Three operations, Gridding, inverse FFT and Deconvolution. 
 
 \begin{figure}[h]
 	\centering
@@ -86,35 +87,26 @@ The image reconstruction problem
 	\label{hypo:major3}
 \end{figure}
 
+Gridding takes the non-uniformly sampled Fourier measurements and interpolates them on a regularly spaced grid. Afterwards, we can use the FFT to calculate the inverse Fourier transform and arrive at the dirty image. A deconvolution algorithm then takes the dirty image and the $PSF$ and puts out two images. The "model" image, which contains the deconvolved version of the dirty image, and the residual image. The inverse operations get applied to the residual image, FFT and De-gridding and the whole process gets restarted from the beginning. 
+This is a single Major Cycle.
+The final image is the addition of all the major cycles Gridding, Deconvolution and $PSF$ are only approximations in the Major Cycle framework. By repeating the process, we reduce the the errors.
 
-The Major cylce contains Three operations, Gridding, inverse FFT and Deconvolution. 
-
-Gridding takes the non-uniform Fourier measurements and puts them on a regular grid. Interpolation.
-
-It is necessary so we can use the inverse FFT.
-
-inverse FFT creates the image. If the interferometer would measure a complete set of Visibilities then the image reconstruction would be finished. However, since not all information is present, the inverse FFT does not arrive at the observed image, but at the "dirty" image. It contains
-
-The deconvolution step takes the dirty image and the Point Spread Function $PSF$ as input. It deconvolves the image. Model image and the residual image.
-
-Gridding, PSF and Deconvolution are not exact operations. each introduce its own error. Take the residual image and apply the inverse transforms. We perform an FFT and de-gridding back.
-At this point, 
-The final reconstructed image is adding the different model images together.
-
-What to use for deconvolution. CLEAN and Compressed Sensing based deconvolution algorithms. Robust and light-weight. Difficult to implement for parallel or distributed computing, but so far cheap enough. Compressed Sensing based algorithms. More expensive, but with 
+In this architecture, the choice of deconvolution algorithm mainly decides how good the reconstruction is. 
+The most expensive operation in terms of runtime is Gridding. 
+State-of-the-art Deconvolution algorithm.
+State of the art was mainly to run this on a single machine.
 
 \subsection{Distributed computing for large scale Reconstructions}
-New interferometers produce an ever increasing number of measurements. The new MeerKAT interferometer 10 terabytes per second. Reconstruction problem becomes too big for single machines. Sooner or later distributed reconstruction.
+New Interferometer produce an ever increasing number of measurements. Sooner or later, the Major Cycle needs to work on distributed computing. State-of-the-art Gridding and Deconvolution algorithms allow only for limited distribution.
 
-The most expensive operation in the Major Cycle, Gridding, has so far been difficult to distribute.
+Recently, Veeneboer et al\cite{veenboer2017image} managed to design a Gridder on the GPU, reducing the wall-clock time of the most exmpensive operations by several factors. Same idea can potentially be used for distributing the Gridder on multiple machines.
+Applying the Theory of Compressed Sensing to deconvolution algorithms, we can create an algorithm with better reconstruction quality and suited to distributed computing.
 
-Gridding contains corrections Radio Interferometry.
+In this project, We want to create a distributed gridding and deconvolution algorithm and explore the difficulties in distributing the image reconstruction. Compare the reconstruction quality.
 
-Recently, Veeneboer et al\cite{veenboer2017image} managed to design a Gridder on the GPU, reducing the wall-clock time of the most exmpensive operations by several factors.
-FFT can also be put on the GPU. 
-With that, the only Has the effect that the CLEAN deconvolution is now the most time consuming operation. CLEAN is difficult to implement for parallel of distributed computing. Compressed Sensing based deconvolution algorithms however can be designed with distribution in mind. 
 
-Push to parallel is not bad, but the future lies in distribution. The target of this work is to create a distributed reconstruction algorithm.
+
+
 
 
 
