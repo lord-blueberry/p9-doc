@@ -75,10 +75,10 @@ MORESANE
 \section{Distributed Image Reconstruction for Radio Interferometers}
 In Astronomy, instruments with higher angular resolution allows us to measure ever smaller structures in the sky. For Radio frequencies, the angular resolution is bound to the antenna dish diameter, which puts practical and financial limitations on the highest possible angular resolution. Radio Interferometers get around this limitation by using several smaller antennas instead. Together, they act as a single large antenna with higher angular resolution at lower financial costs compared to single dish instruments.
 
-Each antenna pair of an Interferometer measures a single Fourier component of the observed image. Retrieving the observed image from the measurements is essentially calculating the Fourier Transform. However, since the Interferometer only measured a limited number of Fourier components, the resulting image is "dirty". It is essentially the observed image convolved with a Point Spread Function ($PSF$).
-There are different ways of deconvolving the image. Find the most likely deconvolution of the dirty image. Deconvolution is not a unique solution. there are potentially many different deconvolved images, the reconstruction algorithm should find the most likely one.
+Each antenna pair of an Interferometer measures a single Fourier component of the observed image. We can retrieve the image by calculating the Fourier Transform of the measurements. However, since the Interferometer only measures an incomplete set of Fourier components, the resulting image is "dirty", convolved with a Point Spread Function ($PSF$). Calculating the Fourier Transform is not enough. To reconstruct the from an Interferometer image, an algorithm has to find the observed image with only the dirty image and the $PSF$ as input. It has to perform a deconvolution. The difficulty lies in the fact that there are potentially many valid deconvolutions for a single measurement, and the algorithm has to decide for the most likely one.
+The quality of the reconstruction is defined by the deconvolution algorithm.
 
-Fastest architecture. Major Cycle \ref{hypo:major3} architecture. The Major Cycle contains Three operations, Gridding, inverse FFT and Deconvolution. 
+State-of-the-art image reconstructions use the Major Cycle architecture (shown in figure \ref{hypo:major3}), which contains three operations: Gridding, FFT and Deconvolution.
 
 \begin{figure}[h]
 	\centering
@@ -87,17 +87,10 @@ Fastest architecture. Major Cycle \ref{hypo:major3} architecture. The Major Cycl
 	\label{hypo:major3}
 \end{figure}
 
-Gridding takes the non-uniformly sampled Fourier measurements and interpolates them on a regularly spaced grid. Afterwards, we can use the FFT to calculate the inverse Fourier transform and arrive at the dirty image. A deconvolution algorithm then takes the dirty image and the $PSF$ and puts out two images. The "model" image, which contains the deconvolved version of the dirty image, and the residual image. The inverse operations get applied to the residual image, FFT and De-gridding and the whole process gets restarted from the beginning. 
-This is a single Major Cycle.
-The final image is the addition of all the major cycles Gridding, Deconvolution and $PSF$ are only approximations in the Major Cycle framework. By repeating the process, we reduce the the errors.
+The first operation in the Major Cycle, Gridding, takes the non-uniformly sampled Fourier measurements from the Interferometer and interpolates them on a uniformly spaced grid. The uniform grid lets us use FFT to calculate the inverse Fourier Transform and we arrive at the dirty image. A deconvolution algorithm takes the dirty image plus the $PSF$ as input, producing the deconvolved "model image", and the residual image as output. At this point, the reverse operations get applied to the residual image. First the FFT and then De-gridding, arriving at the non-uniform Residuals. The next Major Cycle begins with the non-uniform Residuals as input. The cycles are necessary, because the Gridding and Deconvolution operations are only approximations. Over several cycles, we reduce the errors introduced by the approximate Gridding and Deconvolution. The final, reconstructed image is the addition of all the model images of each Major Cycle. 
 
-In this architecture, the choice of deconvolution algorithm mainly decides how good the reconstruction is. 
-The most expensive operation in terms of runtime is Gridding. 
-State-of-the-art Deconvolution algorithm.
-State of the art was mainly to run this on a single machine.
-
-\subsection{Distributed computing for large scale Reconstructions}
-New Interferometer produce an ever increasing number of measurements. Sooner or later, the Major Cycle needs to work on distributed computing. State-of-the-art Gridding and Deconvolution algorithms allow only for limited distribution.
+\subsection{Distributed computing for Large Scale Reconstructions}
+New Interferometer produce an ever increasing number of measurements, creating ever larger reconstruction problems. A single image can contain several terabytes of Fourier measurements. Handling reconstruction problems of this size forces us to use distributed computing. However, State-of-the-art Gridding and Deconvolution algorithms of the Major Cycle architecture only allow for limited distribution. 
 
 Recently, Veeneboer et al\cite{veenboer2017image} managed to design a Gridder on the GPU, reducing the wall-clock time of the most exmpensive operations by several factors. Same idea can potentially be used for distributing the Gridder on multiple machines.
 Applying the Theory of Compressed Sensing to deconvolution algorithms, we can create an algorithm with better reconstruction quality and suited to distributed computing.
