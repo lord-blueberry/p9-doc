@@ -1,12 +1,3 @@
-\section{Handling the Data Volume}\label{volume}
-The new data volume is a challenge to process for both algorithms and computing infrastructure. Push for parallel and distributed algorithms. For Radio Interferometer imaging, we require specialized algorithms. The two distinct operations, non-uniform FFT and Deconvolution, were difficult algorithms for parallel or distributed computing.
-
-The non-uniform FFT was historically what dominated the runtime \cite{}. Performing an efficient non-uniform FFT for Radio Interferometers is an active field of research\cite{offringa2014wsclean, pratley2018fast}, continually reducing the runtime costs of the operation. Recently, Veeneboer et al\cite{veenboer2017image} developed a non-uniform FFT which can be fully executed on the GPU. It speeds up the most expensive operation.
-
-In Radio Astronomy, CLEAN is the go-to deconvolution algorithm. It is light-weight and compared to the non-uniform FFT, a cheap algorithm. It is also highly iterative, which makes it difficult for effective parallel or distributed implementations. However, compressed sensing based deconvolution algorithms can be developed with distribution in mind.
-
-\subsection{Fully distributed imaging algorithm}
-Current imaging algorithms push towards parallel computing with GPU acceleration. But with Veeneboer et al's non-uniform FFT and a compressed sensing based deconvolution, we can go a step further and create a distributed imaging algorithm. 
 
 
 
