@@ -6,18 +6,19 @@
 \BOOKMARK [1][-]{section.2}{Distributed Image Reconstruction for Radio Interferometers}{}% 6
 \BOOKMARK [2][-]{subsection.2.1}{Distributed computing for Large Scale Reconstructions}{section.2}% 7
 \BOOKMARK [2][-]{subsection.2.2}{First steps towards distributed Image Reconstruction}{section.2}% 8
-\BOOKMARK [1][-]{section.3}{Conclusion}{}% 9
-\BOOKMARK [1][-]{section.4}{attachment}{}% 10
-\BOOKMARK [1][-]{section.5}{Larger runtime costs for Compressed Sensing Reconstructions}{}% 11
-\BOOKMARK [2][-]{subsection.5.1}{CLEAN: The Major Cycle Architecture}{section.5}% 12
-\BOOKMARK [2][-]{subsection.5.2}{Compressed Sensing Architecture}{section.5}% 13
-\BOOKMARK [2][-]{subsection.5.3}{Hypothesis for reducing costs of Compressed Sensing Algorithms}{section.5}% 14
-\BOOKMARK [2][-]{subsection.5.4}{State of the art: WSCLEAN Software Package}{section.5}% 15
-\BOOKMARK [3][-]{subsubsection.5.4.1}{W-Stacking Major Cycle}{subsection.5.4}% 16
-\BOOKMARK [3][-]{subsubsection.5.4.2}{Deconvolution Algorithms}{subsection.5.4}% 17
-\BOOKMARK [2][-]{subsection.5.5}{Distributing the Image Reconstruction}{section.5}% 18
-\BOOKMARK [3][-]{subsubsection.5.5.1}{Distributing the Non-uniform FFT}{subsection.5.5}% 19
-\BOOKMARK [3][-]{subsubsection.5.5.2}{Distributing the Deconvolution}{subsection.5.5}% 20
-\BOOKMARK [1][-]{section.6}{Handling the Data Volume}{}% 21
-\BOOKMARK [2][-]{subsection.6.1}{Fully distributed imaging algorithm}{section.6}% 22
-\BOOKMARK [1][-]{section.7}{Ehrlichkeitserkl\344rung}{}% 23
+\BOOKMARK [1][-]{section.3}{Gridding Algorithm: Image Domain Gridder}{}% 9
+\BOOKMARK [1][-]{section.4}{Conclusion}{}% 10
+\BOOKMARK [1][-]{section.5}{attachment}{}% 11
+\BOOKMARK [1][-]{section.6}{Larger runtime costs for Compressed Sensing Reconstructions}{}% 12
+\BOOKMARK [2][-]{subsection.6.1}{CLEAN: The Major Cycle Architecture}{section.6}% 13
+\BOOKMARK [2][-]{subsection.6.2}{Compressed Sensing Architecture}{section.6}% 14
+\BOOKMARK [2][-]{subsection.6.3}{Hypothesis for reducing costs of Compressed Sensing Algorithms}{section.6}% 15
+\BOOKMARK [2][-]{subsection.6.4}{State of the art: WSCLEAN Software Package}{section.6}% 16
+\BOOKMARK [3][-]{subsubsection.6.4.1}{W-Stacking Major Cycle}{subsection.6.4}% 17
+\BOOKMARK [3][-]{subsubsection.6.4.2}{Deconvolution Algorithms}{subsection.6.4}% 18
+\BOOKMARK [2][-]{subsection.6.5}{Distributing the Image Reconstruction}{section.6}% 19
+\BOOKMARK [3][-]{subsubsection.6.5.1}{Distributing the Non-uniform FFT}{subsection.6.5}% 20
+\BOOKMARK [3][-]{subsubsection.6.5.2}{Distributing the Deconvolution}{subsection.6.5}% 21
+\BOOKMARK [1][-]{section.7}{Handling the Data Volume}{}% 22
+\BOOKMARK [2][-]{subsection.7.1}{Fully distributed imaging algorithm}{section.7}% 23
+\BOOKMARK [1][-]{section.8}{Ehrlichkeitserkl\344rung}{}% 24
