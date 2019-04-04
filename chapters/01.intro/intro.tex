@@ -1,13 +1,69 @@
-\section{Introduction}\label{intro}
-Universe
+\section{Angular Resolution in Radio Astronomy}\label{intro}
+Astronomy, Observation of the universe. Higher and higher angular resolution.
 
-Accuracy
+Radio Astronomy, single antenna dishes are too expensive
 
-No 
+Radio interferometers use several antennas together.
 
-Inverse Problems
 
-\subsection{Radio Interferometry}
+No image
+
+The inverse Problem
+
+
+
+\subsection{Radio Interferometric Inverse Problem}
+Inverse Problem, We have measurements and want to find the image matching the measurements. Incomplete, there are potentially infinite number of images fitting the measurements. This forms an Ill-Posed inverse problem. 
+
+Fourier relationship in 2d. Sort of Fourier Components. Called Visibilities
+
+\begin{figure}[htp]
+	% preliminary
+	\sbox\twosubbox{%
+		\resizebox{\dimexpr.9\textwidth-1em}{!}{%
+			\includegraphics[height=3cm]{./chapters/01.intro/meerkat_uv2.png}%
+			\includegraphics[height=3cm]{./chapters/01.intro/meerkat_clean2.png}%
+		}%
+	}
+	\setlength{\twosubht}{\ht\twosubbox}
+	
+	% typeset
+	\centering
+	\subcaptionbox{Measurements of the MeerKAT Radio Interferometer.\label{intro:inversefig:uvspace}}{%
+		\includegraphics[height=\twosubht]{./chapters/01.intro/meerkat_uv2.png}%
+	}\quad
+	\subcaptionbox{A reconstruction which fits the observation.\label{intro:inversefig:reconstruction}}{%
+		\includegraphics[height=\twosubht]{./chapters/01.intro/meerkat_clean2.png}%
+	}
+	\caption{The Image Reconstruction Problem}\label{intro:inversefig}
+\end{figure}
+
+
+
+Image reconstruction problem shown in figure \ref{intro:inversefig}
+Measurements in the Fourier Domain in figure \ref{intro:inversefig:uvspace}. Each dot represents a measurement of the Radio Interferometer. Incomplete, we do have holes in the UV space. But also a very large number of measurements. We have areas with a high sample density.
+Reconstructed image \ref{intro:inversefig:reconstruction}
+
+
+Overdetermined problem, we have magnitudes more Visibilities than Pixels in the image. But noise and holes in the 
+
+
+Or more formally in equation \eqref{intro:inverseproblem}
+
+
+\begin{equation}\label{intro:inverseproblem}
+V(u, v, w) = \int\int \frac{I(x, y)}{\sqrt{1 - x^2 - y ^2}} e^{2 \pi i [ux+vy+ w(\sqrt{1 - x^2 - y ^2} - 1)]} \: dx \: dy
+\end{equation}
+
+3d Fourier Relationship.
+
+Fourier relationship, but Ill-posed inverse problem. Therefore, we need image reconstruction algorithms
+
+
+\subsection{Image Reconstruction}
+Whole system.
+From measurements to image reconstruction contains many different steps. In this project, we concern ourselves with the image reconstruction
+
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.80\linewidth]{./chapters/01.intro/system.png}
@@ -15,14 +71,22 @@ Inverse Problems
 	\label{intro:system}
 \end{figure}
 
-\subsection{Inverse Problem}
+Calibration is not directly
+Bad calibration can introduce a special error in the image.
+
+Different ways of formulating the image reconstruction problem:
+Interpolating the missing Visibilities
+Deconvolution
+Finding an image which fits the measurements
+
+\subsubsection{Theory of Compressed Sensing}
+
+\subsubsection{State of the art}
+
+\subsubsection{Large scale Reconstruction Problem of MeerKAT}
+New class of radio interferometers produce an ever increasing number of data.
 
 
-
-
-\begin{equation}\label{intro:ftsphere}
-V(u, v, w) = \int\int \frac{I(x, y)}{\sqrt{1 - x^2 - y ^2}} e^{2 \pi i [ux+vy+ w(\sqrt{1 - x^2 - y ^2} - 1)]} \: dx \: dy
-\end{equation}
 
 
 
