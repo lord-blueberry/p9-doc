@@ -1,0 +1,16 @@
+\begin{thebibliography}{1}
+
+\bibitem{veenboer2017image}
+Bram Veenboer, Matthias Petschow, and John~W Romein.
+\newblock Image-domain gridding on graphics processors.
+\newblock In {\em 2017 IEEE International Parallel and Distributed Processing
+  Symposium (IPDPS)}, pages 545--554. IEEE, 2017.
+
+\bibitem{dabbech2015moresane}
+Arwa Dabbech, Chiara Ferrari, David Mary, Eric Slezak, Oleg Smirnov, and
+  Jonathan~S Kenyon.
+\newblock Moresane: Model reconstruction by synthesis-analysis estimators-a
+  sparse deconvolution algorithm for radio interferometric imaging.
+\newblock {\em Astronomy \& Astrophysics}, 576:A7, 2015.
+
+\end{thebibliography}

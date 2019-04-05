@@ -1,114 +1,125 @@
-\section{Angular Resolution in Radio Astronomy}\label{intro}
-Astronomy, Observation of the universe. Higher and higher angular resolution.
+\documentclass[11pt]{article}
+\usepackage{cite}
 
-Radio Astronomy, single antenna dishes are too expensive
+\usepackage{hyperref}
+%biblio
+\usepackage{natbib}
+\usepackage{url}
+\usepackage{wrapfig}
 
-Radio interferometers use several antennas together.
+%Math
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{ulem}
+\usepackage{bm}
+\usepackage{stmaryrd} %f\UTF{00FC}r Blitz!
 
-But the problem is that Radio Interferometers do not measure the sky image directly. Instead, they measure Fourier Components. 
-
-
-
-The inverse Problem
-
-
-
-\subsection{Radio Interferometric Inverse Problem}
-Inverse Problem, We have measurements and want to find the image matching the measurements. Incomplete, there are potentially infinite number of images fitting the measurements. This forms an Ill-Posed inverse problem. 
-
-Solving this ill posed inverse problem with image reconstruction
-
-
-Radio Interferometers measure Fourier Components of the Sky. We have a Fourier relationship between measurements and image.
-
-Image reconstruction problem shown in figure \ref{intro:inversefig}
-Measurements in the Fourier Domain in figure \ref{intro:inversefig:uvspace}. Each dot represents a measurement of the Radio Interferometer. Incomplete, we do have holes in the UV space. But also a very large number of measurements. We have areas with a high sample density.
-Reconstructed image \ref{intro:inversefig:reconstruction}
-
-\begin{figure}[htp]
-	% preliminary
-	\sbox\twosubbox{%
-		\resizebox{\dimexpr.9\textwidth-1em}{!}{%
-			\includegraphics[height=3cm]{./chapters/01.intro/meerkat_uv2.png}%
-			\includegraphics[height=3cm]{./chapters/01.intro/meerkat_clean2.png}%
-		}%
-	}
-	\setlength{\twosubht}{\ht\twosubbox}
-	
-	% typeset
-	\centering
-	\subcaptionbox{Measurements of the MeerKAT Radio Interferometer.\label{intro:inversefig:uvspace}}{%
-		\includegraphics[height=\twosubht]{./chapters/01.intro/meerkat_uv2.png}%
-	}\quad
-	\subcaptionbox{A reconstruction which fits the observation.\label{intro:inversefig:reconstruction}}{%
-		\includegraphics[height=\twosubht]{./chapters/01.intro/meerkat_clean2.png}%
-	}
-	\caption{The Image Reconstruction Problem}\label{intro:inversefig}
-\end{figure}
+%PageStyle
+%\usepackage[ngerman]{babel} % deutsche Silbentrennung1
+\usepackage[utf8x]{inputenc} 
+\usepackage{fancyhdr, graphicx}
+\usepackage{subcaption}
+\usepackage[scaled=0.92]{helvet}
+\usepackage{enumitem}
+\usepackage{parskip}
+\usepackage[a4paper,top=2cm]{geometry}
+\setlength{\textwidth}{17cm}
+\setlength{\oddsidemargin}{-0.5cm}
+\usepackage{lastpage} % for getting last page number
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{setspace}
+\usepackage{acronym}
 
 
+% Code listenings
+\usepackage{color}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[font=it]{caption}
+\DeclareCaptionFont{white}{\color{white}}
+\DeclareCaptionFormat{listing}{\colorbox{gray}{\parbox{\textwidth}{#1#2#3}}}
+\captionsetup[lstlisting]{format=listing,labelfont=white,textfont=white}
+\lstset{
+ language=Java,
+ basicstyle=\footnotesize\ttfamily, % Standardschrift
+ numbers=left,               % Ort der Zeilennummern
+ numberstyle=\tiny,          % Stil der Zeilennummern
+ stepnumber=1,              % Abstand zwischen den Zeilennummern
+ numbersep=5pt,              % Abstand der Nummern zum Text
+ tabsize=2,                  % Groesse von Tabs
+ extendedchars=true,         %
+ breaklines=true,            % Zeilen werden Umgebrochen
+ frame=b,         
+ %commentstyle=\itshape\color{LightLime}, Was isch das? O_o
+ %keywordstyle=\bfseries\color{DarkPurple}, und das O_o
+ basicstyle=\small,
+ stringstyle=\color[RGB]{42,0,255}\ttfamily, % Farbe der String
+ keywordstyle=\color[RGB]{127,0,85}\ttfamily, % Farbe der Keywords
+ commentstyle=\color[RGB]{63,127,95}\ttfamily, % Farbe des Kommentars
+ showspaces=false,           % Leerzeichen anzeigen ?
+ showtabs=false,             % Tabs anzeigen ?
+ xleftmargin=17pt,
+ framexleftmargin=17pt,
+ framexrightmargin=5pt,
+ framexbottommargin=4pt,
+ showstringspaces=false      % Leerzeichen in Strings anzeigen ?        
+}
+
+\usepackage{xcolor}
+
+%Config
+\fancypagestyle{firststyle}{ %Style of the first page
+ \fancyhf{}
+ \fancyheadoffset[L]{0.6cm}
+ \lhead{
+ \includegraphics[scale=0.8]{./fhnw_ht_e_10mm.jpg}}
+ \renewcommand{\headrulewidth}{0pt}
+ \lfoot{Institute 4 Data Science,\linebreak www.fhnw.ch }
+}
+
+\fancypagestyle{documentstyle}{ %Style of the rest of the document
+ \fancyhf{}
+ \fancyheadoffset[L]{0.6cm}
+\lhead{
+ \includegraphics[scale=0.8]{./fhnw_ht_e_10mm.jpg}}
+ \renewcommand{\headrulewidth}{0pt}
+ \lfoot{P9 Distributed Image Reconstruction for new Radio Interferometers}
+ \rfoot{\thepage\ / \pageref{LastPage} }
+}
+
+\fancypagestyle{tableofcontent}{ %Style of the rest of the document
+ \fancyhf{}
+ \fancyheadoffset[L]{0.6cm}
+\lhead{
+ \includegraphics[scale=0.8]{./fhnw_ht_e_10mm.jpg}}
+ \renewcommand{\headrulewidth}{0pt}
+ \cfoot{\thepage}
+}
+
+\fancypagestyle{abstract}{ %Style of the first page
+ \fancyhf{}
+ \fancyheadoffset[L]{0.6cm}
+ \lhead{
+ \includegraphics[scale=0.8]{./fhnw_ht_e_10mm.jpg}}
+ \renewcommand{\headrulewidth}{0pt}
+ \cfoot{}
+}
 
 
+%Metadata
+\numberwithin{equation}{section}
 
+\newlength{\twosubht}
+\newsavebox{\twosubbox}
 
-Overdetermined problem, we have magnitudes more Visibilities than Pixels in the image. But noise and holes in the 
+\begin{document}
+\title{P9 Distributed Image Reconstruction for the new Radio Interferometers}
+\author{Jonas Schwammberger}
+\date{\today}
 
-
-Or more formally in equation \eqref{intro:inverseproblem}
-
-
-\begin{equation}\label{intro:inverseproblem}
-V(u, v, w) = \int\int \frac{I(x, y)}{\sqrt{1 - x^2 - y ^2}} e^{2 \pi i [ux+vy+ w(\sqrt{1 - x^2 - y ^2} - 1)]} \: dx \: dy
-\end{equation}
-
-3d Fourier Relationship.
-
-w-projection.
-Our
-
-
-\subsection{Image Reconstruction}
-Whole system.
-From measurements to image reconstruction contains many different steps. In this project, we concern ourselves with the image reconstruction
-
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=0.80\linewidth]{./chapters/01.intro/system.png}
-	\caption{Interferometer System}
-	\label{intro:system}
-\end{figure}
-
-Calibration is not directly
-Bad calibration can introduce a special error in the image.
-
-Different ways of formulating the image reconstruction problem:
-Interpolating the missing Visibilities
-Deconvolution
-Finding an image which fits the measurements
-
-\subsubsection{Theory of Compressed Sensing}
-
-\subsubsection{State of the art}
-
-\subsubsection{Large scale Reconstruction Problem of MeerKAT}
-New class of radio interferometers produce an ever increasing number of data.
-
-
-
-
-
-\subsection{Image Reconstruction}
-
-\subsection{State of the art Deconvolution algorithms}
-
-CLEAN
-
-Compressed Sensing
-
-What is a deconvolution algorithm
-
-\pagebreak
-\section{Image Reconstruction for Radio Interferometers}
+\section*{Distributed Image Reconstruction for Radio Interferometers}
 In Astronomy, instruments with higher angular resolution allows us to measure ever smaller structures in the sky. For Radio frequencies, the angular resolution is bound to the antenna dish diameter, which puts practical and financial limitations on the highest possible angular resolution. Radio Interferometers get around this limitation by using several smaller antennas instead. Together, they act as a single large antenna with higher angular resolution at lower financial costs compared to single dish instruments.
 
 Each antenna pair of an Interferometer measures a single Fourier component of the observed image. We can retrieve the image by calculating the Fourier Transform of the measurements. However, since the Interferometer only measures an incomplete set of Fourier components, the resulting image is "dirty", convolved with a Point Spread Function ($PSF$). Calculating the Fourier Transform is not enough. To reconstruct the from an Interferometer image, an algorithm has to find the observed image with only the dirty image and the $PSF$ as input. It has to perform a deconvolution. The difficulty lies in the fact that there are potentially many valid deconvolutions for a single measurement, and the algorithm has to decide for the most likely one. How similar the truly observed image and the reconstructed images are depends largely on the deconvolution algorithm.
@@ -117,21 +128,21 @@ State-of-the-art image reconstructions use the Major Cycle architecture (shown i
 
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=0.80\linewidth]{./chapters/02.hypo/Major-Minor3.png}
+	\includegraphics[width=0.80\linewidth]{./Major-Minor3.png}
 	\caption{The Major Cycle Architecture of image reconstruction algorithms}
 	\label{hypo:major3}
 \end{figure}
 
 The first operation in the Major Cycle, Gridding, takes the non-uniformly sampled Fourier measurements from the Interferometer and interpolates them on a uniformly spaced grid. The uniform grid lets us use FFT to calculate the inverse Fourier Transform and we arrive at the dirty image. A deconvolution algorithm takes the dirty image plus the $PSF$ as input, producing the deconvolved "model image", and the residual image as output. At this point, the reverse operations get applied to the residual image. First the FFT and then De-gridding, arriving at the non-uniform Residuals. The next Major Cycle begins with the non-uniform Residuals as input. The cycles are necessary, because the Gridding and Deconvolution operations are only approximations. Over several cycles, we reduce the errors introduced by the approximate Gridding and Deconvolution. The final, reconstructed image is the addition of all the model images of each Major Cycle. 
 
-\subsection{Distributed Image Reconstruction}
+\subsection*{The case for distributed Reconstruction}*
 New Interferometer produce an ever increasing number of measurements, creating ever larger reconstruction problems. A single image can contain several terabytes of Fourier measurements. Handling reconstruction problems of this size forces us to use distributed computing. However, state-of-the-art Gridding and Deconvolution algorithms only allow for limited distribution. How to scale the Gridding and Deconvolution algorithms to large problem sizes is still an open question.
 
 Recent developments make a distributed Gridder and a distributed Deconvolution algorithm possible. Veeneboer et al\cite{veenboer2017image} found an input partitioning scheme, which allowed them to perform the Gridding on the GPU. The same partitioning scheme can potentially be used to distribute the Gridding onto multiple machines. For Deconvolution, there exist parallel implementations for certain algorithms like MORESANE\cite{dabbech2015moresane}. These can be used as a basis for a fully distributed image reconstruction.
 
 In this project, we want to make the first steps towards an image reconstruction algorithm, which is distributed from end-to-end, from Gridding up to and including deconvolution. We create our own distributed Gridding and Deconvolution algorithms, and analyse the bottlenecks that arise.
 
-\subsection{First steps towards a distributed Algorithm}
+\subsection*{First steps towards a distributed Algorithm}
 In this project, we make the first steps towards a distributed Major Cycle architecture (shown in figure \ref{hypo:major3}) implemented C\#. We port Veeneboer et al's Gridder, which is written in C++, to C\# and modify it for distributed computing. We implement a simple deconvolution algorithm based on the previous project and create a first, non-optimal distributed version of it.
 
 In the next step, we create a more sophisticated deconvolution algorithm based on the shortcomings of the first implementation. We use simulated and real-world observations of the MeerKAT Radio Interferometer and measure its speed up. We identify the bottlenecks of the current implementation and explore further steps.
@@ -145,11 +156,9 @@ From the first lessons, we continually modify the distributed algorithm and focu
 
 A state-of-the-art reconstruction algorithm has to correct large number of measurement effects arising from the Radio Interferometer. Accounting for all effects is out of the scope for this project. We make simplifying assumptions, resulting in a proof-of-concept algorithm.
 
+\newpage
+\bibliography{mybib}{}
+%\bibliographystyle{plain}
+\bibliographystyle{unsrt}
 
-
-
-
-
-
-
-
+\end{document}
