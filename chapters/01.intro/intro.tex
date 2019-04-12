@@ -1,39 +1,21 @@
 \section{Introduction}\label{intro}
 In Astronomy, instruments with higher angular resolution allows us to measure ever smaller structures in the sky. For Radio frequencies, the angular resolution is bound to the antenna dish diameter, which puts practical and financial limitations on the highest possible angular resolution. Radio Interferometers get around this limitation by using several smaller antennas instead. Together, they act as a single large antenna with higher angular resolution at lower financial costs compared to single dish instruments.
 
-Retrieving the observed image for Radio Interferometer becomes difficult. The Interferometer does not measure pixels of the sky. Instead, it measures an incomplete set of Fourier components. Each antenna pair samples a point in the Fourier Domain. To retrieve the image, a reconstruction algorithm has to find the Fourier Transform of the measurements, even though it is missing information. This forms an ill-posed inverse problem. There are potentially many images that fit the measurements of a Radio Interferometer. From the measurements alone, we do not know which of the possible images was actually observed.
+Retrieving the observed image for Radio Interferometer becomes difficult. The Interferometer does not measure pixels of the sky. Instead, it measures an incomplete set of Fourier components. To retrieve the image, we have to solve the the Radio Interferometric Inverse Problem. We try to find the observed image, while we only know an incomplete set of Fourier Components. Due to the incomplete measurements, the inverse Problem is ill-posed, meaning we have a large number of possible images that fit the measurements. To solve this, image reconstruction algorithms try to find the most likely observed image.
 
 Image reconstruction algorithm which tackle the ill-posed inverse problem. We have two dimensions, reconstructing an image which is as close as possible to the truly observed one, and finding an image as fast as possible.
 
-New Radio Interferometers.
-
-Image reconstruction algorithms therefore have to find the most likely image of a measurements.
-
-Finding an image as fast as possible
-Finding the most likely observed image.
-
-What this project does
+New Radio Interferometers produce an ever larger number of Fourier Components. Calculating an image in a reasonable timeframe becomes an issue. Distribution Necessary. But the Radio Interferometric Inverse Problem so far has been difficult to distribute.
 
 
 \subsection{Radio Interferometric Inverse Problem}
-What is a baseline.
-What is an Observation. Over a time window. Create an image over several hours of measurements.
-Channels, Polarization.
+An example of the Inverse Problem is shown in figure \ref{intro:inversefig}. The image \ref{intro:inversefig:reconstruction} shows a reconstruction The image \ref{intro:inversefig:uvspace} shows the measurements of the MeerKAT Radio Interferometer in the Fourier space. Each dot represents a sampled Fourier component. Each antenna pair creates a sample. Each pair is called a baseline. 
 
-The inverse problem
+What points are sampled are defined by the Antenna layout. Sampling pattern is non-uniform in the Fourier space. Meaning we have more densely sampled areas and more sparsely sampled areas. The image \ref{intro:inversefig:uvspace} clearly shows the incompleteness of the measurements. We have "holes" in the uv-space, which is missing information.
 
-Inverse Problem, We have measurements and want to find the image matching the measurements. Incomplete, there are potentially infinite number of images fitting the measurements. This forms an Ill-Posed inverse problem. 
+What is an Observation. Over a time window. Create an image over several hours of measurements. This increases the number of samples that we have to deal
 
-Solving this ill posed inverse problem with image reconstruction
-
-
-Radio Interferometers measure Fourier Components of the Sky. We have a Fourier relationship between measurements and image.
-
-Image reconstruction problem shown in figure \ref{intro:inversefig}
-Measurements in the Fourier Domain in figure \ref{intro:inversefig:uvspace}. Each dot represents a measurement of the Radio Interferometer. Incomplete, we do have holes in the UV space. But also a very large number of measurements. Non-uniform sampling pattern in the Fourier space. The sampling pattern is defined by the instrument, we have pockets with high number of samples, and areas with few samples. We have "Holes" in the Fourier space, meaning we do not have all the information available for the Nyquist-Shannon sampling rate. In essence, we are missing information for the image.
-
-Reconstructed image \ref{intro:inversefig:reconstruction}
-
+Noise in the Fourier Components. Amplitude and phase noise. 
 
 
 \begin{figure}[htp]
@@ -58,8 +40,13 @@ Reconstructed image \ref{intro:inversefig:reconstruction}
 \end{figure}
 
 
-
+Inverse Problem, We have measurements and want to find the image matching the measurements. Incomplete, there are potentially infinite number of images fitting 
+the measurements. This forms an Ill-Posed inverse problem. 
 Overdetermined problem, we have magnitudes more Visibilities than Pixels in the image. But noise and holes in the 
+
+For Distribution, details become important
+Not the 2d Fourier Relationship.
+Specific to Radio Interferometers
 
 
 Or more formally in equation \eqref{intro:inverseproblem}
@@ -71,8 +58,12 @@ V(u, v, w) = \int\int \frac{I(x, y)}{\sqrt{1 - x^2 - y ^2}} e^{2 \pi i [ux+vy+ w
 
 3d Fourier Relationship.
 
-w-projection.
-Our
+w-projection makes this difficult.
+
+Difficult to calculate efficiently. $w$-term, and the non-uniform sampling pattern keeps us from using the FFT.
+
+To solve this efficiently, the question is how this can be represented in a way that we can re-use the 2d fourier transform.
+
 
 
 \subsection{Radio Interferometric Image Reconstruction}
