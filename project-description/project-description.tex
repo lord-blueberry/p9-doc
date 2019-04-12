@@ -129,13 +129,13 @@ State-of-the-art image reconstructions use the Major Cycle architecture (shown i
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.80\linewidth]{./Major-Minor3.png}
-	\caption{The Major Cycle Architecture of image reconstruction algorithms}
+	\caption{The Major Cycle Architecture for Radio Interferometer Image Reconstruction.}
 	\label{hypo:major3}
 \end{figure}
 
 The first operation in the Major Cycle, Gridding, takes the non-uniformly sampled Fourier measurements from the Interferometer and interpolates them on a uniformly spaced grid. The uniform grid lets us use FFT to calculate the inverse Fourier Transform and we arrive at the dirty image. A deconvolution algorithm takes the dirty image plus the $PSF$ as input, producing the deconvolved "model image", and the residual image as output. At this point, the reverse operations get applied to the residual image. First the FFT and then De-gridding, arriving at the non-uniform Residuals. The next Major Cycle begins with the non-uniform Residuals as input. The cycles are necessary, because the Gridding and Deconvolution operations are only approximations. Over several cycles, we reduce the errors introduced by the approximate Gridding and Deconvolution. The final, reconstructed image is the addition of all the model images of each Major Cycle. 
 
-\subsection*{The case for distributed Reconstruction}*
+\subsection*{The case for distributed Reconstruction}
 New Interferometer produce an ever increasing number of measurements, creating ever larger reconstruction problems. A single image can contain several terabytes of Fourier measurements. Handling reconstruction problems of this size forces us to use distributed computing. However, state-of-the-art Gridding and Deconvolution algorithms only allow for limited distribution. How to scale the Gridding and Deconvolution algorithms to large problem sizes is still an open question.
 
 Recent developments make a distributed Gridder and a distributed Deconvolution algorithm possible. Veeneboer et al\cite{veenboer2017image} found an input partitioning scheme, which allowed them to perform the Gridding on the GPU. The same partitioning scheme can potentially be used to distribute the Gridding onto multiple machines. For Deconvolution, there exist parallel implementations for certain algorithms like MORESANE\cite{dabbech2015moresane}. These can be used as a basis for a fully distributed image reconstruction.
