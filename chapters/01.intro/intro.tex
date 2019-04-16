@@ -23,7 +23,7 @@ Noise in the Fourier Components. Amplitude and phase noise.
 	\sbox\twosubbox{%
 		\resizebox{\dimexpr.9\textwidth-1em}{!}{%
 			\includegraphics[height=3cm]{./chapters/01.intro/meerkat_uv2.png}%
-			\includegraphics[height=3cm]{./chapters/01.intro/meerkat_clean2.png}%
+			\includegraphics[height=3cm]{./chapters/01.intro/mk2/clean.png}%
 		}%
 	}
 	\setlength{\twosubht}{\ht\twosubbox}
@@ -34,7 +34,7 @@ Noise in the Fourier Components. Amplitude and phase noise.
 		\includegraphics[height=\twosubht]{./chapters/01.intro/meerkat_uv2.png}%
 	}\quad
 	\subcaptionbox{A reconstruction which fits the observation.\label{intro:inversefig:reconstruction}}{%
-		\includegraphics[height=\twosubht]{./chapters/01.intro/meerkat_clean2.png}%
+		\includegraphics[height=\twosubht]{./chapters/01.intro/mk2/clean.png}%
 	}
 	\caption{The Image Reconstruction Problem}\label{intro:inversefig}
 \end{figure}
@@ -63,6 +63,31 @@ w-projection makes this difficult.
 Difficult to calculate efficiently. $w$-term, and the non-uniform sampling pattern keeps us from using the FFT.
 
 To solve this efficiently, the question is how this can be represented in a way that we can re-use the 2d fourier transform.
+
+
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/01.intro/mk2/psf.png}
+		\caption{CLEAN reconstruction \\with CASA standard parameters.}
+		\label{results:points:tclean}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\linewidth}
+	\includegraphics[width=\linewidth]{./chapters/01.intro/mk2/dirty.png}
+	\caption{CLEAN reconstruction \\with CASA standard parameters.}
+	\label{results:points:tclean}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/01.intro/mk2/clean.png}
+		\caption{CLEAN reconstruction \\with CASA standard parameters.}
+		\label{results:points:tclean}
+	\end{subfigure}
+
+	
+	\caption{Image reconstruction of two simulated point sources.}
+	\label{results:points}
+\end{figure}
+
 
 
 
