@@ -1,27 +1,31 @@
 \BOOKMARK [1][-]{section.1}{Introduction}{}% 1
-\BOOKMARK [2][-]{subsection.1.1}{Radio Interferometric Inverse Problem}{section.1}% 2
-\BOOKMARK [2][-]{subsection.1.2}{Image Reconstruction}{section.1}% 3
-\BOOKMARK [3][-]{subsubsection.1.2.1}{Representation}{subsection.1.2}% 4
-\BOOKMARK [2][-]{subsection.1.3}{The Major Cycle Architecture}{section.1}% 5
-\BOOKMARK [3][-]{subsubsection.1.3.1}{Minor Cycle}{subsection.1.3}% 6
-\BOOKMARK [1][-]{section.2}{Distributing the Image Reconstruction}{}% 7
-\BOOKMARK [2][-]{subsection.2.1}{Distributed Gridder: The IDG algorithm}{section.2}% 8
-\BOOKMARK [2][-]{subsection.2.2}{Distributed Deconvolution: Coordinate Descent}{section.2}% 9
-\BOOKMARK [1][-]{section.3}{Conclusion}{}% 10
-\BOOKMARK [1][-]{section.4}{attachment}{}% 11
-\BOOKMARK [1][-]{section.5}{Larger runtime costs for Compressed Sensing Reconstructions}{}% 12
-\BOOKMARK [2][-]{subsection.5.1}{CLEAN: The Major Cycle Architecture}{section.5}% 13
-\BOOKMARK [2][-]{subsection.5.2}{Compressed Sensing Architecture}{section.5}% 14
-\BOOKMARK [2][-]{subsection.5.3}{Hypothesis for reducing costs of Compressed Sensing Algorithms}{section.5}% 15
-\BOOKMARK [2][-]{subsection.5.4}{State of the art: WSCLEAN Software Package}{section.5}% 16
-\BOOKMARK [3][-]{subsubsection.5.4.1}{W-Stacking Major Cycle}{subsection.5.4}% 17
-\BOOKMARK [3][-]{subsubsection.5.4.2}{Deconvolution Algorithms}{subsection.5.4}% 18
-\BOOKMARK [2][-]{subsection.5.5}{Distributing the Image Reconstruction}{section.5}% 19
-\BOOKMARK [3][-]{subsubsection.5.5.1}{Distributing the Non-uniform FFT}{subsection.5.5}% 20
-\BOOKMARK [3][-]{subsubsection.5.5.2}{Distributing the Deconvolution}{subsection.5.5}% 21
-\BOOKMARK [1][-]{section.6}{Handling the Data Volume}{}% 22
-\BOOKMARK [2][-]{subsection.6.1}{Fully distributed imaging algorithm}{section.6}% 23
-\BOOKMARK [1][-]{section.7}{Image Reconstruction for Radio Interferometers}{}% 24
-\BOOKMARK [2][-]{subsection.7.1}{Distributed Image Reconstruction}{section.7}% 25
-\BOOKMARK [2][-]{subsection.7.2}{First steps towards a distributed Algorithm}{section.7}% 26
-\BOOKMARK [1][-]{section.8}{Ehrlichkeitserkl\344rung}{}% 27
+\BOOKMARK [2][-]{subsection.1.1}{Radio Interferometry}{section.1}% 2
+\BOOKMARK [2][-]{subsection.1.2}{Image Reconstruction Problem}{section.1}% 3
+\BOOKMARK [2][-]{subsection.1.3}{Solving the Image Reconstruction Problem: The Major/Minor Cycle architecture}{section.1}% 4
+\BOOKMARK [3][-]{subsubsection.1.3.1}{Deconvolution}{subsection.1.3}% 5
+\BOOKMARK [3][-]{subsubsection.1.3.2}{Prior Information about the Image}{subsection.1.3}% 6
+\BOOKMARK [3][-]{subsubsection.1.3.3}{Fast Approximation}{subsection.1.3}% 7
+\BOOKMARK [3][-]{subsubsection.1.3.4}{Representation}{subsection.1.3}% 8
+\BOOKMARK [2][-]{subsection.1.4}{The Major Cycle Architecture}{section.1}% 9
+\BOOKMARK [3][-]{subsubsection.1.4.1}{Minor Cycle}{subsection.1.4}% 10
+\BOOKMARK [1][-]{section.2}{Distributing the Image Reconstruction}{}% 11
+\BOOKMARK [2][-]{subsection.2.1}{Distributed Gridder: The IDG algorithm}{section.2}% 12
+\BOOKMARK [2][-]{subsection.2.2}{Distributed Deconvolution: Coordinate Descent}{section.2}% 13
+\BOOKMARK [1][-]{section.3}{Conclusion}{}% 14
+\BOOKMARK [1][-]{section.4}{attachment}{}% 15
+\BOOKMARK [1][-]{section.5}{Larger runtime costs for Compressed Sensing Reconstructions}{}% 16
+\BOOKMARK [2][-]{subsection.5.1}{CLEAN: The Major Cycle Architecture}{section.5}% 17
+\BOOKMARK [2][-]{subsection.5.2}{Compressed Sensing Architecture}{section.5}% 18
+\BOOKMARK [2][-]{subsection.5.3}{Hypothesis for reducing costs of Compressed Sensing Algorithms}{section.5}% 19
+\BOOKMARK [2][-]{subsection.5.4}{State of the art: WSCLEAN Software Package}{section.5}% 20
+\BOOKMARK [3][-]{subsubsection.5.4.1}{W-Stacking Major Cycle}{subsection.5.4}% 21
+\BOOKMARK [3][-]{subsubsection.5.4.2}{Deconvolution Algorithms}{subsection.5.4}% 22
+\BOOKMARK [2][-]{subsection.5.5}{Distributing the Image Reconstruction}{section.5}% 23
+\BOOKMARK [3][-]{subsubsection.5.5.1}{Distributing the Non-uniform FFT}{subsection.5.5}% 24
+\BOOKMARK [3][-]{subsubsection.5.5.2}{Distributing the Deconvolution}{subsection.5.5}% 25
+\BOOKMARK [1][-]{section.6}{Handling the Data Volume}{}% 26
+\BOOKMARK [2][-]{subsection.6.1}{Fully distributed imaging algorithm}{section.6}% 27
+\BOOKMARK [1][-]{section.7}{Image Reconstruction for Radio Interferometers}{}% 28
+\BOOKMARK [2][-]{subsection.7.1}{Distributed Image Reconstruction}{section.7}% 29
+\BOOKMARK [2][-]{subsection.7.2}{First steps towards a distributed Algorithm}{section.7}% 30
+\BOOKMARK [1][-]{section.8}{Ehrlichkeitserkl\344rung}{}% 31
