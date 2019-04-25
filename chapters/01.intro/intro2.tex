@@ -6,6 +6,7 @@ Higher sensitivity
 Create images at a hIgher angular resolution
 Like MeerKAT
 Does not measure the sky image
+
 Difficulty creating an image
 
 And interferometers do not measure the sky directly. Interferometers do not measure the sky in pixels. Each antenna pair measures a Fourier Component. 
@@ -24,8 +25,7 @@ First tests
 
 
 \subsection{Radio Interferometry System}
-The figure \ref{intro:system} shows the whole imaging pipeline for an interferometer, which consists of three steps: Correlator, Calibration and Image Reconstruction. The incoming electromagnetic wave gets measured by the different antennas of the interferometer. The measurements of each antenna pair get correlated into a complex-valued Fourier Component (called Visibility in Radio Astronomy). Each antenna pair therefore measures amplitude and phase of a single Visibility (Fourier Component) of the sky image.
-What Visibility is measured depends on the distance of the antenna pairs, called the baseline. The longer the baseline, the higher-order Visibility gets measured. Meaning more angular resolution.
+The figure \ref{intro:system} shows the whole system of a Radio Interferometer. Antennas observe the arriving electromagnetic wave, gets processed in three steps: Correlation, Calibration and Image Reconstruction. 
 
 \begin{figure}[h]
 	\centering
@@ -34,17 +34,31 @@ What Visibility is measured depends on the distance of the antenna pairs, called
 	\label{intro:system}
 \end{figure}
 
-What Visibilities get measured depends on the antenna layout. The earth rotation modifies the baselines. Due to the earth's rotation, we can sample different Visibilities. (filling the aperture).
-Noisy measurements
-Only a limited number of Visibilities. This is where the incompleteness comes in. We do not have enough data.
-After the Correlator, this is what is saved as the raw measurements.
+First, the electromagnetic wave gets measured by the different antennas of the interferometer. The measurements of each antenna pair get correlated into a complex-valued Fourier Component (called Visibility in Radio Astronomy). Each antenna pair measures a noisy amplitude and phase of a single Visibility (Fourier Component) of the sky image. The distance and orientation of the antenna pair relative to the incoming signal, called the baseline, dictates which Visibility gets measured. The longer the baseline the higher-order Visibility gets measured, resulting in a higher angular resolution. After correlation, the Visibility data are saved for later processing.
 
-In the Calibration step, we correct for (Interferometer stuff), Pointing errors, Calibrate the amplitude and phase of the visibilities. Correct for pointing errors. (The interferometer measures relative values). Flagging, remove hopelessly noisy data.
-Done before imaging, manual labour.
+The Calibration step is done after the fact.
+Pointing-errors
+We correct the amplitude and phase of each Visibility, correct for different sensitivities and remove corrupted data.
+Here, we can start averaging the Visibilities and reduce the data volume by several factors. 
 
-The last step, the Image Reconstruction is where this work focuses its attention. This is where the ill-posed inverse problem is. We want to find the image corresponding to the calibrated visibilities. 
-[Improving the Calibration with partial results of the image reconstruction, done in practice but not part of this project.]
-The Image Reconstruction part is where the ill-posed inverse problem arises.
+The last step, the Image Reconstruction is where this project is focused on. It takes the calibrated Visibilities and searches for observed sky image. We need to handle an ill-posed inverse problem.
+Ill-Posed because we only have an incomplete set of Visibilities for the sky image.
+Incomplete because:
+
+\subsubsection{The Baseline and Earth's Rotation}
+The baseline is always relative to the incoming signal.
+Earth's rotation changes the orientation affects the baselines, meaning we can measure a different order of Visibilities at a different time of day.
+Radio Interferometers therefore observe a target over several hours, this to measure different Visibilities of t\\
+Arbitrary large number of Visibilities. 
+Large number of Visibilities are crucial for high-quality images.
+Image Reconstruction cannot deal with the data volume of new Interferometers
+
+The stop-gap measure is to average the Visibility data in the calibration step. But
+
+Currently, the MeerKAT Radio Interferometer produces a large number of Visibilities. We need to average them down in the Calibration step. However, self-calibration we want to use a partial result from the image reconstruction to improve calibration. We can't average them down.
+
+Image reconstruction has to deal with an arbitrary amount of Visibilities.
+
 
 
 \subsection{Image Reconstruction Problem}
@@ -56,21 +70,19 @@ V(u, v, w) = \int\int \frac{1}{c(x, y)} I(x, y) e^{2 \pi i [ux+vy+ w(c(x, y) - 1
 
 [Not Really 2d Relationship. if $c() << 1$ Fourier part $e^{2 \pi i [ux+vy]}$]. This is the Fourier transform, but in our case we have an extra term $w(c(x, y) - 1)$ that keeps us from using the 2d fourier transform, and by extend the 2d FFT.
 But still a linear relationship. Meaning we can express the relationship from Visibilities $V()$ and Image $I()$ with a matrix, which we call $F$.
-Create a set of linear equations and solve for the image. Different ways of representing the image reconstruction problem.
+Create a set of linear equations and solve for the image \eqref{intro:linear}. 
 
-\begin{alignat}{2}
-\text{analysis:}\: \underset{I}{find}&\quad FI = V \quad &\\
-\text{in-painting:}\: \underset{V_{Unif}}{find}&\quad MV_{Unif} = V,  \quad &I = iFFT(V_{Unif})\\
-\text{deconvolution:}\: \underset{I}{find}&\quad I \star PSF = I_{Dirty},  \quad &I_{Dirty} = F^{-1}V
-\end{alignat}
+\begin{equation}\label{intro:linear}
+\text{analysis:}\: \underset{I}{find}\quad FI = V
+\end{equation}
 
 Explain analysis
-Explain in-painting
-explain deconvolution
-All are a way to represent the Image reconstruction problem. If the problem had a unique solution, all three representation would find it. Interestingly enough, in Radio Astronomy, we generally have more Visibilities than Pixels in the reconstruction. the first two (ref) are over-determined problems, meaning we have more linear equations than free variables in the system.
+Interestingly enough, in Radio Astronomy, we generally have more Visibilities than Pixels in the reconstruction. the first two (ref) are over-determined problems, meaning we have more linear equations than free variables in the system.
 At first glance, it seems like we can solve equation \eqref{intro:linear}.
+But set is incomplete.
+$F$ is too big for any practical application. It has the size of pixels times Visibilities. 4k*4k pixels, times 4 billion Visibilities.
+
 Why equation \eqref{intro:linear} is ill-posed. Depends on the properties of $V()$
-An example from the MeerKAT Radio Interferometer is shown in figure \ref{intro:inversefig}.
 
 \begin{figure}[htp]
 	% preliminary
@@ -97,13 +109,34 @@ In figure \ref{intro:inversefig:uvspace} shows the Visibility Samples in the UV 
 We have too much data in some areas, while too little in others. Furthermore each Visibility measurement is noisy. These two properties make that many possible images fit the measurements. Which makes the whole inverse problem ill-posed.
 From the measurements alone, we cannot find the observed image from all possible solutions. We need prior information
 
+Prior information, like most pixels are zero, can only contain stars and blobs.
+
+
+
 $F$ is too big for any practical application. It has the size of pixels times Visibilities. 4k*4k pixels, times 4 billion Visibilities. Approximate $F$.
+
+\subsubsection{Different Representations for the Image Reconstruction Problem}
+$F = M FFT(I)$
+Masking Matrix $M$
+Different ways of representing the image reconstruction problem.
+
+\begin{alignat}{2}
+\text{in-painting:}\: \underset{V_{Unif}}{find}&\quad MV_{Unif} = V,  \quad &I = iFFT(V_{Unif})\\
+\text{deconvolution:}\: \underset{I}{find}&\quad I \star PSF = I_{Dirty},  \quad &I_{Dirty} = F^{-1}V
+\end{alignat}
+
+Explain in-painting
+explain deconvolution
+
+Deconvolution is used
+To our knowledge, in-painting is not used for Radio Interferometer image reconstruction.
+
 Decide on a representation!
 
 To solve the image reconstruction problem in Radio Astronomy, we need two things.
 \begin{itemize}
 	\item Decide on a representation.
-	\item Prior knowledge about the image.
+	\item Encode prior knowledge about the image.
 	\item If needed, a fast approximation of the Matrix $F$
 \end{itemize} 
 
