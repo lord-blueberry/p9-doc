@@ -1,6 +1,7 @@
 \section{Introduction}
 In Astronomy, instruments with higher angular resolution allows us to measure ever smaller structures in the sky. For Radio frequencies, the angular resolution is bound to the antenna dish diameter, which puts practical and financial limitations on the highest possible angular resolution. Radio Interferometers get around this limitation by using several smaller antennas instead. Together, they act as a single large antenna with higher angular resolution at lower financial costs compared to single dish instruments.
 
+SKA
 New Radio Interferometers are built
 Higher sensitivity
 Create images at a hIgher angular resolution
@@ -30,7 +31,7 @@ This project is focused on distributing Image Reconstruction for Radio Interfero
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.80\linewidth]{./chapters/01.intro/system.png}
-	\caption{Interferometer System}
+	\caption{Radio Interferometer System}
 	\label{intro:system}
 \end{figure}
 
@@ -38,30 +39,41 @@ First, the electromagnetic wave gets measured by the different antennas of the i
 
 The Calibration step is done after all Visibility data has been recorded. This step corrects the amplitude and phase of the measurements for varying antenna sensitivities, pointing errors and other effects. Also, this step removes corrupted data from the measurements. After the Visibilities are calibrated, we can average the measurements and reduce the data volume by several factors. Typically, averaging is done to reduce the runtime costs of the Image Reconstruction step.
 
-The Image Reconstruction step takes the calibrated, and potentially averaged down Visibility data and finds the most likely observed image of the sky. The calibrated Visibilities are incomplete. For example an Interferometer with dish-antennas is typically blind to the microwave background radiation. The largest structures in the image it can detect depends on the shortest baseline. Since the antennas have to be at least the dish-diameter placed apart, the Interferometer is simply blind to very large structures in the sky image, like the microwave background radiation. This makes the Visibility measurements incomplete, and the Image Reconstruction Problem ill-posed. In the Image Reconstruction step, we therefore have to find the most likely image which fits the measurements.
+The Image Reconstruction step takes the calibrated, and potentially averaged down Visibility data and finds the most likely observed image of the sky. Although the Interferometer produces a potentially large number of Visibilities, they are incomplete: For example an Interferometer with dish-antennas is typically blind to the microwave background radiation. The largest structures in the image it can detect depends on the shortest baseline. Since the antennas have to be at least the dish-diameter placed apart, the Interferometer is simply blind to very large structures in the sky image, like the microwave background radiation. This property makes Image Reconstruction Problem ill-posed. In the Image Reconstruction step, we therefore have to find the most likely image which fits the measurements.
 
 \subsubsection{Earth's rotation and arbitrary large Number of Visibilities}
 To improve the final image, we want to measure as many different Visibilities as possible. Modern Radio Interferometers use the the earth's rotation to change the baselines. When the earth rotates, it modifies the length of the baseline and by extent, what Visibilities get measured. Modern Interferometer can produce an almost arbitrary large number of measurements by just increasing the observation time.
 
-The data volume can be averaged down in the Calibration step. However, with self-calibration, the Image Reconstruction is tasked with solving both the most likely image and the calibration parameters at the same time. This further improves the reconstruction quality\cite{Wiaux-selfcal}, but requires the Image Reconstruction step to handle all the Visibility data.
+The data volume can be averaged down in the Calibration step. However, with self-calibration, the Image Reconstruction is tasked with solving both the most likely image and the calibration parameters at the same time. This further improves the reconstruction quality\cite{Wiauxselfcal}, but requires the Image Reconstruction step to handle all the Visibility data.
 
-In short, we would like to put as many Visibility measurements into the image reconstruction as possible. Modern Radio Interferometers can produce an almost arbitrary large number of measurements. The two main limiting factors are data storage and the scalability of the Image Reconstruction. 
+Modern Radio Interferometers can produce an almost arbitrary large number of measurements. The reconstruction quality benefits from a large number of different Visibility measurements. The two main limiting factors however, are the cost of data storage and the scalability of the Image Reconstruction algorithm.
 
 
 \subsection{The Image Reconstruction Problem}
-Large Data volume
-Distributing the whole Image Reconstruction is difficult.
-Difficulty Distributing the problem.
-Let us formally define the ill-posed inverse problem and then look at how we can find the most-likely image given the Visibility measurements.
-
-First look at the relationship between Visbilities and Image. 
-
-First we formally define the ill-posed inverse problem, and then look at how we can find the most-likely image.
-We want to find the image $I()$ which fits the calibrated Visibilities $V()$. The relationship between the Image and the Visibilities is shown in equation \eqref{intro:inverseproblem}.
+For Radio Interferometers, Image Reconstruction forms an ill-posed inverse problem. There are potentially many different images that fit the measurements. The Image Reconstruction is tasked with finding the most likely image $I()$ given the (calibrated) Visibility measurements $V()$. Formally, we want to invert of the measurement equation \eqref{intro:inverseproblem} of Radio Interferometers.
 
 \begin{equation}\label{intro:inverseproblem}
-V(u, v, w) = \int\int \frac{1}{c(x, y)} I(x, y) e^{2 \pi i [ux+vy+ w(c(x, y) - 1)]} \: dx \: dy \quad, \quad c(x,y) = \sqrt{1 - x^2 - y ^2}
+V(u, v, w) = \int\int  \frac{I(x, y)}{c(x, y)}  e^{2 \pi i [ux+vy+ w(c(x, y) - 1)]} \: dx \: dy \quad \quad c(x,y) = \sqrt{1 - x^2 - y ^2}
 \end{equation}
+
+The measurement equation \eqref{intro:inverseproblem} contains three parts. The Visibility measurements $V(u,v,w)$, the observed image with a normalization factor $\frac{I(x, y)}{c(x, y)}$ and the Fourier Transform $e^{2 \pi i (\ldots)}$. The $x$ and $y$ coordinates are angles from the image center. A pixel in $I(x,y)$ represents how strong the radio emission is from the direction. The figure \ref{intro:inversefig} shows an example of the inverse problem. Note that the Visibilities $V(u,v,w)$ are three dimensional, while the image $I(x,y)$ only has two. However, also note that the third component $w$ only depends on the directions $x$ and $y$. In a sense, the Visibilities $V()$ and the Image $I()$ have a two dimensional Fourier relationship, but with a directionally dependent correction $e^{2 \pi i (\ldots +w(c(x, y) - 1))}$. 
+
+The third component $w$ is an example of a Directionally Dependent Effect (DDE) which have a tendency to increase the runtime costs of the Image Reconstruction. The $w$-component keeps us from using the Fast Fourier Transform (FFT) for the measurement equation \eqref{intro:inverseproblem}
+
+
+In Radio Astronomy, we have Directionally Dependent Effects (DDE's) that  the Directionally Dependent Effects 
+$w$-correction.
+
+
+ In other words, Visibilities $V(u,v,w)$ and image $I(x,y)$ have a two dimensional Fourier relationship, with a $w$-correction
+
+$x^2 + y^2 \ll 1$
+
+
+Two dimensional, with a $w-term$
+DDE
+
+We measure the Visibilities $V(u,v,w)$ in a three dimensional space, yet the image $I(x,y)$ is only two dimensional.
 
 [Not Really 2d Relationship. if $c() << 1$ Fourier part $e^{2 \pi i [ux+vy]}$]. This is the Fourier transform, but in our case we have an extra term $w(c(x, y) - 1)$ that keeps us from using the 2d fourier transform, and by extend the 2d FFT.
 But still a linear relationship. Meaning we can express the relationship from Visibilities $V()$ and Image $I()$ with a matrix, which we call $F$.
@@ -72,6 +84,8 @@ Create a set of linear equations and solve for the image \eqref{intro:linear}.
 \end{equation}
 
 Explain analysis
+As we discussed before, Radio Interferometers typically produce a larger number of Visibility measurements than pixels in the reconstruction.
+
 Interestingly enough, in Radio Astronomy, we generally have more Visibilities than Pixels in the reconstruction. the first two (ref) are over-determined problems, meaning we have more linear equations than free variables in the system.
 At first glance, it seems like we can solve equation \eqref{intro:linear}.
 But set is incomplete.
