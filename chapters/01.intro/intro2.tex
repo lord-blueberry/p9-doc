@@ -50,48 +50,7 @@ Modern Radio Interferometers can produce an almost arbitrary large number of mea
 
 
 \subsection{The Image Reconstruction Problem}
-For Radio Interferometers, Image Reconstruction forms an ill-posed inverse problem. There are potentially many different images that fit the measurements. The Image Reconstruction is tasked with finding the most likely image $I()$ given the (calibrated) Visibility measurements $V()$. Formally, we want to invert of the measurement equation \eqref{intro:inverseproblem} of Radio Interferometers.
-
-\begin{equation}\label{intro:inverseproblem}
-V(u, v, w) = \int\int  \frac{I(x, y)}{c(x, y)}  e^{2 \pi i [ux+vy+ w(c(x, y) - 1)]} \: dx \: dy \quad \quad c(x,y) = \sqrt{1 - x^2 - y ^2}
-\end{equation}
-
-The measurement equation \eqref{intro:inverseproblem} contains three parts. The Visibility measurements $V(u,v,w)$, the observed image with a normalization factor $\frac{I(x, y)}{c(x, y)}$ and the Fourier Transform $e^{2 \pi i (\ldots)}$. The $x$ and $y$ coordinates are angles from the image center. A pixel in $I(x,y)$ represents how strong the radio emission is from the direction. The figure \ref{intro:inversefig} shows an example of the inverse problem. Note that the Visibilities $V(u,v,w)$ are three dimensional, while the image $I(x,y)$ only has two. However, also note that the third component $w$ only depends on the directions $x$ and $y$. In a sense, the Visibilities $V()$ and the Image $I()$ have a two dimensional Fourier relationship, but with a directionally dependent correction $e^{2 \pi i (\ldots +w(c(x, y) - 1))}$. 
-
-The third component $w$ is an example of a Directionally Dependent Effect (DDE) which have a tendency to increase the runtime costs of the Image Reconstruction. The $w$-component keeps us from using the Fast Fourier Transform (FFT) for the measurement equation \eqref{intro:inverseproblem}
-
-
-In Radio Astronomy, we have Directionally Dependent Effects (DDE's) that  the Directionally Dependent Effects 
-$w$-correction.
-
-
- In other words, Visibilities $V(u,v,w)$ and image $I(x,y)$ have a two dimensional Fourier relationship, with a $w$-correction
-
-$x^2 + y^2 \ll 1$
-
-
-Two dimensional, with a $w-term$
-DDE
-
-We measure the Visibilities $V(u,v,w)$ in a three dimensional space, yet the image $I(x,y)$ is only two dimensional.
-
-[Not Really 2d Relationship. if $c() << 1$ Fourier part $e^{2 \pi i [ux+vy]}$]. This is the Fourier transform, but in our case we have an extra term $w(c(x, y) - 1)$ that keeps us from using the 2d fourier transform, and by extend the 2d FFT.
-But still a linear relationship. Meaning we can express the relationship from Visibilities $V()$ and Image $I()$ with a matrix, which we call $F$.
-Create a set of linear equations and solve for the image \eqref{intro:linear}. 
-
-\begin{equation}\label{intro:linear}
-\text{analysis:}\: \underset{I}{find}\quad FI = V
-\end{equation}
-
-Explain analysis
-As we discussed before, Radio Interferometers typically produce a larger number of Visibility measurements than pixels in the reconstruction.
-
-Interestingly enough, in Radio Astronomy, we generally have more Visibilities than Pixels in the reconstruction. the first two (ref) are over-determined problems, meaning we have more linear equations than free variables in the system.
-At first glance, it seems like we can solve equation \eqref{intro:linear}.
-But set is incomplete.
-$F$ is too big for any practical application. It has the size of pixels times Visibilities. 4k*4k pixels, times 4 billion Visibilities.
-
-Why equation \eqref{intro:linear} is ill-posed. Depends on the properties of $V()$
+For Radio Interferometers, Image Reconstruction forms an ill-posed inverse problem. There are potentially many different images that fit the measurements. The Image Reconstruction is tasked with finding the most likely image $I()$ given the (calibrated) Visibility measurements $V()$. Formally, we want to invert the measurement equation of the Radio Interferometer. Equation \eqref{intro:inverseproblem} shows a measurement equation for Radio Interferometers, and figure \ref{intro:inversefig} shows an example for $V()$ and $I()$.
 
 \begin{figure}[htp]
 	% preliminary
@@ -108,11 +67,40 @@ Why equation \eqref{intro:linear} is ill-posed. Depends on the properties of $V(
 	\subcaptionbox{Measurements $V()$ in the UV plane.\label{intro:inversefig:uvspace}}{%
 		\includegraphics[height=\twosubht]{./chapters/01.intro/meerkat_uv2.png}%
 	}\quad
-	\subcaptionbox{A reconstructed image $I()$ which fits the measurements.\label{intro:inversefig:reconstruction}}{%
+	\subcaptionbox{The observed image $I()$.\label{intro:inversefig:reconstruction}}{%
 		\includegraphics[height=\twosubht]{./chapters/01.intro/mk2/clean.png}%
 	}
 	\caption{The Image Reconstruction Problem}\label{intro:inversefig}
 \end{figure}
+
+\begin{equation}\label{intro:inverseproblem}
+V(u, v, w) = \int\int  \frac{I(x, y)}{c(x, y)}  e^{2 \pi i [ux+vy+ w(c(x, y) - 1)]} \: dx \: dy \quad \quad c(x,y) = \sqrt{1 - x^2 - y ^2}
+\end{equation}
+
+The measurement equation \eqref{intro:inverseproblem} contains three parts. The Visibility measurements $V(u,v,w)$, the observed image with a normalization factor $\frac{I(x, y)}{c(x, y)}$ and the Fourier Transform $e^{2 \pi i (\ldots)}$. The $x$ and $y$ coordinates are angles from the image center. A pixel in $I(x,y)$ represents how strong the radio emission is from the direction. Note that the Visibilities $V(u,v,w)$ are three dimensional, while the image $I(x,y)$ only has two. However, also note that the third component $w$ only depends on the directions $x$ and $y$. In a sense, the Visibilities $V()$ and the Image $I()$ have a two dimensional Fourier relationship, but with a directionally dependent correction $e^{2 \pi i (\ldots +w(c(x, y) - 1))}$. 
+
+The third component $w$ is an example of a Directionally Dependent Effect (DDE) which have a tendency to increase the runtime costs of the Image Reconstruction. The $w$-component keeps us from using the Fast Fourier Transform (FFT) for the measurement equation \eqref{intro:inverseproblem}. Research in this area tries to use approximations which lets us use faster algorithms like the FFT, and correct for DDE's accurately enough \cite{veenboer2017image, offringa2014wsclean, pratley2018fast}. In this project, the $w$-correction is the only DDE we handle.
+
+\subsubsection{System of Linear Equations}
+Even though the Fourier Transform in equation \eqref{intro:inverseproblem} contains a $w$-correction factor, $V()$ and $I()$ have still a linear relationship. This means we can create a Matrix $F$ which transforms the image $I()$ into Visibilities, and set up a system of linear equations \eqref{intro:linear}.
+
+\begin{equation}\label{intro:linear}
+\underset{I}{find}\quad FI = V
+\end{equation}
+
+
+Explain analysis
+As we discussed before, Radio Interferometers typically produce a larger number of Visibility measurements than pixels in the reconstruction.
+
+Interestingly enough, in Radio Astronomy, we generally have more Visibilities than Pixels in the reconstruction. the first two (ref) are over-determined problems, meaning we have more linear equations than free variables in the system.
+At first glance, it seems like we can solve equation \eqref{intro:linear}.
+But set is incomplete.
+$F$ is too big for any practical application. It has the size of pixels times Visibilities. 4k*4k pixels, times 4 billion Visibilities.
+
+The figure \ref{intro:inversefig} shows an example of the inverse problem.
+Why equation \eqref{intro:linear} is ill-posed. Depends on the properties of $V()$
+
+
 
 In figure \ref{intro:inversefig:uvspace} shows the Visibility Samples in the UV space. We have densely sampled areas, and holes.
 We have too much data in some areas, while too little in others. Furthermore each Visibility measurement is noisy. These two properties make that many possible images fit the measurements. Which makes the whole inverse problem ill-posed.
