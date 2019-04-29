@@ -25,7 +25,7 @@ Target to distribute the image reconstruction
 First tests
 
 
-\subsection{Radio Interferometry System}
+\subsection{Radio Interferometry System}\label{intro:sys}
 This project is focused on distributing Image Reconstruction for Radio Interferometers, which is only one of three steps in the pipeline from measurements to the final image. We give a quick overview over the whole pipeline in figure \ref{intro:system} and how Radio Interferometers work in principle: The antennas observe the arriving electromagnetic wave, gets processed in three steps, Correlation, Calibration and Image Reconstruction. 
 
 \begin{figure}[h]
@@ -81,39 +81,37 @@ The measurement equation \eqref{intro:inverseproblem} contains three parts. The 
 
 The third component $w$ is an example of a Directionally Dependent Effect (DDE) which have a tendency to increase the runtime costs of the Image Reconstruction. The $w$-component keeps us from using the Fast Fourier Transform (FFT) for the measurement equation \eqref{intro:inverseproblem}. Research in this area tries to use approximations which lets us use faster algorithms like the FFT, and correct for DDE's accurately enough \cite{veenboer2017image, offringa2014wsclean, pratley2018fast}. In this project, the $w$-correction is the only DDE we handle.
 
-\subsubsection{System of Linear Equations}
-Even though the Fourier Transform in equation \eqref{intro:inverseproblem} contains a $w$-correction factor, $V()$ and $I()$ have still a linear relationship. This means we can create a Matrix $F$ which transforms the image $I()$ into Visibilities, and set up a system of linear equations \eqref{intro:linear}.
+\subsubsection{System of Linear Equations}\label{intro:linear}
+Even though the Fourier Transform in equation \eqref{intro:inverseproblem} contains a $w$-correction factor, $V()$ and $I()$ have still a linear relationship. This means we can represent the Image Reconstruction Problem as a system of linear equations: \eqref{intro:linear:linear}. $F$ is the Fourier Transform with $w$-correction, $x$ is the image we are searching and $V$ are the measured Visibilities\footnote{$V$ in the equation \eqref{intro:linear:linear} is a vector. We use the lower-case $v$ to denote the axis in the Fourier space $uvw$, while the upper-case letter denotes the Visibility-vector.}
 
-\begin{equation}\label{intro:linear}
-\underset{I}{find}\quad FI = V
+\begin{equation}\label{intro:linear:linear}
+\underset{x}{find}\quad V = Fx
 \end{equation}
 
+Incompleteness \ref{intro:inversefig:uvspace}. The further we move away from the center, the lower the sample density. (Hole in the center, but not visibile due to resoultion limitations). Non-uniform sampling pattern in the UV-space. Sampling pattern defined by the instrument layout
+As we discussed in section \ref{intro:sys}, Radio Interferometers can produce an almost arbitrary large number of Visibilities.
+Overdetermined system. More Visibilities $V$ than pixels in the image $x$.
+But noisy. So we cannot find a solution to  \eqref{intro:linear:linear}. We need to account for noise, so we arrive at a similar equation \eqref{intro:linear:l2}
 
-Explain analysis
-As we discussed before, Radio Interferometers typically produce a larger number of Visibility measurements than pixels in the reconstruction.
+\begin{equation}\label{intro:linear:l2}
+\underset{x}{find} \: \left \| V - Fx \right \|_2^2 < \epsilon
+\end{equation}
 
-Interestingly enough, in Radio Astronomy, we generally have more Visibilities than Pixels in the reconstruction. the first two (ref) are over-determined problems, meaning we have more linear equations than free variables in the system.
-At first glance, it seems like we can solve equation \eqref{intro:linear}.
-But set is incomplete.
+We want to find a solution $x$ which below the noise level
+This is a convex optimization problem.
+Not a unique solution. Potentially many $x$ which satisfy \eqref{intro:linear:l2} (because of the incompleteness).
+We cannot find the true $x$ from the Visibility measurements alone. 
+Which makes the whole inverse problem ill-posed.
+However, in practice we can do something else. We can use prior information about the image and rank the candidates for \eqref{intro:linear:l2} from most likely to unlikely.
+When we look at \ref{intro:inversefig:reconstruction}, we see it has stars, and extended emissions, clouds. 
+
+Theory of Compressed Sensing
+
 $F$ is too big for any practical application. It has the size of pixels times Visibilities. 4k*4k pixels, times 4 billion Visibilities.
 
-The figure \ref{intro:inversefig} shows an example of the inverse problem.
-Why equation \eqref{intro:linear} is ill-posed. Depends on the properties of $V()$
-
-
-
-In figure \ref{intro:inversefig:uvspace} shows the Visibility Samples in the UV space. We have densely sampled areas, and holes.
-We have too much data in some areas, while too little in others. Furthermore each Visibility measurement is noisy. These two properties make that many possible images fit the measurements. Which makes the whole inverse problem ill-posed.
-From the measurements alone, we cannot find the observed image from all possible solutions. We need prior information
-
-Prior information, like most pixels are zero, can only contain stars and blobs.
-
-
-
-$F$ is too big for any practical application. It has the size of pixels times Visibilities. 4k*4k pixels, times 4 billion Visibilities. Approximate $F$.
 
 \subsubsection{Different Representations for the Image Reconstruction Problem}
-$F = M FFT(I)$
+$F = M W\: FFT(x)$
 Masking Matrix $M$
 Different ways of representing the image reconstruction problem.
 
@@ -130,12 +128,7 @@ To our knowledge, in-painting is not used for Radio Interferometer image reconst
 
 Decide on a representation!
 
-To solve the image reconstruction problem in Radio Astronomy, we need two things.
-\begin{itemize}
-	\item Decide on a representation.
-	\item Encode prior knowledge about the image.
-	\item If needed, a fast approximation of the Matrix $F$
-\end{itemize} 
+
 
 
 \subsection{Solving the Image Reconstruction Problem: The Major/Minor Cycle architecture}
