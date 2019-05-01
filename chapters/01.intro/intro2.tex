@@ -46,6 +46,10 @@ Modern Radio Interferometers can produce an almost arbitrary large number of mea
 \subsection{The Image Reconstruction Problem}
 For Radio Interferometers, Image Reconstruction forms an ill-posed inverse problem. There are potentially many different images that fit the measurements. The Image Reconstruction is tasked with finding the most likely image $I()$ given the (calibrated) Visibility measurements $V()$. Formally, we want to invert the measurement equation of the Radio Interferometer. Equation \eqref{intro:inverseproblem} shows a measurement equation for Radio Interferometers, and figure \ref{intro:inversefig} shows an example for $V()$ and $I()$.
 
+Incompleteness \ref{intro:inversefig:uvspace}. The further we move away from the center, the lower the sample density. (Hole in the center, but not visibile due to resoultion)
+
+When we look at \ref{intro:inversefig:reconstruction}, we see it has stars, and extended emissions, clouds. 
+
 \begin{figure}[htp]
 	% preliminary
 	\sbox\twosubbox{%
@@ -58,7 +62,7 @@ For Radio Interferometers, Image Reconstruction forms an ill-posed inverse probl
 	
 	% typeset
 	\centering
-	\subcaptionbox{Measurements $V()$ in the UV plane.\label{intro:inversefig:uvspace}}{%
+	\subcaptionbox{Measurements $V()$ in the $uv$-plane.\label{intro:inversefig:uvspace}}{%
 		\includegraphics[height=\twosubht]{./chapters/01.intro/meerkat_uv2.png}%
 	}\quad
 	\subcaptionbox{The observed image $I()$.\label{intro:inversefig:reconstruction}}{%
@@ -71,41 +75,45 @@ For Radio Interferometers, Image Reconstruction forms an ill-posed inverse probl
 V(u, v, w) = \int\int  \frac{I(x, y)}{c(x, y)}  e^{2 \pi i [ux+vy+ w(c(x, y) - 1)]} \: dx \: dy \:,  \quad c(x,y) = \sqrt{1 - x^2 - y ^2}
 \end{equation}
 
-The measurement equation \eqref{intro:inverseproblem} contains three parts. The Visibility measurements $V(u,v,w)$, the observed image with a normalization factor $\frac{I(x, y)}{c(x, y)}$ and the Fourier Transform $e^{2 \pi i [\ldots]}$. The $x$ and $y$ coordinates are angles from the image center. A pixel in $I(x,y)$ represents how strong the radio emission is from the direction. Note that the Visibilities $V(u,v,w)$ are three dimensional, while the image $I(x,y)$ only has two. However, also note that the third component $w$ only depends on the directions $x$ and $y$. In a sense, the Visibilities $V()$ and the Image $I()$ have a two dimensional Fourier relationship ($V(u,v,w) = \int\int I(x,y) e^{2 \pi i [ux+vy]} \: dx \: dy$), but with a directionally dependent correction factor $e^{2 \pi i [\ldots +w(c(x, y) - 1)]}$. 
+The measurement equation \eqref{intro:inverseproblem} contains three parts. The Visibility measurements $V(u,v,w)$, the observed image with a normalization factor $\frac{I(x, y)}{c(x, y)}$ and the Fourier Transform $e^{2 \pi i [\ldots]}$. The $x$ and $y$ coordinates are angles from the image center. A pixel in $I(x,y)$ represents how much radio emission was measured from a the direction $x,y$. Note that the Visibilities $V(u,v,w)$ are three dimensional, while the image $I(x,y)$ only has two. However, also note that the third component $w$ only depends on the directions $x$ and $y$. In a sense, the Visibilities $V()$ and the Image $I()$ have a two dimensional Fourier relationship ($V(u,v,w) = \int\int I(x,y) e^{2 \pi i [ux+vy]} \: dx \: dy$), but with a directionally dependent correction factor $e^{2 \pi i [\ldots +w(c(x, y) - 1)]}$. 
 
 The third component $w$ is an example of a Directionally Dependent Effect (DDE) which have a tendency to increase the runtime costs of the Image Reconstruction. The $w$-component keeps us from using the Fast Fourier Transform (FFT) for the measurement equation \eqref{intro:inverseproblem}. Research in this area tries to use approximations which lets us use faster algorithms like the FFT, and correct for DDE's accurately enough \cite{veenboer2017image, offringa2014wsclean, pratley2018fast}. In this project, the $w$-correction is the only DDE we handle.
 
 \subsubsection{System of Linear Equations}\label{intro:linear}
-Even though the Fourier Transform in equation \eqref{intro:inverseproblem} contains a $w$-correction factor, $V()$ and $I()$ have still a linear relationship. This means we can represent the Image Reconstruction Problem as a system of linear equations: \eqref{intro:linear:linear}. $F$ is the Fourier Transform with $w$-correction, $x$ is the image we are searching and $V$ are the measured Visibilities\footnote{$V$ in the equation \eqref{intro:linear:linear} is a vector. We use the lower-case $v$ to denote the axis in the Fourier space $uvw$, while the upper-case letter denotes the Visibility-vector.}.
+Even though the Fourier Transform in equation \eqref{intro:inverseproblem} contains a $w$-correction factor, $V()$ and $I()$ have still a linear relationship. This means we can represent the Image Reconstruction Problem as a system of linear equations: \eqref{intro:linear:linear}. $F$ is the Fourier Transform with $w$-correction, $x$ is the image we are searching and $V$ are the measured Visibilities\footnote{$V$ in the equation \eqref{intro:linear:linear} is a vector. We use the lower-case $v$ to denote the axis in the Fourier space $uvw$, and the upper-case letter to denote the Visibility vector.}.
 
 \begin{equation}\label{intro:linear:linear}
 \underset{x}{find}\quad V = Fx
 \end{equation}
 
-As we discussed in section \ref{intro:sys}, Radio Interferometers can produce an almost arbitrary large number of Visibilities. In practice, we often reconstruct images with far fewer pixels than Visibility measurements, making the equation \eqref{intro:linear:linear} an over-determined problem. Meaning equation \eqref{intro:linear:linear} is either consistent and has a unique solution $x$, or is inconsistent with no solutions. Sadly, the Visibility measurements are subject to noise. The equation \eqref{intro:linear:linear} is inconsistent does not have a solution. To solve the Image Reconstruction Problem, we need to account for noise in the measurements, which leads us to a new equation \eqref{intro:linear:l2}.
+As we discussed in section \ref{intro:sys}, Radio Interferometers can produce an almost arbitrary large number of Visibilities. In practice, we often reconstruct images with far fewer pixels than Visibility measurements, making the equation \eqref{intro:linear:linear} an over-determined problem. Meaning equation \eqref{intro:linear:linear} is either consistent and has a unique solution $x$, or is inconsistent with no solutions. Sadly, the Visibility measurements are subject to noise. The equation \eqref{intro:linear:linear} is inconsistent does not have a solution. To solve the Image Reconstruction Problem, we need to account for noise in the measurements, which leads us to a new inequality \eqref{intro:linear:l2}.
 
 \begin{equation}\label{intro:linear:l2}
 \underset{x}{find} \: \left \| V - Fx \right \|_2^2 < \epsilon
 \end{equation}
 
+We use the L2 norm and find the solution $x$ which, when the Fourier Transform is applied, has the smallest distance to the measurements $V$. The L2 norm leads to a strictly-convex function, meaning \eqref{intro:linear:l2} has only one minimum, and we can use convex optimization techniques to find it. So the question arises, is the observed image $I()$ located at the global minimum of \eqref{intro:linear:l2}? Although we have more measurements than pixels in the reconstruction, the set of Visibilities are still incomplete. They shift the observed image some distance away from the global minimum of \eqref{intro:linear:l2}. From the measurements alone, we cannot locate the observed image. We know it is near the global minimum, but we do not know where it is. The equation \eqref{intro:linear:l2} has many candidate solutions $x$, one of which is the observed image.  From the measurements alone, we cannot decide which candidate was the observed image, and \eqref{intro:linear:l2} is an ill-posed inverse problem. 
 
+Intuitively, the incomplete measurements allow the pixels $x$ in the reconstruction to form physically implausible solutions. 
+In many Image Reconstruction Problems of Radio Interferometry, the pixels cannot be negative. We know it contains stars, 
+ If we include prior information about the image, we can retrieve the most likely image from all the candidates of \eqref{intro:linear:l2}.
+The question is, what are the chances that the most likely image is the observed image?
+The theory of Compressed Sensing tells us this.
 
-A solution can be found with convex optimization techniques.
-$\left \| V - Fx \right \|_2^2 $ is convex. Has a global optimum. We already have generally more Visibilities than pixels, is our observed image \ref{intro:inversefig:reconstruction} $I()$ located at the global optimum?
-We do not have any guarantees.
-Incompleteness \ref{intro:inversefig:uvspace}. The further we move away from the center, the lower the sample density. (Hole in the center, but not visibile due to resoultion
-Since we want to find a solution below a certain noise level, $x$ is not unique.
+\subsubsection{Theory of Compressed Sensing}
+Is a way in which we can encode prior information about the image
+sparsity
+Dictionary $D$. For example Wavelets. Can be larger than the number of pixels
 
+For our considerations LASSO. \eqref{intro:linear:compressed:lasso}
 
+\begin{equation}\label{intro:linear:compressed:lasso}
+\underset{x}{minimize} \: \left \| V - Fx \right \|_2^2 + \lambda \left \| D^{-1}x \right \|_1 
+\end{equation}
 
+Data term
 
-Which makes the whole inverse problem ill-posed.
-However, in practice we can do something else. We can use prior information about the image and rank the candidates for \eqref{intro:linear:l2} from most likely to unlikely.
-When we look at \ref{intro:inversefig:reconstruction}, we see it has stars, and extended emissions, clouds. 
-
-Theory of Compressed Sensing
-
-$F$ is too big for any practical application. It has the size of pixels times Visibilities. 4k*4k pixels, times 4 billion Visibilities. How we 
+Regularization term
 
 
 \subsubsection{Different Representations for the Image Reconstruction Problem}
@@ -114,8 +122,15 @@ Different ways of representing the image reconstruction problem. than equation \
 $F = M W\: FFT(x)$
 Masking Matrix $M$, information loss due to incomplete measurements. 
 
+Deconvolution
+\begin{equation}\label{intro:linear:reprs:deconv}
+\underset{x}{minimize} \: \left \| I_{Dirty} - x \star PSF \right \|_2^2 + \lambda \left \| D^{-1}x \right \|_1 
+\end{equation}
+
+
+
 \begin{equation}\label{intro:representation:inpainting}
-\underset{x}{find} \: \left \| V - Fx \right \|_2^2 < \epsilon
+\underset{x}{minimize} \: \left \| V - Fx \right \|_2^2 < \epsilon
 \end{equation}
 
 Multiplication in Fourier space is a convolution in image space. Masking Matrix $M$ can do that
@@ -126,8 +141,9 @@ We can do the same in the image space
 \end{equation}
 
 \begin{alignat}{2}
-\text{in-painting:}\: \underset{V_2}{find}&\quad MWV_{2} = V,  \quad &x = iFFT(V_{2})\\
-\text{deconvolution:}\: \underset{I}{find}&\quad I \star PSF = I_{Dirty},  \quad &I_{Dirty} = F^{-1}V
+\text{analysis:}\: \underset{V_2}{find}&\quad MWV_{2} = V,  \quad &x = iFFT(V_{2})
+\text{synthesis:}\: \underset{V_2}{find}&\quad MWV_{2} = V,  \quad &x = iFFT(V_{2})\text{in-painting:}\: \underset{V_2}{find}&\quad MWV_{2} = V,  \quad &x = iFFT(V_{2})\\
+\text{in-painting:}\: \underset{I}{find}&\quad I \star PSF = I_{Dirty},  \quad &I_{Dirty} = F^{-1}V
 \end{alignat}
 
 Explain in-painting
@@ -142,6 +158,8 @@ Decide on a representation!
 
 
 \subsection{Solving the Image Reconstruction Problem: The Major/Minor Cycle architecture}
+$F$ is too big for any practical application. It has the size of pixels times Visibilities. 4k*4k pixels, times 4 billion Visibilities. How we 
+
 Current state of the art way of solving the image reconstruction problem. Major Minor Cycle architecture.
 Representation: Deconvolution.
 The Major Cycle is a fast approximation of the Transform Matrix $F$.
