@@ -44,11 +44,9 @@ Modern Radio Interferometers can produce an almost arbitrary large number of mea
 
 
 \subsection{The Image Reconstruction Problem}
-For Radio Interferometers, Image Reconstruction forms an ill-posed inverse problem. There are potentially many different images that fit the measurements. The Image Reconstruction is tasked with finding the most likely image $I()$ given the (calibrated) Visibility measurements $V()$. Formally, we want to invert the measurement equation of the Radio Interferometer. Equation \eqref{intro:inverseproblem} shows a measurement equation for Radio Interferometers, and figure \ref{intro:inversefig} shows an example for $V()$ and $I()$.
+For Radio Interferometers, Image Reconstruction forms an ill-posed inverse problem. There are potentially many different images that fit the measurements. The Image Reconstruction is tasked with finding the most likely image $I()$ given the (calibrated) Visibility measurements $V()$.  Figure \ref{intro:inversefig} shows an example from a MeerKAT observation for $V()$ and $I()$. The image \ref{intro:inversefig:uvspace} shows the incomplete sampling in the Fourier space. The sample density decreases away from the center\footnote{The center has actually no samples, since the MeerKAT Radio Interferometer uses antenna's with dishes. Due to the resolution, it might not be visible in the image \ref{intro:inversefig:uvspace}.}. 
 
-Incompleteness \ref{intro:inversefig:uvspace}. The further we move away from the center, the lower the sample density. (Hole in the center, but not visibile due to resoultion)
-
-When we look at \ref{intro:inversefig:reconstruction}, we see it has stars, and extended emissions, clouds. 
+The observed image \ref{intro:inversefig:reconstruction}, we see it has stars, and extended emissions, clouds. 
 
 \begin{figure}[htp]
 	% preliminary
@@ -70,6 +68,11 @@ When we look at \ref{intro:inversefig:reconstruction}, we see it has stars, and 
 	}
 	\caption{The Image Reconstruction Problem}\label{intro:inversefig}
 \end{figure}
+
+Formally, we want to invert the measurement equation of the Radio Interferometer.
+
+Equation \eqref{intro:inverseproblem} shows a measurement equation for Radio Interferometers, 
+
 
 \begin{equation}\label{intro:inverseproblem}
 V(u, v, w) = \int\int  \frac{I(x, y)}{c(x, y)}  e^{2 \pi i [ux+vy+ w(c(x, y) - 1)]} \: dx \: dy \:,  \quad c(x,y) = \sqrt{1 - x^2 - y ^2}
@@ -122,11 +125,13 @@ Different ways of representing the image reconstruction problem. than equation \
 $F = M W\: FFT(x)$
 Masking Matrix $M$, information loss due to incomplete measurements. 
 
+Different spaces for the data term. Either in visibility space, or in image space
 Deconvolution
 \begin{equation}\label{intro:linear:reprs:deconv}
 \underset{x}{minimize} \: \left \| I_{Dirty} - x \star PSF \right \|_2^2 + \lambda \left \| D^{-1}x \right \|_1 
 \end{equation}
 
+Different spaces for the reconstruction. Image, Visibility, or sparse space.
 
 
 \begin{equation}\label{intro:representation:inpainting}
@@ -141,18 +146,19 @@ We can do the same in the image space
 \end{equation}
 
 \begin{alignat}{2}
-\text{analysis:}\: \underset{V_2}{find}&\quad MWV_{2} = V,  \quad &x = iFFT(V_{2})
-\text{synthesis:}\: \underset{V_2}{find}&\quad MWV_{2} = V,  \quad &x = iFFT(V_{2})\text{in-painting:}\: \underset{V_2}{find}&\quad MWV_{2} = V,  \quad &x = iFFT(V_{2})\\
+\text{synthesis:}\: \underset{V_2}{find}&\quad MWV_{2} = V,  \quad &x = iFFT(V_{2}) \\
+\text{in-painting:}\: \underset{V_2}{find}&\quad MWV_{2} = V,  \quad x = iFFT(V_{2})\\
 \text{in-painting:}\: \underset{I}{find}&\quad I \star PSF = I_{Dirty},  \quad &I_{Dirty} = F^{-1}V
 \end{alignat}
 
+
+Different advantages, which transformation we can use
 Explain in-painting
 explain deconvolution
 
 Deconvolution is used
 To our knowledge, in-painting is not used for Radio Interferometer image reconstruction.
 
-Decide on a representation!
 
 
 

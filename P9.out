@@ -15,7 +15,7 @@
 \BOOKMARK [3][-]{subsubsection.1.5.1}{Minor Cycle}{subsection.1.5}% 15
 \BOOKMARK [1][-]{section.2}{State of the art Image Reconstruction}{}% 16
 \BOOKMARK [2][-]{subsection.2.1}{Gridder}{section.2}% 17
-\BOOKMARK [3][-]{subsubsection.2.1.1}{w-stacking}{subsection.2.1}% 18
+\BOOKMARK [3][-]{subsubsection.2.1.1}{-stacking}{subsection.2.1}% 18
 \BOOKMARK [3][-]{subsubsection.2.1.2}{IDG}{subsection.2.1}% 19
 \BOOKMARK [2][-]{subsection.2.2}{Reconstruction}{section.2}% 20
 \BOOKMARK [3][-]{subsubsection.2.2.1}{CLEAN}{subsection.2.2}% 21
