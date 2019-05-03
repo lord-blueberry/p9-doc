@@ -148,61 +148,72 @@ I_{Dirty} &= x \star PSF
 
 We can use the matrix $M$ directly, and use it to transform from uniformly sampled Visibilities $V_2$ to non-uniformly sampled Visibilities $V$, arriving at line three of equation \eqref{intro:linear:repr:fourier}.
 
-Since a multiplication in Fourier space is a convolution in image space, we can also represent the masking matrix $M$ as a Point Spread Function $PSF$ in image space. Degradation is a convolution.
+Since a multiplication in Fourier space is a convolution in image space, we can also represent the masking matrix $M$ as a Point Spread Function $PSF$ in image space. Degradation is a convolution. $I_{Dirty}$ calculation is a Fourier Transform of the measurements. So we need to solve a deconvolution problem.
 
-All these lines are of \eqref{intro:linear:repr:fourier} all represent the Image Reconstruction Problem in different spaces. For example, if we change the data term in our LASSO objective from $\left \| V - Fx \right \|_2^2$ to a deconvolution $\left \| I_{Dirty} - x \star PSF \right \|_2^2$ we arrive at the same global minimum. But, in Radio Astronomy, the images are magnitudes smaller than the calibrated Visibility measurements $V$. 
-Potential to reduce the costs. 
+All these lines are of \eqref{intro:linear:repr:fourier} all represent the Image Reconstruction Problem in different spaces. For example, if we change the data term in our LASSO objective from $\left \| V - Fx \right \|_2^2$ to a deconvolution $\left \| I_{Dirty} - x \star PSF \right \|_2^2$ we arrive at the same global minimum. But, in Radio Astronomy, the images are magnitudes smaller than the calibrated Visibility measurements $V$.
+Reducing the problem size.
 In practice, we have an accuracy issue with the $PSF$, since it is not constant. The $PSF$ changes over the image due to DDEs like $w$-correction.
+We will use deconvolution in the state-of-the-art.
+
+\begin{equation} \label{intro:linear:repr:deconv}
+\begin{split}
+\underset{x}{minimize}\: \left \| V - Fx \right \|_2^2 + &\lambda \left \| D^{-1}x \right \|_1  \\
+\underset{x}{minimize}\: \left \| I_{Dirty} - x \star PSF \right \|_2^2 + &\lambda \left \| D^{-1}x \right \|_1
+\end{split}
+\end{equation}
 
 We can set the data term in our LASSO objective to either Visibility or image space. The reconstruction space has three possible design choices, which leads to three different LASSO objectives.
 
 \begin{alignat}{2}
 \text{analysis:}\: \underset{x}{minimize}\:& \left \| V - Fx \right \|_2^2 + &\lambda \left \| D^{-1}x \right \|_1  \\
-\text{in-painting:}\: \underset{V_2}{minimize}\:& \left \| V - MV_2 \right \|_2^2 + &\lambda \left \| D^{-1}F^{-1}V_2 \right \|_1  \\
+\text{in-painting:}\: \underset{V_2}{minimize}\:& \left \| V - MV_2 \right \|_2^2 + &\lambda \left \| D^{-1}F^{-1}V_2 \right \|_1 \label{intro:linear:repr:in} \\
 \text{synthesis:}\: \underset{\alpha}{minimize}\:& \left \| V - FD\alpha \right \|_2^2 + &\lambda \left \| \alpha \right \|_1  
 \end{alignat}
 
+Analysis, standard formulation.
 
+To our knowledge, in-painting \eqref{intro:linear:repr:in} is not used for the Image Reconstruction Problem. Difficulty in the Regularization term. 
 
-Different advantages, which transformation we can use
-Explain in-painting
-explain deconvolution
-
-Deconvolution is used
-To our knowledge, in-painting is not used for Radio Interferometer image reconstruction.
-
+Synthesis reconstructs in the sparse space, increases the number of free variables, we have at least as many $\alpha$ than $x$. But, we do not need the Matrix $D^{-1}$, which for certain spaces may not even be defined. We can use over-complete representations.
+Why use over-complete? More freedom?
 
 
 
+\subsection{Solving the Image Reconstruction Problem: The Major/Minor Cycle Architecture}
+We want to solve ill-posed Image Reconstruction problem \eqref{intro:linear:l2}.
 
-\subsection{Solving the Image Reconstruction Problem: The Major/Minor Cycle architecture}
-$F$ is too big for any practical application. It has the size of pixels times Visibilities. 4k*4k pixels, times 4 billion Visibilities. How we 
-
-Current state of the art way of solving the image reconstruction problem. Major Minor Cycle architecture.
-Representation: Deconvolution.
-The Major Cycle is a fast approximation of the Transform Matrix $F$.
-The Minor Cycle is a deconvolution algorithm. In this architecture, the Deconvolution algorithm is responsible for including prior knowledge about the image.
+In this section we present the state-of-the-art in solving the Image Reconstruction Problem, the Major/Minor Cycle algorithm. Like the name implies, we split the problem into two parts, the Major Cycle, which is responsible for calculating the Fourier Transform, and the Minor Cycle, which is responsible for deconvolving the image. The figure \ref{intro:major} shows the Major/Minor Cycle architecture and their steps.
 
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.80\linewidth]{./chapters/02.hypo/Major-Minor3.png}
-	\caption{The Major Cycle Architecture}
+	\caption{The Major/Minor Cycle Architecture}
 	\label{intro:major}
 \end{figure}
 
-The Gridder + FFT is responsible for a fast approximation of $F$, while the deconvolution algorithm
-Gridder is responsible for handling all Radio Interferometry weirdness. It has to handle the $w$-term of the Visibilities \eqref{intro:inverseproblem}. In practice, even more corrections fall onto the job of the Gridder. Since we have magnitudes more Visibilities than pixels, the Gridder's job is to "compress" the problem.
+Let us first look at the Major Cycle in more detail.
+The Gridder first takes the non-uniformly sampled Visibilities and interpolates them on a uniform grid. This allows us to use the inverse FFT to calculate the acutal Fourier Transform. All DDEs, like $w$-correction fall into the Gridder in this architecture.
+Gridder is not perfect.
+Remember that we can factorize the Fourier Transform Matrix into two parts, $F = M\: FFT(x)$. In the Gridding step, we essentially applies $M^{-1}$ on the calibrated Visibilities.
 
-Note on the Cyclic Nature. It is counter intuitive and explained later in 
+After the inverse FFT, we arrive at the Minor Cycle deconvolution. Deconvolution problem is a lot smaller and (mostly) free from DDEs. 
+The $PSF$ is just an approximation
+Here in the Minor Cycle, we include prior knowledge about the image to approximate the ill-posed inverse problem. 
+We have different choices of algorithms here. Our choice defines the reconstruction quality.
 
-\subsubsection{The Gridder}
+Then De-gridding.
+
+What the major cycle does, Minor Cycle can approximate the deconvolution.
+
+Runtime: Gridder problematic. It has to deal with the calibrated Visibilities, which are LARGE. The unifrom grid is typically smaller. Gridder is the first \cite{skastuff}
 
 
 \subsubsection{Minor Cycle: CLEAN Deconvolutions}
+The Minor Cycle was conceived with CLEAN in mind.
+CLEAN is state of the art algorithm
+
 Contains two classes of objects: Point sources, which are essentially stars, and extended emissions, which span over several pixels.
 
-
-\subsubsection{Why are there Major Cycles in the first place?}
 \begin{figure}[h]
 	\centering
 	\begin{subfigure}[b]{0.3\linewidth}
