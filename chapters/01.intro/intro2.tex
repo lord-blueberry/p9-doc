@@ -80,7 +80,7 @@ The measurement equation \eqref{intro:inverseproblem} contains three parts. The 
 
 The third component $w$ is an example of a Directionally Dependent Effect (DDE) which have a tendency to increase the runtime costs of the Image Reconstruction. The $w$-component keeps us from using the Fast Fourier Transform (FFT) for the measurement equation \eqref{intro:inverseproblem}. Research in this area tries to use approximations which lets us use faster algorithms like the FFT, and correct for DDE's accurately enough \cite{veenboer2017image, offringa2014wsclean, pratley2018fast}. In this project, the $w$-correction is the only DDE we handle.
 
-\subsubsection{System of Linear Equations}\label{intro:linear}
+\subsection{System of Linear Equations}\label{intro:linear}
 Even though the Fourier Transform in equation \eqref{intro:inverseproblem} contains a $w$-correction factor, $V()$ and $I()$ have still a linear relationship. This means we can represent the Image Reconstruction Problem as a system of linear equations: \eqref{intro:linear:linear}. $F$ is the Fourier Transform with $w$-correction, $x$ is the image we are searching and $V$ are the measured Visibilities\footnote{$V$ in the equation \eqref{intro:linear:linear} is a vector. We use the lower-case $v$ to denote the axis in the Fourier space $uvw$, and the upper-case letter to denote the Visibility vector.}.
 
 \begin{equation}\label{intro:linear:linear}
@@ -104,7 +104,7 @@ We know it contains stars,
 The question is, what are the chances that the most likely image is the observed image?
 The theory of Compressed Sensing tells us this.
 
-\subsubsection{Theory of Compressed Sensing}
+\subsection{Theory of Compressed Sensing}
 Theory of Compressed Sensing \cite{candes2006robust, donoho2006compressed} is a recently developed sampling theorem.
 How we can include prior information about the image and how likely we are to retrieve the observed image. 
 Prior.
@@ -130,7 +130,7 @@ So we need a Regularization Dicitionary $D$, which captures the prior informatio
 
 
 
-\subsubsection{Different Representations for the LASSO Objective}
+\subsubsection{Different Representations for the LASSO Objective}\label{intro:linear:repr}
 
 There are different ways to represent the LASSO objective \eqref{intro:linear:compressed:lasso}. Has the data term in the Fourier space, and reconstructs the image directly. We have different design decisions here. We can choose the Data term to be either in Fourier or image space, and we can set the Variables to be in either image, uniform Fourier or in the sparse space.
 
@@ -149,11 +149,12 @@ I_{Dirty} &= x \star PSF
 We can use the matrix $M$ directly, and use it to transform from uniformly sampled Visibilities $V_2$ to non-uniformly sampled Visibilities $V$, arriving at line three of equation \eqref{intro:linear:repr:fourier}.
 
 Since a multiplication in Fourier space is a convolution in image space, we can also represent the masking matrix $M$ as a Point Spread Function $PSF$ in image space. Degradation is a convolution. $I_{Dirty}$ calculation is a Fourier Transform of the measurements. So we need to solve a deconvolution problem.
+DIRTY IMAGE
 
 All these lines are of \eqref{intro:linear:repr:fourier} all represent the Image Reconstruction Problem in different spaces. For example, if we change the data term in our LASSO objective from $\left \| V - Fx \right \|_2^2$ to a deconvolution $\left \| I_{Dirty} - x \star PSF \right \|_2^2$ we arrive at the same global minimum. But, in Radio Astronomy, the images are magnitudes smaller than the calibrated Visibility measurements $V$.
 Reducing the problem size.
 In practice, we have an accuracy issue with the $PSF$, since it is not constant. The $PSF$ changes over the image due to DDEs like $w$-correction.
-We will use deconvolution in the state-of-the-art.
+
 
 \begin{equation} \label{intro:linear:repr:deconv}
 \begin{split}
@@ -162,7 +163,11 @@ We will use deconvolution in the state-of-the-art.
 \end{split}
 \end{equation}
 
-We can set the data term in our LASSO objective to either Visibility or image space. The reconstruction space has three possible design choices, which leads to three different LASSO objectives.
+We will use deconvolution in the state-of-the-art.
+
+Explain data space, reconstruction space and regularization space,
+
+We can set the data term in our LASSO objective to either Visibility or image space. The reconstruction space has three possible design choices, which leads to three different LASSO objectives: Analysis, in-painting and synthesis.
 
 \begin{alignat}{2}
 \text{analysis:}\: \underset{x}{minimize}\:& \left \| V - Fx \right \|_2^2 + &\lambda \left \| D^{-1}x \right \|_1  \\
@@ -179,10 +184,11 @@ Why use over-complete? More freedom?
 
 
 
-\subsection{Solving the Image Reconstruction Problem: The Major/Minor Cycle Architecture}
-We want to solve ill-posed Image Reconstruction problem \eqref{intro:linear:l2}.
 
-In this section we present the state-of-the-art in solving the Image Reconstruction Problem, the Major/Minor Cycle algorithm. Like the name implies, we split the problem into two parts, the Major Cycle, which is responsible for calculating the Fourier Transform, and the Minor Cycle, which is responsible for deconvolving the image. The figure \ref{intro:major} shows the Major/Minor Cycle architecture and their steps.
+\subsection{Solving the Image Reconstruction Problem: The Major/Minor Cycle Architecture}
+In this section, we discuss the state-of-the-art architecture for solving the ill-posed Image Reconstruction Problem \eqref{intro:linear:l2}.
+As we discussed in the section \ref{intro:linear}, we have different choices in representing the Image Reconstruction Problem. The Major/Minor Cycle Architecture splits the problem in two parts: The Major Cycle, which is responsible for efficiently calculating the Dirty Image $I_{Dirty}$ of \eqref{intro:linear:repr:deconv}, and the Minor Cycle, which handles the ill-posed Image Reconstruction problem via deconvolution. 
+This separation allows us to solve the ill-posed inverse problem in image space, which is typically smaller than the calibrated visibilities. The figure \ref{intro:major} shows the Major Cycle and the steps involved.
 
 \begin{figure}[h]
 	\centering
@@ -191,29 +197,35 @@ In this section we present the state-of-the-art in solving the Image Reconstruct
 	\label{intro:major}
 \end{figure}
 
-Let us first look at the Major Cycle in more detail.
-The Gridder first takes the non-uniformly sampled Visibilities and interpolates them on a uniform grid. This allows us to use the inverse FFT to calculate the acutal Fourier Transform. All DDEs, like $w$-correction fall into the Gridder in this architecture.
-Gridder is not perfect.
-Remember that we can factorize the Fourier Transform Matrix into two parts, $F = M\: FFT(x)$. In the Gridding step, we essentially applies $M^{-1}$ on the calibrated Visibilities.
+Let us first look at the Major Cycle of figure \ref{intro:major} in more detail. We can separate
 
-After the inverse FFT, we arrive at the Minor Cycle deconvolution. Deconvolution problem is a lot smaller and (mostly) free from DDEs. 
-The $PSF$ is just an approximation
-Here in the Minor Cycle, we include prior knowledge about the image to approximate the ill-posed inverse problem. 
-We have different choices of algorithms here. Our choice defines the reconstruction quality.
 
-Then De-gridding.
+The first Major Cycle takes the calibrated, non-uniformly sampled Visibilities and interpolates them on a uniform Grid. This lets us use the inverse FFT in the next step, and the Cycle arrives at the Dirty Image. At this point, the Minor Cycle takes over and deduces the most likely observed image, the Model Image. After the Minor Cycle, the Major Cycle continues with the Model Image. It calculating the FFT and the De-Gridding on the model image, and finishes with non-uniformly sampled Model Visibilities. The second Major Cycle subtracts the Model from the calibrated Visibilities and repeats the process with the residuals.
 
-What the major cycle does, Minor Cycle can approximate the deconvolution.
+In the real world, several Major Cycles, between 2-6 are needed to reconstruct an image.
+At first glance, it is not clear why we cannot just use a single major cycle. The Minor Cycle minimizes the objective \eqref{intro:linear:repr:deconv}, it seems all we need is the $PSF$ and the Dirty Image from the first Major Cycle. The problem is that the $PSF$ of Radio Interferometers is not constant over the image. DDEs like the $w$-correction affect the $PSF$. In this architecture, we only approximate the deconvolution in the Minor Cycle. 
 
-Runtime: Gridder problematic. It has to deal with the calibrated Visibilities, which are LARGE. The unifrom grid is typically smaller. Gridder is the first \cite{skastuff}
-
+How many Minor Cycles, Major Cycles. We can use a fast approximation in the Minor Cycle. Minor Cycles are computationally cheap compared to the Major Cycle. For maximum speed, we would only want a single Major Cycle. But for the best reconstruction quality, we want as many as possible.
 
 \subsubsection{Minor Cycle: CLEAN Deconvolutions}
+
 The Minor Cycle was conceived with CLEAN in mind.
 CLEAN is state of the art algorithm
 
 Contains two classes of objects: Point sources, which are essentially stars, and extended emissions, which span over several pixels.
 
+
+Find the fainter sources in later iterations
+Because we can only estimate the psf.
+
+\subsubsection{Runtime costs of the Major Cycle}
+
+The Gridder is the most expensive step. 
+Since the Gridder takes the calibrated Visibilities as input. The Gridder is typically the bottleneck in this architecture \cite{skastuff}.
+Also responsible for correcting all DDEs before the FFT. Gridder becomes the difficult piece of software.
+
+
+\subsubsection{High Dynamic Range}
 \begin{figure}[h]
 	\centering
 	\begin{subfigure}[b]{0.3\linewidth}
@@ -236,40 +248,18 @@ Contains two classes of objects: Point sources, which are essentially stars, and
 	\caption{Image reconstruction of two simulated point sources.}
 	\label{results:points}
 \end{figure}
-Find the fainter sources in later iterations
-Because we can only estimate the psf.
 
 
+\subsection{Distributing the Major/Minor Cycle}
 
-\subsection{Distributing the Major and Minor Cycles}
 Difficulty in separation
 Each Pixel depends on all Visibilities, and a single Visibility depends on all pixels.
 Doing work several times
 
-\subsubsection{Compressed Sensing and the evolution of Priors}
-Positivity constraint.
-Contains two classes of objects: Point sources, which are essentially stars, and extended emissions, which span over several pixels.
-
-
-\subsection{The Major Cycle Architecture}
-Major cycle how to reconstruct the image with deconvolution
-In an efficient manner
-
-$V()$ problems of non-uniform sampling, and the 3 dimensions. keep us from using the Fast Fourier Transform.
-We first interpolate on a regularly spaced grid, in the "Gridder".
-Use the FFT. For large numbers of Visibilities, this is faster. than inverting equation directly \eqref{intro:inverseproblem}.
-And now we do a deconvolution in image space
-
-So we have three basic components, Gridder, FFT and Deconvolution algorithms.
-The Major Cycle Architecture makes this a cycle.
-Shown in figure \ref{intro:major}.
 
 
 
-Why the cycle is necessary
 
 
-
-\subsubsection{Minor Cycle}
 
 
