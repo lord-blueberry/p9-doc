@@ -95,33 +95,27 @@ As we discussed in section \ref{intro:sys}, Radio Interferometers can produce an
 
 We use the L2 norm and find the solution $x$ which, when the Fourier Transform is applied, has the smallest distance to the measurements $V$. The L2 norm leads to a strictly-convex function, meaning \eqref{intro:linear:l2} has only one minimum, and we can use convex optimization techniques to find it. So the question arises, is the observed image $I()$ located at the global minimum of \eqref{intro:linear:l2}? Although we have more measurements than pixels in the reconstruction, the set of Visibilities are still incomplete. They shift the observed image some distance away from the global minimum of \eqref{intro:linear:l2}. From the measurements alone, we cannot locate the observed image. We know it is near the global minimum, but we do not know where it is. The equation \eqref{intro:linear:l2} has many candidate solutions $x$, one of which is the observed image.  From the measurements alone, we cannot decide which candidate was the observed image, and \eqref{intro:linear:l2} is an ill-posed inverse problem. 
 
-Intuitively, the incomplete measurements allow the pixels $x$ in the reconstruction to form physically implausible solutions. 
-
-In many Image Reconstruction Problems of Radio Interferometry, the pixels cannot be negative.
-We know it contains stars, 
-
- If we include prior information about the image, we can retrieve the most likely image from all the candidates of \eqref{intro:linear:l2}.
-The question is, what are the chances that the most likely image is the observed image?
-The theory of Compressed Sensing tells us this.
+Intuitively, the incomplete measurements allow the pixels $x$ in the reconstruction to form physically implausible solutions. By including prior information, we can distinguish between likely and unlikely candidates of \eqref{intro:linear:l2}, and hopefully find the observed image. We can use the Theory of Compressed Sensing allows us to encode prior information about the image, and find the most likely solution to the ill-posed Image Reconstruction Problem.
 
 \subsection{Theory of Compressed Sensing}
-Theory of Compressed Sensing \cite{candes2006robust, donoho2006compressed} is a recently developed sampling theorem.
-How we can include prior information about the image and how likely we are to retrieve the observed image. 
-Prior.
+Recently, the Compressed Sensing sampling theorem has emerged\cite{candes2006robust, donoho2006compressed}, and has applications in data compression, de-noising\cite{zhu2009new}, and image reconstruction. For our intends and purposes, the Theory of Compressed Sensing gives us a way to encode prior information into the Image Reconstruction Problem. In essence, we choose a dictionary of basis functions $D$ to represent our image $x = D\alpha$. With the appropriate dictionary $D$, the most likely solution is the one with the fewest non-zero components in $\alpha$, and we arrive at the minimization objective \eqref{intro:linear:compressed:lasso} to solve our Image Reconstruction Problem. But first, let us look at how we chose the dictionary $D$ and how we include prior information in more detail.
 
-sparsity
-Dictionary $D$. For example Wavelets. Can be larger than the number of pixels
+We can always represent the image in a different space, for example with Haar-wavelets. In that case $D$ in $x = D\alpha$ is a dictionary of Haar-Wavelets, $\alpha$ is the Haar-Wavelet component vector and $x$ are the pixel values of our image. 
+Natural images are sparse in Haar-Wavelet space. Few non-zero components in $\alpha$
+If the natural image is corrupted with noise, it tends to affect all $\alpha$'s equally, meaning it is not sparse any more. However, the most significant components are still the original ones. So by searching for a solution which is sparse in Haar-Wavelet space, we can de-noise the image.
 
-For our considerations LASSO objective \eqref{intro:linear:compressed:lasso}
+For our Image Reconstruction Problem, we need a dictionary $D$ in which our observed image can be sparsely represented.
+If we choose the right $D$, the Theory of Compressed Sensing guarantees us the most likely image is the observed one.
+We search for the image $x$ which is as close to the measurements as possible, but also has the fewest non-zero components $\alpha$. We can formulate this as a LASSO minimization problem \eqref{intro:linear:l2}.
 
 \begin{equation}\label{intro:linear:compressed:lasso}
 \underset{x}{minimize} \: \left \| V - Fx \right \|_2^2 + \lambda \left \| D^{-1}x \right \|_1 
 \end{equation}
 
-Data term
-Regularization term
-
-Problem of a result: we still don't know how close we are, or if certain structures
+The objective contains two terms: The data term $\left \| V - Fx \right \|_2^2$, which is identical to the previous inequality \eqref{intro:linear:l2}, and the regularization term $\lambda \left \| D^{-1}x \right \|_1$, which enforces sparsity in our Dictionary.
+Reconstruction quality depends on the choice of $D$
+Radio Astronomy three different $D$ are in wide use, Starlets, Daubechies Wavelets, and sparsity in image domain.
+Starlets and daubechies lead to better reconstruction quality, 
 
 So we need a Regularization Dicitionary $D$, which captures the prior information we have about the image. Then, we can use convex optimization techniques to minimize the objective \eqref{intro:linear:compressed:lasso}.
 
