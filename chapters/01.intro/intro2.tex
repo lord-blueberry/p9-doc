@@ -44,7 +44,7 @@ Modern Radio Interferometers can produce an almost arbitrary large number of mea
 
 
 \subsection{The Image Reconstruction Problem}
-For Radio Interferometers, Image Reconstruction forms an ill-posed inverse problem. There are potentially many different images that fit the measurements. The Image Reconstruction is tasked with finding the most likely image $I()$ given the (calibrated) Visibility measurements $V()$.  Figure \ref{intro:inversefig} shows an example from a MeerKAT observation for $V()$ and $I()$. The image \ref{intro:inversefig:uvspace} shows the incomplete sampling in the Fourier space. The sample density decreases away from the center\footnote{The center has actually no samples, since the MeerKAT Radio Interferometer uses antenna's with dishes. Due to the resolution, it might not be visible in the image \ref{intro:inversefig:uvspace}.}. The observed image \ref{intro:inversefig:reconstruction} contains two classes of structure, point sources and extended emissions. Point sources arise from stars and other distant objects, their emissions are concentrated around a single pixel. Extended emissions arise from hydrogen clouds and other sources which span an area of several arc-seconds of the sky.
+For Radio Interferometers, Image Reconstruction forms an ill-posed inverse problem. There are potentially many different images that fit the measurements. The Image Reconstruction is tasked with finding the most likely image $I()$ given the (calibrated) Visibility measurements $V()$.  Figure \ref{intro:inversefig} shows an example from a MeerKAT observation for $V()$ and $I()$. The image \ref{intro:inversefig:uvspace} shows the incomplete sampling in the Fourier space. The sample density decreases away from the center\footnote{The center has actually no samples, since the MeerKAT Radio Interferometer uses antenna's with dishes. Due to the resolution, it might not be visible in the image \ref{intro:inversefig:uvspace}.}. The observed image \ref{intro:inversefig:reconstruction} contains two classes of structure, point sources and extended emissions. Point sources arise from stars and other distant objects, their emissions are concentrated around a single pixel. Extended emissions arise from hydrogen clouds and other sources which span an area of several arc-seconds of the sky. Or more formally, we want to invert the measurement equation \eqref{intro:inverseproblem} of the radio interferometer and retrieve the observed image $I()$. As we will see, this is an ill-posed inverse problem, and we have a large number of images that fit the measurements.
 
 \begin{figure}[htp]
 	% preliminary
@@ -67,25 +67,37 @@ For Radio Interferometers, Image Reconstruction forms an ill-posed inverse probl
 	\caption{The Image Reconstruction Problem}\label{intro:inversefig}
 \end{figure}
 
-Formally, we want to invert the measurement equation of the Radio Interferometer.
-
-Equation \eqref{intro:inverseproblem} shows a measurement equation for Radio Interferometers, 
-
+Let us look at the measurement equation \eqref{intro:inverseproblem} in more detail. It consists of three parts: The Visibility measurements $V(u,v,w)$, the observed image with a normalization factor $\frac{I(x, y)}{c(x, y)}$ and the Fourier Transform $e^{2 \pi i [\ldots]}$. $u$ $v$ and $w$ represent the axes in the Fourier Domain, while the $x$ and $y$ axes represent the angles away from the image center. A pixel in $I(x,y)$ represents how much radio emission was measured from a the direction $x,y$.
 
 \begin{equation}\label{intro:inverseproblem}
 V(u, v, w) = \int\int  \frac{I(x, y)}{c(x, y)}  e^{2 \pi i [ux+vy+ w(c(x, y) - 1)]} \: dx \: dy \:,  \quad c(x,y) = \sqrt{1 - x^2 - y ^2}
 \end{equation}
 
-The measurement equation \eqref{intro:inverseproblem} contains three parts. The Visibility measurements $V(u,v,w)$, the observed image with a normalization factor $\frac{I(x, y)}{c(x, y)}$ and the Fourier Transform $e^{2 \pi i [\ldots]}$. The $x$ and $y$ coordinates are angles from the image center. A pixel in $I(x,y)$ represents how much radio emission was measured from a the direction $x,y$. Note that the Visibilities $V(u,v,w)$ are three dimensional, while the image $I(x,y)$ only has two. However, also note that the third component $w$ only depends on the directions $x$ and $y$. In a sense, the Visibilities $V()$ and the Image $I()$ have a two dimensional Fourier relationship ($V(u,v,w) = \int\int I(x,y) e^{2 \pi i [ux+vy]} \: dx \: dy$), but with a directionally dependent correction factor $e^{2 \pi i [\ldots +w(c(x, y) - 1)]}$. 
+The radio interferometer essentially observes the sky in the Fourier domain. If we want to retrieve the observed sky image $I()$, all we need to do in theory is calculate the inverse Fourier Transform. However, the inverse Fourier Transform does not give us the observed image $I()$, because the measurements $V()$ are incomplete.
+
+Note that the Visibilities $V(u,v,w)$ are three dimensional, while the image $I(x,y)$ only has two. However, also note that the third component $w$ only depends on the directions $x$ and $y$. In a sense, the Visibilities $V()$ and the Image $I()$ have a two dimensional Fourier relationship ($V(u,v,w) = \int\int I(x,y) e^{2 \pi i [ux+vy]} \: dx \: dy$), but with a directionally dependent correction factor $e^{2 \pi i [\ldots +w(c(x, y) - 1)]}$. 
 
 The third component $w$ is an example of a Directionally Dependent Effect (DDE) which have a tendency to increase the runtime costs of the Image Reconstruction. The $w$-component keeps us from using the Fast Fourier Transform (FFT) for the measurement equation \eqref{intro:inverseproblem}. Research in this area tries to use approximations which lets us use faster algorithms like the FFT, and correct for DDE's accurately enough \cite{veenboer2017image, offringa2014wsclean, pratley2018fast}. In this project, the $w$-correction is the only DDE we handle.
 
-\subsection{System of Linear Equations}\label{intro:linear}
+
+\subsubsection{System of Linear Equations}\label{intro:linear}
 Even though the Fourier Transform in equation \eqref{intro:inverseproblem} contains a $w$-correction factor, $V()$ and $I()$ have still a linear relationship. This means we can represent the Image Reconstruction Problem as a system of linear equations: \eqref{intro:linear:linear}. $F$ is the Fourier Transform with $w$-correction, $x$ is the image we are searching and $V$ are the measured Visibilities\footnote{$V$ in the equation \eqref{intro:linear:linear} is a vector. We use the lower-case $v$ to denote the axis in the Fourier space $uvw$, and the upper-case letter to denote the Visibility vector.}.
+
+All the relevant deductions can be made in this.
 
 \begin{equation}\label{intro:linear:linear}
 \underset{x}{find}\quad V = Fx
 \end{equation}
+
+Under-Determined system, because $V$ is incomplete. We cannot get the observed image $x$
+Add prior information. We know the image contains hydrogen clouds and distant stars. We can use this information and find the most likely image.
+
+(LASSO))
+
+This is a minimization problem, where we have the data term and regularization term. Data term forces image to be close to the measurements. Regularization term penalizes unlikely images. What are the chances of
+
+
+
 
 As we discussed in section \ref{intro:sys}, Radio Interferometers can produce an almost arbitrary large number of Visibilities. In practice, we often reconstruct images with far fewer pixels than Visibility measurements, making the equation \eqref{intro:linear:linear} an over-determined problem. Meaning equation \eqref{intro:linear:linear} is either consistent and has a unique solution $x$, or is inconsistent with no solutions. Sadly, the Visibility measurements are subject to noise. The equation \eqref{intro:linear:linear} is inconsistent does not have a solution. To solve the Image Reconstruction Problem, we need to account for noise in the measurements, which leads us to a new inequality \eqref{intro:linear:l2}.
 
@@ -97,7 +109,7 @@ We use the L2 norm and find the solution $x$ which, when the Fourier Transform i
 
 Intuitively, the incomplete measurements allow the pixels $x$ in the reconstruction to form physically implausible solutions. By including prior information, we can distinguish between likely and unlikely candidates of \eqref{intro:linear:l2}, and hopefully find the observed image. We can use the Theory of Compressed Sensing allows us to encode prior information about the image, and find the most likely solution to the ill-posed Image Reconstruction Problem.
 
-\subsection{Theory of Compressed Sensing}
+\subsubsection{Theory of Compressed Sensing}
 Recently, the Compressed Sensing sampling theorem has emerged\cite{candes2006robust, donoho2006compressed}, and has applications in data compression, de-noising\cite{zhu2009new}, and image reconstruction. For our intends and purposes, the Theory of Compressed Sensing gives us a way to encode prior information into the Image Reconstruction Problem. In essence, we choose a dictionary of basis functions $D$ to represent our image $x = D\alpha$. With the appropriate dictionary $D$, the most likely solution is the one with the fewest non-zero components in $\alpha$, and we arrive at the minimization objective \eqref{intro:linear:compressed:lasso} to solve our Image Reconstruction Problem. But first, let us look at how we chose the dictionary $D$ and how we include prior information in more detail.
 
 We can always represent the image in a different space, for example with Haar-wavelets. In that case $D$ in $x = D\alpha$ is a dictionary of Haar-Wavelets, $\alpha$ is the Haar-Wavelet component vector and $x$ are the pixel values of our image. 
@@ -118,10 +130,6 @@ Radio Astronomy three different $D$ are in wide use, Starlets, Daubechies Wavele
 Starlets and daubechies lead to better reconstruction quality, 
 
 So we need a Regularization Dicitionary $D$, which captures the prior information we have about the image. Then, we can use convex optimization techniques to minimize the objective \eqref{intro:linear:compressed:lasso}.
-
-
-
-
 
 
 \subsubsection{Different Representations for the LASSO Objective}\label{intro:linear:repr}
@@ -177,9 +185,16 @@ Synthesis reconstructs in the sparse space, increases the number of free variabl
 Why use over-complete? More freedom?
 
 
+\subsection{Shared memory system}
 
 
-\subsection{Solving the Image Reconstruction Problem: The Major/Minor Cycle Architecture}
+
+\subsection{Solving the Image Reconstruction Problem}
+
+The image reconstruction problem for radio interferometers is as old as 
+
+State of the art
+
 In this section, we discuss the state-of-the-art architecture for solving the ill-posed Image Reconstruction Problem \eqref{intro:linear:l2}.
 As we discussed in the section \ref{intro:linear}, we have different choices in representing the Image Reconstruction Problem. The Major/Minor Cycle Architecture splits the problem in two parts: The Major Cycle, which is responsible for efficiently calculating the Dirty Image $I_{Dirty}$ of \eqref{intro:linear:repr:deconv}, and the Minor Cycle, which handles the ill-posed Image Reconstruction problem via deconvolution. 
 This separation allows us to solve the ill-posed inverse problem in image space, which is typically smaller than the calibrated visibilities. The figure \ref{intro:major} shows the Major Cycle and the steps involved.
@@ -245,6 +260,18 @@ Also responsible for correcting all DDEs before the FFT. Gridder becomes the dif
 
 
 \subsection{Distributing the Major/Minor Cycle}
+
+Three operations to consider distribute
+
+Gridding
+
+FFT
+
+Deconvolution.
+
+Gridding is the most expensive operation for radio interferometers, since it takes the large volume of calibrated Visibilities as input. 
+Afterwards the 
+
 
 Distributed LASSO
 \cite{mateos2010distributed}, Distributed LASSO, consensus amongst computing nodes, RANSAC approach? But Visibilities are highly redundant, meaning our nodes compute basically teh same for most of the time.
