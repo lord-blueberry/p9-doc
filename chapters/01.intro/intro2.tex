@@ -79,7 +79,7 @@ Note that the Visibilities $V(u,v,w)$ are three dimensional, while the image $I(
 
 The third component $w$ is an example of a Directionally Dependent Effect (DDE) which have a tendency to increase the runtime costs of the Image Reconstruction. The $w$-component keeps us from using the Fast Fourier Transform (FFT) for the measurement equation \eqref{intro:inverseproblem}. Research in this area tries to use approximations which lets us use faster algorithms like the FFT, and correct for DDE's accurately enough \cite{veenboer2017image, offringa2014wsclean, pratley2018fast}. In this project, the $w$-correction is the only DDE we handle.
 
-
+%---------------------------------------------------------------------------------- Everything below this line needs to be reworked
 \subsubsection{System of Linear Equations}\label{intro:linear}
 Even though the Fourier Transform in equation \eqref{intro:inverseproblem} contains a $w$-correction factor, $V()$ and $I()$ have still a linear relationship. This means we can represent the Image Reconstruction Problem as a system of linear equations: \eqref{intro:linear:linear}. $F$ is the Fourier Transform with $w$-correction, $x$ is the image we are searching and $V$ are the measured Visibilities\footnote{$V$ in the equation \eqref{intro:linear:linear} is a vector. We use the lower-case $v$ to denote the axis in the Fourier space $uvw$, and the upper-case letter to denote the Visibility vector.}.
 
@@ -92,7 +92,9 @@ All the relevant deductions can be made in this.
 Under-Determined system, because $V$ is incomplete. We cannot get the observed image $x$
 Add prior information. We know the image contains hydrogen clouds and distant stars. We can use this information and find the most likely image.
 
-(LASSO))
+\begin{equation}\label{intro:linear:compressed}
+\underset{x}{minimize} \: \left \| V - Fx \right \|_2^2 + \lambda P(x)
+\end{equation}
 
 This is a minimization problem, where we have the data term and regularization term. Data term forces image to be close to the measurements. Regularization term penalizes unlikely images. What are the chances of
 
@@ -185,26 +187,50 @@ Synthesis reconstructs in the sparse space, increases the number of free variabl
 Why use over-complete? More freedom?
 
 
-\subsection{Shared memory system}
+%^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^Everything ABOVE this line needs to be reworked
 
-
-
-\subsection{Solving the Image Reconstruction Problem}
-
-The image reconstruction problem for radio interferometers is as old as 
-
-State of the art
-
-In this section, we discuss the state-of-the-art architecture for solving the ill-posed Image Reconstruction Problem \eqref{intro:linear:l2}.
-As we discussed in the section \ref{intro:linear}, we have different choices in representing the Image Reconstruction Problem. The Major/Minor Cycle Architecture splits the problem in two parts: The Major Cycle, which is responsible for efficiently calculating the Dirty Image $I_{Dirty}$ of \eqref{intro:linear:repr:deconv}, and the Minor Cycle, which handles the ill-posed Image Reconstruction problem via deconvolution. 
-This separation allows us to solve the ill-posed inverse problem in image space, which is typically smaller than the calibrated visibilities. The figure \ref{intro:major} shows the Major Cycle and the steps involved.
+\subsection{Solving the image reconstruction in practice}\label{intro:major}
+We know how to solve the ill-posed image reconstruction problem in theory. We formulate a minimization problem \eqref{intro:linear:compressed}, specify a prior function that capture our prior knowledge, and find the optimum image with an appropriate optimization algorithm. In practice however we have a hard time representing the dense Fourier Transform matrix $F$ in the equation \eqref{intro:linear:compressed}. It is the size of number of visibilities times pixels in the reconstruction. Even older radio interferometers easily produce several million visibilities, with a million pixels in the reconstructed image. We cannot represent $F$ explicitly. Instead, we can use the major/minor cycle architecture shown in figure \ref{intro:major:fig} and avoid the explicit calculation of $F$. The major/minor cycle architecture is common in radio interferometric image reconstruction. First, we present what the major and minor cycles do, and discuss how it helps with radio interferometric image reconstruction in section \ref{intro:cycles}.
 
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.80\linewidth]{./chapters/02.hypo/Major-Minor3.png}
 	\caption{The Major/Minor Cycle Architecture}
-	\label{intro:major}
+	\label{intro:major:fig}
 \end{figure}
+
+The major cycle is responsible for transforming the calibrated visibilities to an image. First, it takes the calibrated Visibilities and interpolates them on a uniform grid. This is called the "gridding" step. The gridding step lets us use the Fast Fourier Transform (FFT). At this point, we have approximated the Fourier Transform matrix $F$ with the gridding and FFT step. Since the radio interferometer measures an incomplete set of Fourier components, the resulting image is "dirty". 
+It was convolved with a point spread function $PSF$. 
+
+The minor cycle de-convolves the dirty image with the $PSF$. A decvonvolution is still an ill-posed inverse problem. Indeed, if we ignore the error that is introduced by the gridding step, the deconvolution problem shown \eqref{intro:major:deconv} is equivalent to the image reconstruction problem \eqref{intro:linear:compressed}, but with a key difference: We replaced the big Fourier Transform matrix $Fx$ with a convolution $x \star PSF$, which we can represent much more efficiently than $F$.
+
+\begin{equation}\label{intro:major:deconv}
+\underset{x}{minimize} \: \left \| I_{dirty} - x \star PSF \right \|_2^2 + \lambda P(x)
+\end{equation}
+
+The minor cycle solves the actual ill-posed inverse problem. but in image space. Cycle 
+
+Now, we do the major cycle and start anew
+
+How expensive it is.
+
+General data size for MeerKAT/SKA.
+
+\subsubsection{Approximations under the major/minor cycle architecture} \label{intro:cycles}
+It may unintuitive why the major cycle is even necessary. Why are we not finished after the first time we deconvolved the image?
+
+Several approximations. The minor cycle does not need to calculate the exact deconvolution, and the Gridding step is also just an approximation.
+
+$PSF$ is not constant over the image. With the Major cycle, the minor cycle can approximate the deconvolution with a constant $PSF$. Estimating the $PSF$ for one location is as expensive as half a major cycle. It is common to use a single estimation for the whole problem
+
+Assuming we know the reconstructed image, the major cycle then just improves the gridding accuracy, similar to how \cite{kunisnonequispaced}.
+Several major cycles gives us free improved accuracy 
+
+In section \ref{dist} we quickly discuss
+
+
+
+
 
 Let us first look at the Major Cycle of figure \ref{intro:major} in more detail. We can separate
 
