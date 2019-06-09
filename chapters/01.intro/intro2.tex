@@ -189,7 +189,8 @@ Why use over-complete? More freedom?
 
 %^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^Everything ABOVE this line needs to be reworked
 
-\subsection{Solving the image reconstruction in practice}\label{intro:major}
+
+\subsection{The major/minor cycle architecture for image reconstruction in practice}\label{intro:major}
 We know how to solve the ill-posed image reconstruction problem in theory. We formulate a minimization problem \eqref{intro:linear:compressed}, specify a prior function that capture our prior knowledge, and find the optimum image with an appropriate optimization algorithm. In practice however we have a hard time representing the dense Fourier Transform matrix $F$ in the equation \eqref{intro:linear:compressed}. It is the size of number of visibilities times pixels in the reconstruction. Even older radio interferometers easily produce several million visibilities, with a million pixels in the reconstructed image. We cannot represent $F$ explicitly. Instead, we can use the major/minor cycle architecture shown in figure \ref{intro:major:fig} and avoid the explicit calculation of $F$. The major/minor cycle architecture is common in radio interferometric image reconstruction. First, we present what the major and minor cycles do, and discuss how it helps with radio interferometric image reconstruction in section \ref{intro:cycles}.
 
 \begin{figure}[h]
@@ -199,26 +200,20 @@ We know how to solve the ill-posed image reconstruction problem in theory. We fo
 	\label{intro:major:fig}
 \end{figure}
 
-The major cycle is responsible for transforming the calibrated visibilities to an image. First, it takes the calibrated Visibilities and interpolates them on a uniform grid. This is called the "gridding" step. The gridding step lets us use the Fast Fourier Transform (FFT). At this point, we have approximated the Fourier Transform matrix $F$ with the gridding and FFT step. Since the radio interferometer measures an incomplete set of Fourier components, the resulting image is "dirty". 
-It was convolved with a point spread function $PSF$. 
+The major cycle is responsible for transforming the calibrated visibilities to an image. First, it takes the calibrated visibilities and interpolates them on a uniform grid. This is called the "gridding" step. The gridding step lets us use the inverse Fast Fourier Transform (iFFT) next. At this point, we have approximated the Fourier Transform matrix $F$ with the gridding and iFFT step. Since the radio interferometer measures an incomplete set of visibilities, the image after the iFFT is "dirty". The missing visibilities have the effect of convolving the observed image with a Point Spread Function $PSF$, resulting in the dirty image. 
 
-The minor cycle de-convolves the dirty image with the $PSF$. A decvonvolution is still an ill-posed inverse problem. Indeed, if we ignore the error that is introduced by the gridding step, the deconvolution problem shown \eqref{intro:major:deconv} is equivalent to the image reconstruction problem \eqref{intro:linear:compressed}, but with a key difference: We replaced the big Fourier Transform matrix $Fx$ with a convolution $x \star PSF$, which we can represent much more efficiently than $F$.
+The dirty image is handed over to the minor cycle, which finds the most likely deconvolved image. A deconvolution is still an ill-posed inverse problem. Indeed, if we ignore the error that is introduced by the gridding step, the deconvolution problem shown \eqref{intro:major:deconv} is equivalent to the image reconstruction problem \eqref{intro:linear:compressed}. Both objectives arrive at the same most-likely image $x$, but with a key difference: We replaced the big Fourier Transform matrix $Fx$ with a convolution $x \star PSF$, which we can represent much more efficiently in practice. The deconvolved image is called the model image in the major/minor cycle architecture.
 
 \begin{equation}\label{intro:major:deconv}
 \underset{x}{minimize} \: \left \| I_{dirty} - x \star PSF \right \|_2^2 + \lambda P(x)
 \end{equation}
 
-The minor cycle solves the actual ill-posed inverse problem. but in image space. Cycle 
-
-Now, we do the major cycle and start anew
-
-How expensive it is.
-
-General data size for MeerKAT/SKA.
+What follows after the minor cycle may be unintuitive at first glance: We take the model image, and revert it back to non-uniform visibilities. We apply the FFT and de-gridding step and arrive at the non-uniformly sampled model visibilities. We then subtract the model visibilities from the calibrated data, and start another major cycle with the residual visibilities. The final reconstructed image is the sum of the model images over several major cycles. This architecture allows us to use several approximations in the minor cycle. 
 
 \subsubsection{Approximations under the major/minor cycle architecture} \label{intro:cycles}
-It may unintuitive why the major cycle is even necessary. Why are we not finished after the first time we deconvolved the image?
+Looking at the deconvolution problem \eqref{intro:major:deconv} in isolation, we find a few hidden difficulties: For one, the $PSF$ in \eqref{intro:major:deconv} is not constant over the image. DDE's like the $w$-term change the $PSF$ for each pixel.
 
+\eqref{intro:major:deconv}, $PSF$ is not constant. DDE like the $w$-term change the $PSF$ for each pixel. But estimating a $PSF$ is an expensive operation. In section \ref{dist} we show how the $PSF$ is estimated in practice. 
 Several approximations. The minor cycle does not need to calculate the exact deconvolution, and the Gridding step is also just an approximation.
 
 $PSF$ is not constant over the image. With the Major cycle, the minor cycle can approximate the deconvolution with a constant $PSF$. Estimating the $PSF$ for one location is as expensive as half a major cycle. It is common to use a single estimation for the whole problem
@@ -226,7 +221,28 @@ $PSF$ is not constant over the image. With the Major cycle, the minor cycle can 
 Assuming we know the reconstructed image, the major cycle then just improves the gridding accuracy, similar to how \cite{kunisnonequispaced}.
 Several major cycles gives us free improved accuracy 
 
-In section \ref{dist} we quickly discuss
+
+
+Alternatives to the major cycle
+
+
+\subsubsection{Alternatives to the major/minor cycle architecture}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
