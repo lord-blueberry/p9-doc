@@ -211,7 +211,41 @@ The dirty image is handed over to the minor cycle, which finds the most likely d
 What follows after the minor cycle may be unintuitive at first glance: We take the model image, and revert it back to non-uniform visibilities. We apply the FFT and de-gridding step and arrive at the non-uniformly sampled model visibilities. We then subtract the model visibilities from the calibrated data, and start another major cycle with the residual visibilities. The final reconstructed image is the sum of the model images over several major cycles. This architecture allows us to use several approximations in the minor cycle. 
 
 \subsubsection{Approximations under the major/minor cycle architecture} \label{intro:cycles}
-Looking at the deconvolution problem \eqref{intro:major:deconv} in isolation, we find a few hidden difficulties: For one, the $PSF$ in \eqref{intro:major:deconv} is not constant over the image. DDE's like the $w$-term change the $PSF$ for each pixel.
+Looking at the deconvolution problem \eqref{intro:major:deconv} in isolation, we find a few hidden difficulties with the $PSF$: It spans the whole image and it is not constant over all pixels. DDE's like the $w$-term change the $PSF$ for each pixel. Solving the deconvolution problem would require us to estimate the $PSF$ for each pixel, which quickly becomes too expensive for larger images\footnote{Calculating the $PSF$ for a pixel requires a gridding and an iFFT step, or half a major cycle. We need around two to ten major cycles for an accurate reconstruction. Estimating a $PSF$ for each pixel is not viable.}. With the major cycle however, we can use an approximation of the true $PSF$. The error we introduce by approximating the $PSF$ will get removed over several major cycles. 
+
+Typically, the minor cycle uses a constant $PSF$ and cuts parts of it off, only using the most significant center. An example is shown in figure \ref{intro:major:dynamic:psf} and \ref{intro:major:dynamic:psfCut}. The figure \ref{intro:major:dynamic:psf} shows the $PSF$ for the center pixel. It is approximately Gaussian shape in the center, but affects pixels over the whole image. Figure \ref{intro:major:dynamic:psfCut} shows the window which was used for deconvolution. It is half the size of the original $PSF$, and the minor cycle ignores all effects of the $PSF$ that are further away. 
+
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}[b]{0.4\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/01.intro/mk2/psf.png}
+		\caption{$PSF$ for the center pixel.}
+		\label{intro:major:dynamic:psf}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.4\linewidth}
+	\includegraphics[width=\linewidth]{./chapters/01.intro/mk2/psfCut.png}
+	\caption{$PSF$ window used for deconvolution.}
+	\label{intro:major:dynamic:psfCut}
+	\end{subfigure}
+
+	
+	\begin{subfigure}[b]{0.4\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/01.intro/mk2/dirty.png}
+		\caption{Dirty image.}
+		\label{intro:major:dynamic:dirty}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.4\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/01.intro/mk2/clean.png}
+		\caption{Reconstructed image after 5 major cycles.}
+		\label{intro:major:dynamic:tclean}
+	\end{subfigure}
+	
+	\caption{Deconvolution problem for the MeerKAT radio interferometer with a strong extended emission and weaker point sources in the image.}
+	\label{intro:major:dynamic}
+\end{figure}
+
+
+Figure \ref{intro:major:dynamic} shows a deconvolution problem for the MeerKAT radio interferometer. The $PSF$ for the center pixel is shown in figure \ref{intro:major:dynamic:psf}. The $PSF$ is approximately a gaussian at the center, with only
 
 \eqref{intro:major:deconv}, $PSF$ is not constant. DDE like the $w$-term change the $PSF$ for each pixel. But estimating a $PSF$ is an expensive operation. In section \ref{dist} we show how the $PSF$ is estimated in practice. 
 Several approximations. The minor cycle does not need to calculate the exact deconvolution, and the Gridding step is also just an approximation.
@@ -276,29 +310,6 @@ Since the Gridder takes the calibrated Visibilities as input. The Gridder is typ
 Also responsible for correcting all DDEs before the FFT. Gridder becomes the difficult piece of software.
 
 
-\subsubsection{High Dynamic Range}
-\begin{figure}[h]
-	\centering
-	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=\linewidth]{./chapters/01.intro/mk2/psf.png}
-		\caption{Point Spread Function.}
-		\label{results:points:tclean}
-	\end{subfigure}
-	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=\linewidth]{./chapters/01.intro/mk2/dirty.png}
-		\caption{Dirty image}
-		\label{results:points:tclean}
-	\end{subfigure}
-	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=\linewidth]{./chapters/01.intro/mk2/clean.png}
-		\caption{Deconvolved image.}
-		\label{results:points:tclean}
-	\end{subfigure}
-	
-	
-	\caption{Image reconstruction of two simulated point sources.}
-	\label{results:points}
-\end{figure}
 
 
 \subsection{Distributing the Major/Minor Cycle}
