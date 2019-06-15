@@ -112,6 +112,8 @@ We use the L2 norm and find the solution $x$ which, when the Fourier Transform i
 Intuitively, the incomplete measurements allow the pixels $x$ in the reconstruction to form physically implausible solutions. By including prior information, we can distinguish between likely and unlikely candidates of \eqref{intro:linear:l2}, and hopefully find the observed image. We can use the Theory of Compressed Sensing allows us to encode prior information about the image, and find the most likely solution to the ill-posed Image Reconstruction Problem.
 
 \subsubsection{Theory of Compressed Sensing}
+RIP of F
+
 Recently, the Compressed Sensing sampling theorem has emerged\cite{candes2006robust, donoho2006compressed}, and has applications in data compression, de-noising\cite{zhu2009new}, and image reconstruction. For our intends and purposes, the Theory of Compressed Sensing gives us a way to encode prior information into the Image Reconstruction Problem. In essence, we choose a dictionary of basis functions $D$ to represent our image $x = D\alpha$. With the appropriate dictionary $D$, the most likely solution is the one with the fewest non-zero components in $\alpha$, and we arrive at the minimization objective \eqref{intro:linear:compressed:lasso} to solve our Image Reconstruction Problem. But first, let us look at how we chose the dictionary $D$ and how we include prior information in more detail.
 
 We can always represent the image in a different space, for example with Haar-wavelets. In that case $D$ in $x = D\alpha$ is a dictionary of Haar-Wavelets, $\alpha$ is the Haar-Wavelet component vector and $x$ are the pixel values of our image. 
@@ -190,19 +192,10 @@ Why use over-complete? More freedom?
 
 
 \subsection{Radio interferometric image reconstruction in practice}\label{intro:major}
-We know how to solve the ill-posed image reconstruction problem in theory. We formulate a minimization problem \eqref{intro:linear:compressed}, specify a prior function that capture our prior knowledge, and find the optimum image with an appropriate optimization algorithm. In practice however we have a hard time representing the dense Fourier Transform matrix $F$ in the equation \eqref{intro:linear:compressed}. It is the size of number of visibilities times pixels in the reconstruction. Even older radio interferometers easily produce several million visibilities, with a million pixels in the reconstructed image. We cannot represent $F$ explicitly. However, we can use two "tricks" to:
-
-\begin{enumerate}
-	\item Reduce the dimensions of the measurements $V$.
-	\item Approximate runtime intensive operations.
-\end{enumerate}
-
-The first "trick" is to reformulate the image reconstruction as a deconvolution problem, which reduces the dimensions of the measurements. The second trick is to split the minimization problem into two cycles, the major/minor cycle. The major/minor cycle architecture was developed for radio interferometric image reconstruction and has been in use for decades \cite{hogbom1974aperture}. First, we derive the deconvolution problem and then introduce the major/minor cycle architecture.
+We know how to solve the ill-posed image reconstruction problem in theory. We formulate a minimization problem \eqref{intro:linear:compressed}, specify a prior function that capture our prior knowledge, and find the optimum image with an appropriate optimization algorithm. In practice however we have a hard time representing the dense Fourier Transform matrix $F$ in the equation \eqref{intro:linear:compressed}. It is the size of number of visibilities times pixels in the reconstruction. Even older radio interferometers easily produce several million visibilities, with a million pixels in the reconstructed image. We cannot represent $F$ explicitly. However, we can reformulate the image reconstruction \eqref{intro:linear:compressed} as a deconvolution problem, which reduces the dimensions of the measurement $V$ and removes the large Fourier transform matrix $F$ from the minimization objective.
 
 \subsubsection{Reformulating as a deconvolution problem}\label{intro:major:reformulation}
-We can reformulate the image reconstruction \eqref{intro:linear:compressed} as a deconvolution problem, which reduces the dimensions of the measurement $V$ and removes the large Fourier transform matrix $F$ from the minimization objective.
-
-Note that the Fourier transform matrix $F$ in \eqref{intro:linear:compressed} is a product of two operations: The Fourier transform $F$, and the masking operator $M$. The Fourier transform was established in section \ref{intro:reconstruction}. The masking operator is simply a matrix with zero entries for all Fourier components invisible to the instrument. So far, $M$ was implicitly contained in $F$ of \eqref{intro:linear:compressed}. To derive the deconvolution problem, we represent $M$ explicitly. For the sake of demonstration, let us assume our visibility measurements $V(u, v ,w)$ lie on a discrete grid. $V(u, v, w)$ is zero for all components that the interferometer could not measure. We then can represent the transformation from image to visibility space with the Fourier transform $F$ followed by a masking operation $M$, and we arrive at the image reconstruction problem \eqref{intro:major:reformulation:factor}. This is identical to \eqref{intro:linear:compressed}, except for the factorization of $F$.
+The Fourier transform matrix $F$ in \eqref{intro:linear:compressed} is a product of two operations: The Fourier transform $F$, and the masking operator $M$. The Fourier transform was established in section \ref{intro:reconstruction}. The masking operator is simply a matrix with zero entries for all Fourier components invisible to the instrument. So far, $M$ was implicitly contained in $F$ of \eqref{intro:linear:compressed}. To derive the deconvolution problem, we represent $M$ explicitly. For the sake of demonstration, let us assume our visibility measurements $V(u, v ,w)$ lie on a discrete grid. $V(u, v, w)$ is zero for all components that the interferometer could not measure. We then can represent the transformation from image to visibility space with the Fourier transform $F$ followed by a masking operation $M$, and we arrive at the image reconstruction problem \eqref{intro:major:reformulation:factor}. This is identical to \eqref{intro:linear:compressed}, except for the factorization of $F$.
 
 \begin{alignat}{2}
 \text{original:} \quad \underset{x}{minimize}\:& \left \| V - M Fx \right \|_2^2 + &\lambda P(x) \label{intro:major:reformulation:factor}\\ 
@@ -214,11 +207,15 @@ Note that $M$ represents the degradation, the corruption introduced by incomplet
 
 Since the deconvolution formulation is vital for the major/minor cycle architecture, we have a closer look at \eqref{intro:major:reformulation:deconv}. The effect of incomplete sampling in Fourier space is equal to a convolution with a Point Spread Function $PSF$ in image space. I.e. $PSF = F^{-1}M$. The measurements are now represented as the "dirty" image, $I_{dirty} = F^{-1}V$. We try to find the deconvolved image $x$, while only knowing the convolution kernel $PSF$ and the convolved, dirty image $I_{dirty}$. This is still an ill-posed inverse problem. We have potentially many different deconvolutions that fit the dirty image, and we search the most likely candidate according to some prior $P(x)$. 
 
-The deconvolution \eqref{intro:major:reformulation:deconv} and the original image reconstruction problem \eqref{intro:linear:compressed} are equivalent. Both arrive at the same result. But the deconvolution problem is easier to handle in practice: $I_{dirty}$ and $PSF$ are generally more compact representations of $V$ and $M$. Together with the major/minor cycle architecture, we can introduce approximations that simplify the deconvolution problem.
-
+The deconvolution \eqref{intro:major:reformulation:deconv} and the original image reconstruction problem \eqref{intro:linear:compressed} are equivalent. Both arrive at the same result. But the deconvolution problem is easier to handle in practice: $I_{dirty}$ and $PSF$ are generally more compact representations of $V$ and $M$. There is one last issue: Calculating the dirty image from the measurements ($I_{dirty} = F^{-1}V$) again needs the impractically large Fourier transform matrix $F$. This is solved in the major/minor cycle algorithm.
 
 \subsubsection{The major/minor cycle}
-The major/minor cycle architecture shown in figure \ref{intro:major:fig} consists of two parts: The minor cycle, which iteratively deconvolves the dirty image with the $PSF$ (it minimizes \eqref{intro:major:reformulation:deconv}). The major cycle is more complex. The first half of the major cycle approximates the dirty image ($I_{dirty} \approx F^{-1}V$) for the minor cycle, while the second half takes the deconvolved image, called the "model" image in the major/minor cycle architecture, and transforms it back to the original visibility space ($V_{model} \approx Fx$). The next major cycle then uses the residual visibilities ($V_{res} = V - V_{model}$) and repeats the process.
+The major/minor cycle architecture shown in figure \ref{intro:major:fig} consists of two parts: The minor cycle, which iteratively deconvolves the dirty image with the $PSF$ (it minimizes \eqref{intro:major:reformulation:deconv}). The major cycle is responsible for estimating the dirty image. It consists of two steps: the gridding and the Fast Fourier Transformation (FFT).
+
+The gridding step takes the visibility measurements and interpolates them on a uniform grid. 
+Has to handle DDE's like the $w$-component.
+The FFT.
+which is known as the non-uniform FFT \cite{kunisnonequispaced} in general.
 
 \begin{figure}[h]
 	\centering
@@ -227,21 +224,18 @@ The major/minor cycle architecture shown in figure \ref{intro:major:fig} consist
 	\label{intro:major:fig}
 \end{figure}
 
-At first glance, it may not be clear why several major cycles are even necessary. 
+The first half of the major cycle approximates the dirty image ($I_{dirty} \approx F^{-1}V$) for the minor cycle, while the second half takes the deconvolved image, called the "model" image in the major/minor cycle architecture, and transforms it back to the original visibility space ($V_{model} \approx Fx$). The next major cycle then uses the residual visibilities ($V_{res} = V - V_{model}$) and repeats the process.
 
-The major cycle allows us to use approximations in the minor cycle, and in the Fourier transform. 
-
-The dirty image is handed over to the minor cycle, which finds the most likely deconvolved image. A deconvolution is still an ill-posed inverse problem. Indeed, if we ignore the error that is introduced by the gridding step, the deconvolution problem shown \eqref{intro:major:deconv} is equivalent to the image reconstruction problem \eqref{intro:linear:compressed}. Both objectives arrive at the same most-likely image $x$, but with a key difference: We replaced the big Fourier Transform matrix $Fx$ with a convolution $x \star PSF$, which we can represent much more efficiently in practice. The deconvolved image is called the model image in the major/minor cycle architecture.
-
-Instead, we can use the major/minor cycle architecture shown in figure \ref{intro:major:fig} and avoid the explicit calculation of $F$.  First, we present what the major and minor cycles do, and discuss how it helps with radio interferometric image reconstruction in section \ref{intro:cycles}.
+At first glance, it may not be clear why several major cycles are even necessary. It is precisely this cycle that allows us to introduce approximations in the minor cycle. We will go into more detail about the approximations in section \ref{intro:major:approximations} and why they are important for radio interferometers.
+This section dives deeper into the core operation of the major cycle, the gridding. 
 
 
 
-The major cycle is responsible for transforming the calibrated visibilities to an image. First, it takes the calibrated visibilities and interpolates them on a uniform grid. This is called the "gridding" step. The gridding step lets us use the inverse Fast Fourier Transform (iFFT) next. At this point, we have approximated the Fourier Transform matrix $F$ with the gridding and iFFT step. Since the radio interferometer measures an incomplete set of visibilities, the image after the iFFT is "dirty". The missing visibilities have the effect of convolving the observed image with a Point Spread Function $PSF$, resulting in the dirty image. 
 
+\subsubsection{Approximations under the major cycle} \label{intro:major:approximations}
+Looking at the deconvolution problem \eqref{intro:major:reformulation:deconv} in isolation , we find a few hidden difficulties with the $PSF$.
 
-\subsubsection{Approximations under the major/minor cycle} \label{intro:major:approximations}
-Looking at the deconvolution problem \eqref{intro:major:reformulation:deconv} in isolation, we find a few hidden difficulties with the $PSF$: It spans the whole image and it is not constant over all pixels. DDE's like the $w$-term change the $PSF$ for each pixel. Solving the deconvolution problem would require us to estimate the $PSF$ for each pixel, which quickly becomes too expensive for larger images\footnote{Calculating the $PSF$ for a pixel requires a gridding and an iFFT step, or half a major cycle. We need around two to ten major cycles for an accurate reconstruction. Estimating a $PSF$ for each pixel is not viable.}. With the major cycle however, we can use an approximation of the true $PSF$. The error we introduce by approximating the $PSF$ will get removed over several major cycles. 
+ For one, it spans the whole image and it is not constant over all pixels. DDE's like the $w$-term change the $PSF$ for each pixel. Solving the deconvolution problem would require us to estimate the $PSF$ for each pixel, which quickly becomes too expensive for larger images\footnote{Calculating the $PSF$ for a pixel requires a gridding and an iFFT step, or half a major cycle. We need around two to ten major cycles for an accurate reconstruction. Estimating a $PSF$ for each pixel is not viable.}. With the major cycle however, we can use an approximation of the true $PSF$. The error we introduce by approximating the $PSF$ will get removed over several major cycles. 
 
 Typically, the minor cycle uses a constant $PSF$ and cuts parts of it off, only using the most significant center. An example is shown in figure \ref{intro:major:dynamic:psf} and \ref{intro:major:dynamic:psfCut}. The figure \ref{intro:major:dynamic:psf} shows the $PSF$ for the center pixel. It is approximately Gaussian shape in the center, but affects pixels over the whole image. Figure \ref{intro:major:dynamic:psfCut} shows the window which was used for deconvolution. It is half the size of the original $PSF$, and the minor cycle ignores all effects of the $PSF$ that are further away. 
 
@@ -337,37 +331,6 @@ Contains two classes of objects: Point sources, which are essentially stars, and
 
 Find the fainter sources in later iterations
 Because we can only estimate the psf.
-
-\subsubsection{Runtime costs of the Major Cycle}
-
-The Gridder is the most expensive step. 
-Since the Gridder takes the calibrated Visibilities as input. The Gridder is typically the bottleneck in this architecture \cite{skastuff}.
-Also responsible for correcting all DDEs before the FFT. Gridder becomes the difficult piece of software.
-
-
-
-
-\subsection{Distributing the Major/Minor Cycle}
-
-Three operations to consider distribute
-
-Gridding
-
-FFT
-
-Deconvolution.
-
-Gridding is the most expensive operation for radio interferometers, since it takes the large volume of calibrated Visibilities as input. 
-Afterwards the 
-
-
-Distributed LASSO
-\cite{mateos2010distributed}, Distributed LASSO, consensus amongst computing nodes, RANSAC approach? But Visibilities are highly redundant, meaning our nodes compute basically teh same for most of the time.
-
-
-Difficulty in separation of the A Matrix
-Each Pixel depends on all Visibilities, and a single Visibility depends on all pixels.
-Doing work several times
 
 
 
