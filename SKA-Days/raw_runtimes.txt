@@ -1,0 +1,11 @@
+mpi
+total elapsed: 00:30:34.7221817
+idg forward elapsed: 00:07:53.4073004
+idg backwards elapsed: 00:08:41.0717371
+devonvolution: 00:11:33.3113432
+
+single
+total elapsed: 01:34:29.0358586
+idg forward elapsed: 00:18:35.7428840
+idg backwards elapsed: 00:34:08.8743328
+devonvolution: 00:37:53.3947109
