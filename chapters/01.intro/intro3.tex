@@ -14,7 +14,7 @@ First, the electromagnetic wave gets measured by the different antennas of the i
 
 The calibration step is done after all visibility data has been recorded. This step corrects the amplitude and phase of the measurements for varying antenna sensitivities, pointing errors and other effects. Also, this step removes corrupted data from the measurements. After the calibration step, the visibilities still contain noise.
 
-The last step is responsible for reconstructing an image from the calibrated, noisy visibilities. The figure \ref{intro:inversefig} shows a real-world example of a reconstruction from the MeerKAT radio interferometer. It arrives at the reconstructed image by inverting the measurement equation, and deciding which part of the visibilities is noisy, and which part is the signal.
+The last step is responsible for reconstructing an image from the calibrated, noisy visibilities. The figure \ref{intro:inversefig} shows a real-world example of a reconstruction from the MeerKAT radio interferometer. It arrives at the reconstructed image by inverting the measurement equation, and deciding which part of the visibilities is noisy, and which part is the signal. These two problems, handling the noise and inverting the measurement equation, are central to image reconstruction for radio interferometers. They influence both the quality and the runtime costs of the reconstruction.
 
 \begin{figure}[htp]
 	% preliminary
@@ -39,7 +39,9 @@ The last step is responsible for reconstructing an image from the calibrated, no
 
 
 \subsubsection{The measurement equation}
-Let us look at the measurement equation \eqref{intro:inverseproblem} in more detail. It consists of three parts: The visibility measurements $V(u,v,w)$, the observed image with a normalization factor $\frac{I(x, y)}{c(x, y)}$ and the Fourier Transform $e^{2 \pi i [\ldots]}$. $u$ $v$ and $w$ represent the axes in the Fourier Domain, while the $x$ and $y$ axes represent the angles away from the image center. A pixel in $I(x,y)$ represents how much radio emission was measured from a the direction $x,y$. The image \ref{intro:inversefig:uvspace} shows an example for $V()$, while \ref{intro:inversefig:reconstruction} shows an example for $I()$.
+The measurement equation models how the electromagnetic wave gets distorted on its path from the celestial source through the ionosphere and finally through the antenna of the interferometer\cite{smirnov2011revisiting1}. It abstracts all effects we wish to correct in the image reconstruction in one equation. As such, there is no single unified measurement equation for all interferometers, and generally depends on the instrument.
+
+In this project we use the measurement equation \eqref{intro:inverseproblem}. It consists of three parts: The visibility measurements $V(u,v,w)$\footnote{$V$ in the equation \eqref{intro:linear:linear} is a vector. We use the lower-case $v$ to denote the axis in the Fourier space $uvw$, and the upper-case letter to denote the visibility vector.}, the observed image with a normalization factor $\frac{I(x, y)}{c(x, y)}$ and the Fourier Transform $e^{2 \pi i [\ldots]}$. $u$ $v$ and $w$ represent the axes in the Fourier Domain, while the $x$ and $y$ axes represent the angles away from the image center. A pixel in $I(x,y)$ represents how much radio emission was measured from a the direction $x,y$. The image \ref{intro:inversefig:uvspace} shows an example for $V()$, while \ref{intro:inversefig:reconstruction} shows an example for $I()$.
 
 \begin{equation}\label{intro:inverseproblem}
 V(u, v, w) = \int\int  \frac{I(x, y)}{c(x, y)}  e^{2 \pi i [ux+vy+ w(c(x, y) - 1)]} \: dx \: dy \:,  \quad c(x,y) = \sqrt{1 - x^2 - y ^2}
@@ -51,11 +53,15 @@ The third component $w$ is an example of a Directionally Dependent Effect (DDE) 
 
 
 \subsection{System of linear equations}
-Even though the Fourier Transform in equation \eqref{intro:inverseproblem} contains a $w$-correction factor, $V()$ and $I()$ have still a linear relationship. This means we can represent the image reconstruction as a system of linear equations: \eqref{intro:linear:linear}. $F$ is the Fourier Transform with $w$-correction, $x$ is the image we are searching and $V$ are the measured Visibilities\footnote{$V$ in the equation \eqref{intro:linear:linear} is a vector. We use the lower-case $v$ to denote the axis in the Fourier space $uvw$, and the upper-case letter to denote the Visibility vector.}.
+Even though the Fourier Transform in the measurement equation \eqref{intro:inverseproblem} contains a $w$-correction factor, it is still linear. Even with more complex measurement equations, the relationship between the visibilities $V()$ and the $I()$ remain linear\cite{smirnov2011revisiting}. This means we can represent the measurement equation as a system of linear equations  \eqref{intro:linear:linear}, where $F$ is the Fourier Transform with $w$-correction, $x$ is the image we are searching, $V$ are the calibrated visibilities and $\epsilon$ is the noise level we expect. To reconstruct the image $x$, we simply need to search for a solution to \eqref{intro:linear:linear}, and we have inverted the measurement equation and accounted for noise.
 
 \begin{equation}\label{intro:linear:linear}
 \underset{x}{find}\quad \left \| V - Fx \right \|_2^2 < \epsilon
 \end{equation}
+
+Even though we generally have more visibilities than pixels in the reconstruction, which makes \eqref{intro:linear:linear} overdetermined, there is no unique solution to \eqref{intro:linear:linear}. There are potentially many candidate images that solve \eqref{intro:linear:linear}. The actually observed image is among the candidates, but from the measurements alone we cannot decide which it is. This makes the image reconstruction for radio interferometers an ill-posed inverse problem.
+
+
 
 
 
