@@ -1,67 +1,43 @@
-
 \section{Simple distributed image reconstruction}\label{dist}
-Show architecture
+Distribute the major cycle we need several major cycle iterations. We cannot execute the second cycle before the first. So we need to distribute the steps in the major cycle, namely the gridding, FFT and deconvolution step. 
 
-Different architectures, why don't we do consensus algorithms.
+Gridding is generally the most time intensive step. 
+Large number of visibilities, forces us to partition the input data. Meaning each node has only part of the data. This work assumes we have a copy of the full grid on each node. and exchange
+We use the Image Domain Gridding algorithm.
 
-Message Passing Interface (MPI)
+The FFT is generally not worth distributing, if we can keep all the data in memory. When the gridding is done, in our setup, the grid is small enough to keep in memory.
+
+Deconvolution is potentially the second most time consuming step after the Gridding.
+Depends on the image content.
+Deconvolution produces the model image and the residual image.
+Distributed deconvolution requires communication. How we communicate is key.
+Distributing the deconvolution generally leaves us with two possible architectures: Either we split the deconvolution problem into patches, or we create a consensus algorithm. Consensus algorithms work by each node having a copy of the model image, and as a group, decide on the equal image. Not very useful for Meerkat, since we potentially do the work several times. 
+We then want to distribute the work as evenly as possible between the nodes. 
+That is why we chose to split the data onto nodes. 
 
 
-Gridding and Devonvolution
-
-We use the recently developed Image Domain Gridder (IDG) 
-
-
-\subsection{The Image Domain Gridder}\label{distribution:idg}
-
-What the gridding actually does. In theory, just an interpolation. Interpolation kernel like Spheroidal, Kaiser-Bessel functions etc. Generally the most intensive step, because the number of grid cells is generally a lot smaller than the number calibrated Visibilities.
-
-However, here we move from the three dimensional Visibilities to two dimensions. DDE's fall down in the area of the gridder.
-
-So how we do an interpolation 
-
-Veeneboer et al\cite{veenboer2017image} developed the Image Domain Gridder. It uses Subgrids and solves each subgrid seperately.
-It is in the image domain, because it can do Radio Interferometer specific corrections efficiently. Furthermore, it leads to a structure which is primed for GPU processing.
-We use this algorithm to distribute the gridding.
-
-W-Projection, Spheroidal are convolutions in the Fourier space.
-
-The figure \ref{distribution:idg:system} shows the different parts of the image domain algorithm.
-
+This leads us to the following architecture.
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=0.80\linewidth]{./chapters/03.distribution/idg/major-minor-idg.png}
-	\caption{Image Domain Gridder in the Major Cycle Architecture}
-	\label{distribution:idg:system}
+	\includegraphics[width=0.80\linewidth]{./chapters/03.distribution/distributed_architecture.png}
+	\caption{Distributed architecture for half a major cycle}
+	\label{dist:architecture:fig}
 \end{figure}
 
-Algorithm
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=0.40\linewidth]{./chapters/03.distribution/idg/subgrid.png}
-	\caption{Subgrid}
-	\label{distribution:idg:subgrid}
-\end{figure}
+Rest of the Major Cycle. We need to get the model image patches from the nodes, FFT on node 0, and then we communicate the grid.
 
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=0.40\linewidth]{./chapters/03.distribution/idg/paralellization.png}
-	\caption{parallel}
-	\label{distribution:idg:parallel}
-\end{figure}
 
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=0.40\linewidth]{./chapters/03.distribution/idg/idg0.png}
-	\caption{Image Domain Gridder in the Major Cycle Architecture}
-	\label{distribution:idg:idg0}
-\end{figure}
+\subsection{Distributing the IDG Algorithm}\label{distribution:idg}
+It is simple, unlike $w$-stacking, we do not need to partition the data. So we can do just communicate the grid
 
-\subsection{Coordinate Descent deconvolution}
 
-Coordinate Descent Algorithm why
 
-Variants
+\subsection{Distributed deconvolution algorithm}
+
+Coordinate Descent Algorithm why.
+
+Basic algorithm.
+
 
 Implementation
 Correlate the dirty image
@@ -69,7 +45,7 @@ Find max
 How to calculate a
 
 \subsubsection{ElasticNet Regularization}
-Why
+L2 norm was used in other work. \cite{Ferrari}
 
 
 Formula

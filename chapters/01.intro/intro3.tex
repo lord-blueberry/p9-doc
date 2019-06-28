@@ -52,7 +52,6 @@ The radio interferometer essentially observes the sky in the Fourier domain. If 
 The third component $w$ is an example of a Directionally Dependent Effect (DDE) which have a tendency to increase the runtime costs of the image reconstruction. The $w$-component keeps us from using the Fast Fourier Transform (FFT) for the measurement equation \eqref{intro:inverseproblem}. Research in this area tries to use approximations which lets us use faster algorithms like the FFT, and correct for DDE's accurately enough \cite{veenboer2017image, offringa2014wsclean, pratley2018fast}. In this project, the $w$-correction is the only DDE we handle.
 
 
-
 \subsection{System of linear equations}
 Even though the Fourier Transform in the measurement equation \eqref{intro:inverseproblem} contains a $w$-correction factor, it is still linear. Even with more complex measurement equations, the relationship between the visibilities $V()$ and the $I()$ remain linear\cite{smirnov2011revisiting}. If we ignore the noise for the sake of demonstration, this means we can represent the measurement equation as a system of linear equations  \eqref{intro:linear:linear}, where $F$ is the Fourier Transform with $w$-correction, $x$ is the image we are searching, $V$ are the calibrated visibilities. To reconstruct the image $x$, we simply need to search for a solution to \eqref{intro:linear:linear}.
 
@@ -63,7 +62,6 @@ Even though the Fourier Transform in the measurement equation \eqref{intro:inver
 Even though we generally have more visibilities than pixels in the reconstruction, which makes \eqref{intro:linear:linear} overdetermined, there is no unique solution to \eqref{intro:linear:linear}. There are potentially many candidate images that solve \eqref{intro:linear:linear}. The actually observed image is among the candidates, but from the measurements alone we cannot decide which it is. This makes the image reconstruction for radio interferometers an ill-posed inverse problem.
 
 The reason why there is no unique solution to \eqref{intro:linear:linear} lies in the visibility measurements $V$. When we look back at figure \ref{intro:inversefig:uvspace}, it is clear to see that the interferometer does not sample the visibilities in a uniform way. There are regions with a high sample density. The density decreases when we move further away from the center. In short, the radio interferometer measures an incomplete set of visibilities. It does not contain all the data we require to reconstruct the image, which makes finding the image an ill-posed inverse problem.
-
 
 
 
