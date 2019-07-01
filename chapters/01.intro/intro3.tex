@@ -59,20 +59,31 @@ Even though the Fourier Transform in the measurement equation \eqref{intro:inver
 \underset{x}{find}\quad V - Fx = 0
 \end{equation}
 
-Even though we generally have more visibilities than pixels in the reconstruction, which makes \eqref{intro:linear:linear} overdetermined, there is no unique solution to \eqref{intro:linear:linear}. There are potentially many candidate images that solve \eqref{intro:linear:linear}. The actually observed image is among the candidates, but from the measurements alone we cannot decide which it is. This makes the image reconstruction for radio interferometers an ill-posed inverse problem.
+Even though we generally have more visibilities than pixels in the reconstruction, which makes \eqref{intro:linear:linear} overdetermined, there is no unique solution to \eqref{intro:linear:linear}. There are potentially many candidate images that solve \eqref{intro:linear:linear}. This makes the image reconstruction for radio interferometers an ill-posed inverse problem. 
 
-The reason why there is no unique solution to \eqref{intro:linear:linear} lies in the visibility measurements $V$. When we look back at figure \ref{intro:inversefig:uvspace}, it is clear to see that the interferometer does not sample the visibilities in a uniform way. There are regions with a high sample density. The density decreases when we move further away from the center. In short, the radio interferometer measures an incomplete set of visibilities. It does not contain all the data we require to reconstruct the image, which makes finding the image an ill-posed inverse problem.
+The reason why lies in the visibility measurements $V$. When we look back at figure \ref{intro:inversefig:uvspace}, it is clear to see that the interferometer does not sample the visibilities in a uniform way. There are regions with a high sample density. The density decreases when we move further away from the center. In short, the radio interferometer measures an incomplete set of visibilities. The measurements do not contain all the data we require to reconstruct the image. There are potentially many different candidate images that solve equation \eqref{intro:linear:linear}. The observed image is among the candidates, and from the measurements alone we cannot decide which it is. 
 
+Finding the observed image from the incomplete set of visibilities is an ill-posed inverse problem, even if the measurements are noiseless. But as we discussed, radio interferometers produce noisy visibility measurements. We require an image reconstruction algorithm which handles two problems: Finding the observed image from the incomplete measurements and deciding which part of the measurements are noise. 
 
+Both can be handled by including prior information about the image. We know the image contains a mixture of point sources, emissions from stars and other far-away sources concentrated around a single pixel, extended emissions, clouds of hydrogen spanning an area over several arc-seconds. By including prior information, a reconstruction algorithm can find the most-likely image of equation \eqref{intro:linear:linear}. The theory of Compressed Sensing\cite{candes2006robust,donoho2006compressed} gives us a framework for how we can include prior information about the image. 
 
-\subsubsection{The theory of compressed sensing}
+\subsubsection{The theory of Compressed Sensing}
+A technique in signal processing for efficient acquisition and reconstruction of signals. We can find the solution to ill-posed linear systems by solving an optimization objective. 
 
+Our framework, image reconstruction consists of Three parts, the objective, the prior function and an optimization algorithm.
+This is the idea. We solve an optimization problem, which consists of two parts. The data term and the regularization term. The data term forces the 
+Prior function. We use the term prior and regularization in this context interchangeably.
+
+The optimum of the objective gives us the most likely image. Bayesian interpretation with prior probability.
 
 \begin{equation}\label{intro:linear:compressed}
 \underset{x}{minimize} \: \left \| V - Fx \right \|_2^2 + \lambda P(x)
 \end{equation}
-%Although the interferometer produces a potentially large number of visibilities, they are incomplete: For example an Interferometer with dish-antennas is typically blind to the microwave background radiation. The largest structures in the image it can detect depends on the shortest baseline. Since the antennas have to be at least the dish-diameter placed apart, the Interferometer is simply blind to very large structures in the sky image, like the microwave background radiation. This property makes Image Reconstruction Problem ill-posed. In the image reconstruction step, we therefore have to find the most likely image which fits the measurements.
 
+
+Theory of compressed sensing that this works at all. How likely it is that the and that under the right prior P() we are almost guaranteed to find th
+
+What does it mean for image reconstruction. A framework for analysis of image reconstruction algorithms.
 
 
 \subsection{Image reconstruction in practice}\label{intro:major}
@@ -94,7 +105,7 @@ Since the deconvolution formulation is vital for the major/minor cycle architect
 The deconvolution \eqref{intro:major:reformulation:deconv} and the original image reconstruction problem \eqref{intro:linear:compressed} are equivalent. Both arrive at the same result. But the deconvolution problem is easier to handle in practice: $I_{dirty}$ and $PSF$ are generally more compact representations of $V$ and $M$. There is one last issue: Calculating the dirty image from the measurements ($I_{dirty} = F^{-1}V$) again needs the impractically large Fourier transform matrix $F$. This is solved in the major/minor cycle algorithm.
 
 \subsubsection{The major/minor cycle}
-The major/minor cycle architecture shown in figure \ref{intro:major:fig} consists of two parts: The minor cycle, which iteratively deconvolves the dirty image with the $PSF$ (it minimizes \eqref{intro:major:reformulation:deconv}). The major cycle is responsible for estimating the dirty image. It consists of two steps: the gridding and the Fast Fourier Transformation (FFT).
+The major/minor cycle architecture shown in figure \ref{intro:major:fig} consists of two parts: The minor cycle, which iteratively deconvolves the dirty image with the $PSF$ (it minimizes \eqref{intro:major:reformulation:deconv}). The first half of the major cycle estimates the dirty image. It consists of two steps: the gridding and the Fast Fourier Transformation (FFT). The gridding step takes the incomplete and non-uniformly sampled visibilities and interpolates them on a uniform grid. Then the inverse FFT can be used to calculate the dirty image.
 
 \begin{figure}[h]
 	\centering
@@ -103,4 +114,20 @@ The major/minor cycle architecture shown in figure \ref{intro:major:fig} consist
 	\label{intro:major:fig}
 \end{figure}
 
+Minor Cycle deconvolution. Creates the deconvolved "model" image.
+
+After the Minor Cycle, the second half of the Major Cycle continues. It takes the model image and transforms it back to the original measurement space. FFT and de-gridding. Arriving at the model visibilities.
+
+Then we subtract the model visibilities from the original measurements and start the next Major Cycle with the residual visibilities. The final reconstructed image is the result of several major cycles. Depending on the observation and deconvolution algorithm we require more or fewer major cycles. Expected number around 5
+
+Most expensive operations is the gridding and de-gridding followed by the deconvolution. Gridding is also where we do corrections like the $w$-term. So interpolation becomes specific for the field of radio astronomy.
+
+Depending on the observation, the second most expensive step is the deconvolution.
+
+
 \subsubsection{Approximations under the major cycle} \label{intro:major:approximations}
+Why is the major cycle even necessary. At first glance, it seems like we may be done after the first major cycle. Because the deconvolution problem.
+
+But the $PSF$ is actually just an approximation. The $PSF$ changes over the image.
+
+Plus the gridding also introduces an error which gets reduced over several Major Cycles.
