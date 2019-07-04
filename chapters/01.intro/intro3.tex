@@ -68,22 +68,33 @@ Finding the observed image from the incomplete set of visibilities is an ill-pos
 Both can be handled by including prior information about the image. We know the image contains a mixture of point sources, emissions from stars and other far-away sources concentrated around a single pixel, extended emissions, clouds of hydrogen spanning an area over several arc-seconds. By including prior information, a reconstruction algorithm can find the most-likely image of equation \eqref{intro:linear:linear}. The theory of Compressed Sensing\cite{candes2006robust,donoho2006compressed} gives us a framework for how we can include prior information about the image. 
 
 \subsubsection{The theory of Compressed Sensing}
-A technique in signal processing for efficient acquisition and reconstruction of signals. We can find the solution to ill-posed linear systems by solving an optimization objective. 
-
-Our framework, image reconstruction consists of Three parts, the objective, the prior function and an optimization algorithm.
-This is the idea. We solve an optimization problem, which consists of two parts. The data term and the regularization term. The data term forces the 
-Prior function. We use the term prior and regularization in this context interchangeably.
-
-The optimum of the objective gives us the most likely image. Bayesian interpretation with prior probability.
+The theory of Compressed Sensing is a technique for efficient acquisition and reconstruction of signals. For image reconstruction in radio astronomy, it gives us a theoretical framework for analysing reconstruction algorithms. The basic idea of Compressed Sensing reconstruction is: We find a solution to the ill-posed linear system of equations by minimizing an optimization objective \eqref{intro:linear:compressed}, where $x$ is the most likely image we wish to find. A compressed sensing reconstruction algorithm therefore consists of three parts, an objective function, a prior function $P()$ and an optimization algorithm.
 
 \begin{equation}\label{intro:linear:compressed}
 \underset{x}{minimize} \: \left \| V - Fx \right \|_2^2 + \lambda P(x)
 \end{equation}
 
+The objective consists of two parts, the data term and the regularization term. The data term $\left \| V - Fx \right \|_2^2$ forces the most likely image to be as close to the measurements as possible, and the regularization term $P(x)$ penalizes unlikely images according to our prior function. The parameter $\lambda$ represents how much we penalize unlikely images and by extend, much noise we expect in the reconstruction. The parameter $\lambda$ is either left to the user to define, or an estimation strategy is used \cite{miller1970least}.
+
+The prior function $P()$
+Any function we like
+From image denoising. L1 L2
+Total Variation
+
+Optimization algorithm. Finding the most likely image
+
+Sparse priors. Indicator function. 
+L1 norm in a different domain.
+
+
+The optimum of the objective gives us the most likely image. Bayesian interpretation with prior probability.
+
+
+
 
 Theory of compressed sensing that this works at all. How likely it is that the and that under the right prior P() we are almost guaranteed to find th
-
-What does it mean for image reconstruction. A framework for analysis of image reconstruction algorithms.
+Incoherence
+RIP, but in practice we have no idea if $F$ fulfills the RIP. But we know it is likely
 
 
 \subsection{Image reconstruction in practice}\label{intro:major}
@@ -105,7 +116,7 @@ Since the deconvolution formulation is vital for the major/minor cycle architect
 The deconvolution \eqref{intro:major:reformulation:deconv} and the original image reconstruction problem \eqref{intro:linear:compressed} are equivalent. Both arrive at the same result. But the deconvolution problem is easier to handle in practice: $I_{dirty}$ and $PSF$ are generally more compact representations of $V$ and $M$. There is one last issue: Calculating the dirty image from the measurements ($I_{dirty} = F^{-1}V$) again needs the impractically large Fourier transform matrix $F$. This is solved in the major/minor cycle algorithm.
 
 \subsubsection{The major/minor cycle}
-The major/minor cycle architecture shown in figure \ref{intro:major:fig} consists of two parts: The minor cycle, which iteratively deconvolves the dirty image with the $PSF$ (it minimizes \eqref{intro:major:reformulation:deconv}). The first half of the major cycle estimates the dirty image. It consists of two steps: the gridding and the Fast Fourier Transformation (FFT). The gridding step takes the incomplete and non-uniformly sampled visibilities and interpolates them on a uniform grid. Then the inverse FFT can be used to calculate the dirty image.
+The major/minor cycle architecture shown in figure \ref{intro:major:fig} consists of two parts: The minor cycle, which iteratively deconvolves the dirty image with the $PSF$ (it minimizes \eqref{intro:major:reformulation:deconv}). The first half of the major cycle estimates the dirty image. It consists of two steps: the gridding and the Fast Fourier Transformation (FFT). The gridding step takes the incomplete and non-uniformly sampled visibilities and interpolates them on a uniform grid. Then the inverse FFT can be calculated on the interpolated visibilities and we arrive at the dirty image.
 
 \begin{figure}[h]
 	\centering
@@ -131,3 +142,6 @@ Why is the major cycle even necessary. At first glance, it seems like we may be 
 But the $PSF$ is actually just an approximation. The $PSF$ changes over the image.
 
 Plus the gridding also introduces an error which gets reduced over several Major Cycles.
+
+\subsubsection{Alternatives to the major/minor cycle}
+Not formulating as a deconvolution, but takes the gridding and FFT step. Fastest approximation. Tends to use many major cycles.
