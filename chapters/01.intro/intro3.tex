@@ -76,19 +76,19 @@ The theory of Compressed Sensing is a technique for efficient acquisition and re
 
 The objective consists of two parts, the data term and the regularization term. The data term $\left \| V - Fx \right \|_2^2$ forces the most likely image to be as close to the measurements as possible, and the regularization term $P(x)$ penalizes unlikely images according to our prior function. The parameter $\lambda$ represents how much we penalize unlikely images and by extend, much noise we expect in the reconstruction. The parameter $\lambda$ is either left to the user to define, or an estimation strategy is used \cite{miller1970least}.
 
-The prior function $P()$
-Any function we like
-From image denoising. L1 L2
-Total Variation
+The prior function $P()$ represents our prior knowledge about the image. It assigns a high penalty for unlikely images. In in radio interferometric image reconstructions tend to use similar prior functions as for image de-noising applications. Such as: Total Variation ($\left \| \triangledown x \right \|_1$) \cite{wiaux2009compressed}, L2 ($\left \|x \right \|_2$) \cite{ferrari2014distributed} and the L1 ($\left \|x \right \|_1$) \cite{hardy2013direct} norm. 
 
-Optimization algorithm. Finding the most likely image
+Choice of prior sets the image quality. But also influences the convergence speed and the robustness to heavy noise corruption. It is still an open question what the optimal prior function is for radio interferometric image reconstruction.
 
+
+Optimization algorithm. which can efficiently optimize the objective function \eqref{intro:linear:compressed} with a given prior function $P()$. Which optimization algorithm is optimal depends on the prior function, and often on the properties of the data itself.
+Interior Point mehtods, Matching Pursuit,ADMM, Coordinate Descent, 
+
+Theory of Compressed Sensing 
 Sparse priors. Indicator function. 
 L1 norm in a different domain.
 
-
 The optimum of the objective gives us the most likely image. Bayesian interpretation with prior probability.
-
 
 
 
