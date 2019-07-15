@@ -53,39 +53,60 @@ The third component $w$ is an example of a Directionally Dependent Effect (DDE) 
 
 
 \subsection{System of linear equations}
-Even though the Fourier Transform in the measurement equation \eqref{intro:inverseproblem} contains a $w$-correction factor, it is still linear. Even with more complex measurement equations, the relationship between the visibilities $V()$ and the $I()$ remain linear\cite{smirnov2011revisiting}. If we ignore the noise for the sake of demonstration, this means we can represent the measurement equation as a system of linear equations  \eqref{intro:linear:linear}, where $F$ is the Fourier Transform with $w$-correction, $x$ is the image we are searching, $V$ are the calibrated visibilities. To reconstruct the image $x$, we simply need to search for a solution to \eqref{intro:linear:linear}.
+Even though the Fourier Transform in the measurement equation \eqref{intro:inverseproblem} contains a $w$-correction factor, it is still linear. There exist more complex measurement equations, but the relationship often stays linear in nature \cite{smirnov2011revisiting1, smirnov2011revisiting2, smirnov2011revisiting3, smirnov2011revisiting4}. This means we can represent the measurement equation as a system of linear equations  \eqref{intro:linear:linear}, where $F$ is the Fourier Transform with $w$-correction, $x$ is the image we are searching, $V$ are the calibrated visibilities. For the sake of demonstration, we ignore the noise in the visibility measurements in \eqref{intro:linear:linear}. To reconstruct the image $x$, we simply need to search for a solution to \eqref{intro:linear:linear}.
 
 \begin{equation}\label{intro:linear:linear}
 \underset{x}{find}\quad V - Fx = 0
 \end{equation}
 
-Even though we generally have more visibilities than pixels in the reconstruction, which makes \eqref{intro:linear:linear} overdetermined, there is no unique solution to \eqref{intro:linear:linear}. There are potentially many candidate images that solve \eqref{intro:linear:linear}. This makes the image reconstruction for radio interferometers an ill-posed inverse problem. 
+Even though we generally have more visibilities than pixels in the reconstruction, which makes \eqref{intro:linear:linear} over-determined, there is no unique solution to it. There are potentially many candidate images that solve the equation, which makes the image reconstruction for radio interferometers an ill-posed inverse problem.
 
-The reason why lies in the visibility measurements $V$. When we look back at figure \ref{intro:inversefig:uvspace}, it is clear to see that the interferometer does not sample the visibilities in a uniform way. There are regions with a high sample density. The density decreases when we move further away from the center. In short, the radio interferometer measures an incomplete set of visibilities. The measurements do not contain all the data we require to reconstruct the image. There are potentially many different candidate images that solve equation \eqref{intro:linear:linear}. The observed image is among the candidates, and from the measurements alone we cannot decide which it is. 
+Ill-posed inverse problems arise in many different areas, such as image reconstruction\cite{}, de-noising\cite{}, and signal splitting\cite{}. The problem is considered ill-posed when it has one of the following properties:
+\begin{enumerate}
+	\item No solution exists.
+	\item No unique solution exists.
+	\item The solutions behaviour does not change continuously with the initial condition (For example: a small change in the measurements lead to a very different reconstructed image.).
+\end{enumerate}
+The image reconstruction problem for radio interferometers is ill-posed because of the second property: There is no unique solution to \eqref{intro:linear:linear}. At first glance, this might be counter-intuitive. The issue of not having a unique solution makes sense for under-determined systems of linear equations, when there are fewer visibilities than pixels in the reconstruction, as for example in x-ray image reconstruction \cite{felix2017compressed}. Linear algebra tells us that there is a potentially infinite number of solutions to an under-determined system. However, as already mentioned, radio interferometers produce a large number of visibilities. The system \eqref{intro:linear:linear} is generally over-determined. Yet, there are still many candidate images that fit the visibility measurements.
 
-Finding the observed image from the incomplete set of visibilities is an ill-posed inverse problem, even if the measurements are noiseless. But as we discussed, radio interferometers produce noisy visibility measurements. We require an image reconstruction algorithm which handles two problems: Finding the observed image from the incomplete measurements and deciding which part of the measurements are noise. 
+The reason why lies in the visibility measurements $V$. When we look back at figure \ref{intro:inversefig:uvspace}, it is clear to see that the interferometer does not sample the visibilities in a uniform way. There are regions with a high sample density. The density decreases when we move further away from the center. The higher mode visibilities get fewer and fewer samples. For high angular resolution images (when a pixel represents the emission from a small angle), the missing visibilities at higher mode are responsible for making the problem ill posed. For low angular resolution images on the other hand, the missing high mode visibilities become negligible and the problem is well-posed. 
 
-Both can be handled by including prior information about the image. We know the image contains a mixture of point sources, emissions from stars and other far-away sources concentrated around a single pixel, extended emissions, clouds of hydrogen spanning an area over several arc-seconds. By including prior information, a reconstruction algorithm can find the most-likely image of equation \eqref{intro:linear:linear}. The theory of Compressed Sensing\cite{candes2006robust,donoho2006compressed} gives us a framework for how we can include prior information about the image. 
+The ill-posed reconstruction problem arises from the high angular resolution of the reconstructed image. Or in other words, by solving the ill-posed inverse problem, we can acquire an image with higher angular resolution from the same visibility measurements. The rest of this introduction will continue with how we solve the ill-posed image reconstruction problem in practice, while section \ref{intro:major} will introduce what algorithms and architectures are used in practice.
 
-\subsubsection{The theory of Compressed Sensing}
-The theory of Compressed Sensing is a technique for efficient acquisition and reconstruction of signals. For image reconstruction in radio astronomy, it gives us a theoretical framework for analysing reconstruction algorithms. The basic idea of Compressed Sensing reconstruction is: We find a solution to the ill-posed linear system of equations by minimizing an optimization objective \eqref{intro:linear:compressed}, where $x$ is the most likely image we wish to find. A compressed sensing reconstruction algorithm therefore consists of three parts, an objective function, a prior function $P()$ and an optimization algorithm.
+%In short, the radio interferometer measures an incomplete set of visibilities. The measurements do not contain all the data we require to reconstruct the image. There are potentially many different candidate images that solve equation \eqref{intro:linear:linear}. The observed image is among the candidates, and from the measurements alone we cannot decide which it is. 
+
+%Finding the observed image from the incomplete set of visibilities is an ill-posed inverse problem, even if the measurements are noiseless. But as we discussed, radio interferometers produce noisy visibility measurements. We require an image reconstruction algorithm which handles two problems: Finding the observed image from the incomplete measurements and deciding which part of the measurements are noise. 
+
+%Both can be handled by including prior information about the image. We know the image contains a mixture of point sources, emissions from stars and other far-away sources concentrated around a single pixel, extended emissions, clouds of hydrogen spanning an area over several arc-seconds. By including prior information, a reconstruction algorithm can find the most-likely image of equation \eqref{intro:linear:linear}. The theory of Compressed Sensing\cite{candes2006robust,donoho2006compressed} gives us a framework for how we can include prior information about the image. 
+
+\subsubsection{Adding a regularization} \label{intro:linear:regularization}
+For ill-posed inverse problems, there are two viewpoints for the same idea. From the viewpoint of optimization, we can solve the ill-posed image reconstruction problem \eqref{intro:linear:linear} by adding a regularization. The regularization creates a system of linear equations with a unique solution. From the viewpoint of Bayesian Statistics, we include prior knowledge and search for most likely image given the measurements. For this project, both terms describe the same idea and we use regularization and prior interchangeably. We know that the reconstructed image from radio interferometers contain a mixture of stars (point sources located in a single pixel) and extended emissions like hydrogen clouds. By adding this prior knowledge to the reconstruction problem, we can find the most likely image given the measurements. As we will see, under the right prior, we are almost guaranteed to reconstruct the truly observed image in theory.
+
+
+
+The theory of Compressed Sensing is a technique for efficient acquisition and reconstruction of signals.The basic idea of Compressed Sensing reconstruction is: We find a solution to the ill-posed linear system of equations by minimizing an optimization objective \eqref{intro:linear:compressed}, where $x$ is the most likely image we wish to find. A compressed sensing reconstruction algorithm therefore consists of three components, an objective function, a prior function $P()$ and an optimization algorithm.
 
 \begin{equation}\label{intro:linear:compressed}
 \underset{x}{minimize} \: \left \| V - Fx \right \|_2^2 + \lambda P(x)
 \end{equation}
 
-The objective consists of two parts, the data term and the regularization term. The data term $\left \| V - Fx \right \|_2^2$ forces the most likely image to be as close to the measurements as possible, and the regularization term $P(x)$ penalizes unlikely images according to our prior function. The parameter $\lambda$ represents how much we penalize unlikely images and by extend, much noise we expect in the reconstruction. The parameter $\lambda$ is either left to the user to define, or an estimation strategy is used \cite{miller1970least}.
+The objective consists of two parts, the data term and the regularization term. The data term $\left \| V - Fx \right \|_2^2$ forces the most likely image to be as close to the measurements as possible, and the regularization term $P(x)$ penalizes unlikely images according to our prior function. The parameter $\lambda$ represents how much we penalize unlikely images and by extend, much noise we expect in the reconstruction. The parameter $\lambda$ is either left to the user to define, can be estimated from the data \cite{miller1970least}.
 
 The prior function $P()$ represents our prior knowledge about the image. It assigns a high penalty for unlikely images. In in radio interferometric image reconstructions tend to use similar prior functions as for image de-noising applications. Such as: Total Variation ($\left \| \triangledown x \right \|_1$) \cite{wiaux2009compressed}, L2 ($\left \|x \right \|_2$) \cite{ferrari2014distributed} and the L1 ($\left \|x \right \|_1$) \cite{hardy2013direct} norm. 
 
+Finally, an optimization algorithm is necessary which can optimize the objective function \eqref{intro:linear:compressed} with the chosen prior function $P()$. Typical choices for optimization algorithms in image reconstructions are Interior Point Methods like Simplex, Matching Pursuit and ADMM. Which algorithm is the most efficient depends on the choice of the prior and often on the properties of the data itself.
+
+There are a lot of design choices in creating an image reconstruction algorithm.
+Theoretical guarantees.
+With the appropriate prior function, we can show with the theory of compressed senssing that the most likely reconstructed image $x$ is almost guaranteed to be the true image.
+In practice, we do not always know which prior function is appropriate,
+
+The choice of the prior function $P()$ 
 Choice of prior sets the image quality. But also influences the convergence speed and the robustness to heavy noise corruption. It is still an open question what the optimal prior function is for radio interferometric image reconstruction.
 
 
-Optimization algorithm. which can efficiently optimize the objective function \eqref{intro:linear:compressed} with a given prior function $P()$. Which optimization algorithm is optimal depends on the prior function, and often on the properties of the data itself.
-Interior Point mehtods, Matching Pursuit,ADMM, Coordinate Descent, 
-
 Theory of Compressed Sensing 
-Sparse priors. Indicator function. 
+Sparse priors. Indicator function. ff
 L1 norm in a different domain.
 
 The optimum of the objective gives us the most likely image. Bayesian interpretation with prior probability.
