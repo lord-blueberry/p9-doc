@@ -64,10 +64,10 @@ Even though we generally have more visibilities than pixels in the reconstructio
 Ill-posed inverse problems arise in many different areas, such as image reconstruction\cite{}, de-noising\cite{}, and signal splitting\cite{}. The problem is considered ill-posed when it has one of the following properties:
 \begin{enumerate}
 	\item No solution exists.
-	\item No unique solution exists.
-	\item The solutions behaviour does not change continuously with the initial condition (For example: a small change in the measurements lead to a very different reconstructed image.).
+	\item There are solutions, but no unique solution exists.
+	\item The solution behaviour does not change continuously with the initial condition (For example: a small change in the measurements lead to a very different reconstructed image).
 \end{enumerate}
-The image reconstruction problem for radio interferometers is ill-posed because of the second property: There is no unique solution to \eqref{intro:linear:linear}. At first glance, this might be counter-intuitive. The issue of not having a unique solution makes sense for under-determined systems of linear equations, when there are fewer visibilities than pixels in the reconstruction, as for example in x-ray image reconstruction \cite{felix2017compressed}. Linear algebra tells us that there is a potentially infinite number of solutions to an under-determined system. However, as already mentioned, radio interferometers produce a large number of visibilities. The system \eqref{intro:linear:linear} is generally over-determined. Yet, there are still many candidate images that fit the visibility measurements.
+The image reconstruction problem for radio interferometers is ill-posed because of the second property: There is no unique solution to \eqref{intro:linear:linear}. At first glance, this might be counter-intuitive. The issue of not having a unique solution makes sense for under-determined systems of linear equations, when there are fewer visibilities than pixels in the reconstruction, as for example in x-ray image reconstruction\cite{felix2017compressed}. Linear algebra tells us that there is a potentially infinite number of solutions to an under-determined system. However, as already mentioned, radio interferometers produce a large number of visibilities. The system \eqref{intro:linear:linear} is generally over-determined. Yet, there are still many candidate images that fit the visibility measurements.
 
 The reason why lies in the visibility measurements $V$. When we look back at figure \ref{intro:inversefig:uvspace}, it is clear to see that the interferometer does not sample the visibilities in a uniform way. There are regions with a high sample density. The density decreases when we move further away from the center. The higher mode visibilities get fewer and fewer samples. For high angular resolution images (when a pixel represents the emission from a small angle), the missing visibilities at higher mode are responsible for making the problem ill posed. For low angular resolution images on the other hand, the missing high mode visibilities become negligible and the problem is well-posed. 
 
@@ -80,64 +80,58 @@ The ill-posed reconstruction problem arises from the high angular resolution of 
 %Both can be handled by including prior information about the image. We know the image contains a mixture of point sources, emissions from stars and other far-away sources concentrated around a single pixel, extended emissions, clouds of hydrogen spanning an area over several arc-seconds. By including prior information, a reconstruction algorithm can find the most-likely image of equation \eqref{intro:linear:linear}. The theory of Compressed Sensing\cite{candes2006robust,donoho2006compressed} gives us a framework for how we can include prior information about the image. 
 
 \subsubsection{Adding a regularization} \label{intro:linear:regularization}
-For ill-posed inverse problems, there are two viewpoints for the same idea. From the viewpoint of optimization, we can solve the ill-posed image reconstruction problem \eqref{intro:linear:linear} by adding a regularization. The regularization creates a system of linear equations with a unique solution. From the viewpoint of Bayesian Statistics, we include prior knowledge and search for most likely image given the measurements. For this project, both terms describe the same idea and we use regularization and prior interchangeably. We know that the reconstructed image from radio interferometers contain a mixture of stars (point sources located in a single pixel) and extended emissions like hydrogen clouds. By adding this prior knowledge to the reconstruction problem, we can find the most likely image given the measurements. As we will see, under the right prior, we are almost guaranteed to reconstruct the truly observed image in theory.
+For ill-posed inverse problems, there are two viewpoints for the same idea. From the viewpoint of optimization, we can solve the ill-posed image reconstruction problem \eqref{intro:linear:linear} by adding a regularization. The regularization creates a system of linear equations with a unique solution. From the viewpoint of Bayesian Statistics, we include prior knowledge and search for most likely image given the measurements. For this project, both terms describe the same idea and we use regularization and prior interchangeably. We know that the reconstructed image from radio interferometers contain a mixture of stars (point sources located in a single pixel) and extended emissions like hydrogen clouds. By adding this prior knowledge to the reconstruction problem, we can find the most likely image given the measurements. As we will see, under the right prior, we can create a reconstruction algorithm that is almost guaranteed to find the truly observed image in theory.
 
-
-
-The theory of Compressed Sensing is a technique for efficient acquisition and reconstruction of signals.The basic idea of Compressed Sensing reconstruction is: We find a solution to the ill-posed linear system of equations by minimizing an optimization objective \eqref{intro:linear:compressed}, where $x$ is the most likely image we wish to find. A compressed sensing reconstruction algorithm therefore consists of three components, an objective function, a prior function $P()$ and an optimization algorithm.
+There are different ways to include regularization in the reconstruction problem. In this project, we use the following method: We cast the image reconstruction problem into an optimization objective consisting of a data fidelity term and a regularization term. A reconstruction algorithm therefore consists of an optimization objective, a prior function and an optimization algorithm.
 
 \begin{equation}\label{intro:linear:compressed}
 \underset{x}{minimize} \: \left \| V - Fx \right \|_2^2 + \lambda P(x)
 \end{equation}
 
-The objective consists of two parts, the data term and the regularization term. The data term $\left \| V - Fx \right \|_2^2$ forces the most likely image to be as close to the measurements as possible, and the regularization term $P(x)$ penalizes unlikely images according to our prior function. The parameter $\lambda$ represents how much we penalize unlikely images and by extend, much noise we expect in the reconstruction. The parameter $\lambda$ is either left to the user to define, can be estimated from the data \cite{miller1970least}.
+The objective \eqref{intro:linear:compressed} has a data term $\left \| V - Fx \right \|_2^2$, which forces the most likely image to be as close to the measurements as possible, and the regularization term $P(x)$, which penalizes unlikely images according to our prior function. The parameter $\lambda$ represents how much we penalize unlikely images and by extend, much noise we expect in the reconstruction. The parameter $\lambda$ is either left to the user to define, can be estimated from the data \cite{miller1970least}. 
 
-The prior function $P()$ represents our prior knowledge about the image. It assigns a high penalty for unlikely images. In in radio interferometric image reconstructions tend to use similar prior functions as for image de-noising applications. Such as: Total Variation ($\left \| \triangledown x \right \|_1$) \cite{wiaux2009compressed}, L2 ($\left \|x \right \|_2$) \cite{ferrari2014distributed} and the L1 ($\left \|x \right \|_1$) \cite{hardy2013direct} norm. 
+The prior function $P()$ represents our prior knowledge about the image. It assigns a high penalty for unlikely images. In in radio interferometric image reconstructions tend to use similar prior functions as for image de-noising applications. Such as: Total Variation ($\left \| \triangledown x \right \|_1$) \cite{wiaux2009compressed}, L2 ($\left \|x \right \|_2$) \cite{ferrari2014distributed} or the L1 norm in a wavelet domain ($\left \|Wx \right \|_1$) \cite{girard2015sparse}.
 
-Finally, an optimization algorithm is necessary which can optimize the objective function \eqref{intro:linear:compressed} with the chosen prior function $P()$. Typical choices for optimization algorithms in image reconstructions are Interior Point Methods like Simplex, Matching Pursuit and ADMM. Which algorithm is the most efficient depends on the choice of the prior and often on the properties of the data itself.
+Finally, an optimization algorithm is necessary which can optimize the objective function \eqref{intro:linear:compressed} with the chosen prior function $P()$. Typical choices for optimization algorithms in image reconstructions are Interior Point Methods like Simplex, Matching Pursuit \cite{hogbom1974aperture} and ADMM\cite{carrillo2014purify}. 
 
-There are a lot of design choices in creating an image reconstruction algorithm.
-Theoretical guarantees.
-With the appropriate prior function, we can show with the theory of compressed senssing that the most likely reconstructed image $x$ is almost guaranteed to be the true image.
-In practice, we do not always know which prior function is appropriate,
+A reconstruction algorithm for radio astronomy consists of an optimization objective, a prior function and an optimization algorithm. It is a three dimensional design space. Not every prior is suitable for every optimization algorithm. The choice of optimization objective influences both what prior and what optimization algorithm we can use. Although there are a different choices for the optimization objective, in this project we limit ourselves to the objective \eqref{intro:linear:compressed}.
 
-The choice of the prior function $P()$ 
-Choice of prior sets the image quality. But also influences the convergence speed and the robustness to heavy noise corruption. It is still an open question what the optimal prior function is for radio interferometric image reconstruction.
+The last question that remains is, how likely is it that the most observed image is
+We do not have the samples necessary for the Nyquist-Shannon theorem, where we need at least twice as much samples for the highest frequency in the signal. (Radio interferometers measure more than enough data, but as we already discussed, the sampling distribution is not uniform, and we are missing the information of the higher mode visibilities).
+The theory of Compressed Sensing\cite{candes2006robust,donoho2006compressed} gives us a theoretical framework for analysis. It shows that exact reconstruction is not only possible, but almost guaranteed in theory.
+Depends on the properties of the Fourier transform matrix $F$ and the prior function $P()$
 
+Compressible signals. Natural image are compressible in a wavelet domain. Meaning that they are sparse, only need a few non-zero coefficient in the wavelet domain. search the Interesting point is that noise tends to affect
+Sparse priors L0 norm in a wavelet domain. For exact reconstruction, all we actually need is the information on the location and magnitude of the non-zero wavelets.
+When we know a sparse space, we can use this as regularization for the image reconstruction.
+We can do an exact reconstruction from far fewer samples than stated by the Nyquist-Shannon rate. 
+Properties of $F$. Measurement and reconstruction space need to be as incoherent as possible.
+Why, because we learn the most about the non-zero wavelet bases.
+Fourier Space and Image space are maximally incoherent. 
 
-Theory of Compressed Sensing 
-Sparse priors. Indicator function. ff
-L1 norm in a different domain.
+To prove exact reconstruction of signals, the matrix $F$ needs to fulfill the restricted isometry property.
+Necessary to prove exact reconstruction. 
+Approximately orthonormal on sparse signals. (If we randomly choose ten columns of $F$, how much do they correlate. We want as little correlation as possible.)
+Calculate the RIP is NP-hard\cite{tillmann2013computational}. Approximations are also difficult to compute\cite{natarajan2014computational}. 
+So we can only talk about how likely a given matrix fulfills the RIP. Matrix where each element is sampled from a random Gaussian distributîon has the highest change.
+Not possible for Radio interferometers, because they sample in the fourier domain.
+Random samples in the Fourier domain also have a high chance to fulfill the RIP \cite{haviv2017restricted}.
+Depends on the antenna layout. MeerKAT quasi random antenna placement.
 
-The optimum of the objective gives us the most likely image. Bayesian interpretation with prior probability.
-
-
-
-Theory of compressed sensing that this works at all. How likely it is that the and that under the right prior P() we are almost guaranteed to find th
-Incoherence
-RIP, but in practice we have no idea if $F$ fulfills the RIP. But we know it is likely
-
+Active field of research, how we prove exact reconstruction in theory \cite{candes2011probabilistic}. For our project, it is not as important. Currently, what the best prior function is for radio astronomy is still an open question. 
 
 \subsection{Image reconstruction in practice}\label{intro:major}
-We know how to solve the ill-posed image reconstruction problem in theory. We formulate a minimization problem \eqref{intro:linear:compressed}, specify a prior function that capture our prior knowledge, and find the optimum image with an appropriate optimization algorithm. In practice however we have a hard time representing the dense Fourier Transform matrix $F$ in the equation \eqref{intro:linear:compressed}. It is the size of number of visibilities times pixels in the reconstruction. Even older radio interferometers easily produce several million visibilities, with a million pixels in the reconstructed image. We cannot represent $F$ explicitly. However, we can reformulate the image reconstruction \eqref{intro:linear:compressed} as a deconvolution problem, which reduces the dimensions of the measurement $V$ and removes the large Fourier transform matrix $F$ from the minimization objective.
+We know how to solve the ill-posed image reconstruction problem in theory. We formulate a minimization problem \eqref{intro:linear:compressed}, specify a prior function that capture our prior knowledge, and find the optimum image with an appropriate optimization algorithm. In practice however we have a hard time representing the dense Fourier Transform matrix $F$ in the equation \eqref{intro:linear:compressed}. It is the size of number of visibilities times pixels in the reconstruction. Even older radio interferometers easily produce several million visibilities, with a million pixels in the reconstructed image. We cannot represent $F$ explicitly in memory. 
 
-\subsubsection{Reformulating as a deconvolution problem}\label{intro:major:reformulation}
-The Fourier transform matrix $F$ in \eqref{intro:linear:compressed} is a product of two operations: The Fourier transform $F$, and the masking operator $M$. The masking operator is a matrix with zero entries for all Fourier components invisible to the instrument. So far, $M$ was implicitly contained in $F$ of \eqref{intro:linear:compressed}. To derive the deconvolution problem, we represent $M$ explicitly. For the sake of demonstration, let us assume our visibility measurements $V(u, v ,w)$ lie on a discrete grid. $V(u, v, w)$ is zero for all components that the interferometer could not measure. We then can represent the transformation from image to visibility space with the Fourier transform $F$ followed by a masking operation $M$, and we arrive at the image reconstruction problem \eqref{intro:major:reformulation:factor}. This is identical to \eqref{intro:linear:compressed}, except for the factorization of $F$.
-
-\begin{alignat}{2}
-\text{original:} \quad \underset{x}{minimize}\:& \left \| V - M Fx \right \|_2^2 + &\lambda P(x) \label{intro:major:reformulation:factor}\\ 
-\text{in-painting:} \quad\underset{V_2}{minimize}\:& \left \| V - M V_2 \right \|_2^2 + &\lambda P(F^{-1}V_2) \label{intro:major:reformulation:fourier} \\
-\text{deconvolution:} \quad \underset{x}{minimize}\:& \left \| I_{dirty} - x * PSF \right \|_2^2 + &\lambda P(x) \label{intro:major:reformulation:deconv}
-\end{alignat}
-
-Note that $M$ represents the degradation, the corruption introduced by incomplete sampling in the visibility space. $M$ is the important operator. The measurements $V$, or the reconstructed image $x$ can be in any space we wish. For example, we do not actually need to reconstruct the image in image space. In theory, we can reformulate an equivalent problem \eqref{intro:major:reformulation:fourier}, in which we in-paint the missing visibilities. Or, we can use the Fourier transform on the visibility measurements $V$ and the masking operator $M$, which leads us to the deconvolution problem \eqref{intro:major:reformulation:deconv}. 
-
-Since the deconvolution formulation is vital for the major/minor cycle architecture, we have a closer look at \eqref{intro:major:reformulation:deconv}. The effect of incomplete sampling in Fourier space is equal to a convolution with a Point Spread Function $PSF$ in image space. I.e. $PSF = F^{-1}M$. The measurements are now represented as the "dirty" image, $I_{dirty} = F^{-1}V$. We try to find the deconvolved image $x$, while only knowing the convolution kernel $PSF$ and the convolved, dirty image $I_{dirty}$. This is still an ill-posed inverse problem. We have potentially many different deconvolutions that fit the dirty image, and we search the most likely candidate according to some prior $P(x)$. 
-
-The deconvolution \eqref{intro:major:reformulation:deconv} and the original image reconstruction problem \eqref{intro:linear:compressed} are equivalent. Both arrive at the same result. But the deconvolution problem is easier to handle in practice: $I_{dirty}$ and $PSF$ are generally more compact representations of $V$ and $M$. There is one last issue: Calculating the dirty image from the measurements ($I_{dirty} = F^{-1}V$) again needs the impractically large Fourier transform matrix $F$. This is solved in the major/minor cycle algorithm.
+The major/minor cycle architecture is widely used for reconstruction algorithms in radio astronomy.
+We know the image is magnitudes smaller than the original measurements. 
+The major cycle is responsible for an efficient transform from visibility in image space, while the minor cycle solves the ill-posed inverse problem in the image space.
+Turns out the ill-posed inverse problem of finding an image for the incomplete set of visibilities is equal to a deconvolution in image space. A deconvolution is still ill posed.  We show the derivation in section \ref{intro:major:reformulation}, and discuss the major/minor cycle architecture in more details.
 
 \subsubsection{The major/minor cycle}
-The major/minor cycle architecture shown in figure \ref{intro:major:fig} consists of two parts: The minor cycle, which iteratively deconvolves the dirty image with the $PSF$ (it minimizes \eqref{intro:major:reformulation:deconv}). The first half of the major cycle estimates the dirty image. It consists of two steps: the gridding and the Fast Fourier Transformation (FFT). The gridding step takes the incomplete and non-uniformly sampled visibilities and interpolates them on a uniform grid. Then the inverse FFT can be calculated on the interpolated visibilities and we arrive at the dirty image.
+The major/minor cycle architecture shown in figure \ref{intro:major:fig} consists of three operations: Gridding, Fast Fourier Transform (FFT) and the minor cycle.
+
+ of two parts: The minor cycle, which iteratively deconvolves the dirty image with the $PSF$ (it minimizes \eqref{intro:major:reformulation:deconv}). The first half of the major cycle estimates the dirty image. It consists of two steps: the gridding and the Fast Fourier Transformation (FFT). The gridding step takes the incomplete and non-uniformly sampled visibilities and interpolates them on a uniform grid. Then the inverse FFT can be calculated on the interpolated visibilities and we arrive at the dirty image.
 
 \begin{figure}[h]
 	\centering
@@ -156,6 +150,20 @@ Most expensive operations is the gridding and de-gridding followed by the deconv
 
 Depending on the observation, the second most expensive step is the deconvolution.
 
+\subsubsection{Reformulating as a deconvolution problem}\label{intro:major:reformulation}
+The Fourier transform matrix $F$ in \eqref{intro:linear:compressed} is a product of two operations: The Fourier transform $F$, and the masking operator $M$. The masking operator is a matrix with zero entries for all Fourier components invisible to the instrument. So far, $M$ was implicitly contained in $F$ of \eqref{intro:linear:compressed}. To derive the deconvolution problem, we represent $M$ explicitly. For the sake of demonstration, let us assume our visibility measurements $V(u, v ,w)$ lie on a discrete grid. $V(u, v, w)$ is zero for all components that the interferometer could not measure. We then can represent the transformation from image to visibility space with the Fourier transform $F$ followed by a masking operation $M$, and we arrive at the image reconstruction problem \eqref{intro:major:reformulation:factor}. This is identical to \eqref{intro:linear:compressed}, except for the factorization of $F$.
+
+\begin{alignat}{2}
+\text{original:} \quad \underset{x}{minimize}\:& \left \| V - M Fx \right \|_2^2 + &\lambda P(x) \label{intro:major:reformulation:factor}\\ 
+\text{in-painting:} \quad\underset{V_2}{minimize}\:& \left \| V - M V_2 \right \|_2^2 + &\lambda P(F^{-1}V_2) \label{intro:major:reformulation:fourier} \\
+\text{deconvolution:} \quad \underset{x}{minimize}\:& \left \| I_{dirty} - x * PSF \right \|_2^2 + &\lambda P(x) \label{intro:major:reformulation:deconv}
+\end{alignat}
+
+Note that $M$ represents the degradation, the corruption introduced by incomplete sampling in the visibility space. $M$ is the important operator. The measurements $V$, or the reconstructed image $x$ can be in any space we wish. For example, we do not actually need to reconstruct the image in image space. In theory, we can reformulate an equivalent problem \eqref{intro:major:reformulation:fourier}, in which we in-paint the missing visibilities. Or, we can use the Fourier transform on the visibility measurements $V$ and the masking operator $M$, which leads us to the deconvolution problem \eqref{intro:major:reformulation:deconv}. 
+
+Since the deconvolution formulation is vital for the major/minor cycle architecture, we have a closer look at \eqref{intro:major:reformulation:deconv}. The effect of incomplete sampling in Fourier space is equal to a convolution with a Point Spread Function $PSF$ in image space. I.e. $PSF = F^{-1}M$. The measurements are now represented as the "dirty" image, $I_{dirty} = F^{-1}V$. We try to find the deconvolved image $x$, while only knowing the convolution kernel $PSF$ and the convolved, dirty image $I_{dirty}$. This is still an ill-posed inverse problem. We have potentially many different deconvolutions that fit the dirty image, and we search the most likely candidate according to some prior $P(x)$. 
+
+The deconvolution \eqref{intro:major:reformulation:deconv} and the original image reconstruction problem \eqref{intro:linear:compressed} are equivalent. Both arrive at the same result. But the deconvolution problem is easier to handle in practice: $I_{dirty}$ and $PSF$ are generally more compact representations of $V$ and $M$. There is one last issue: Calculating the dirty image from the measurements ($I_{dirty} = F^{-1}V$) again needs the impractically large Fourier transform matrix $F$. This is solved in the major/minor cycle algorithm.
 
 \subsubsection{Approximations under the major cycle} \label{intro:major:approximations}
 Why is the major cycle even necessary. At first glance, it seems like we may be done after the first major cycle. Because the deconvolution problem.

@@ -4,8 +4,8 @@
 \BOOKMARK [2][-]{subsection.1.2}{System of linear equations}{section.1}% 4
 \BOOKMARK [3][-]{subsubsection.1.2.1}{Adding a regularization}{subsection.1.2}% 5
 \BOOKMARK [2][-]{subsection.1.3}{Image reconstruction in practice}{section.1}% 6
-\BOOKMARK [3][-]{subsubsection.1.3.1}{Reformulating as a deconvolution problem}{subsection.1.3}% 7
-\BOOKMARK [3][-]{subsubsection.1.3.2}{The major/minor cycle}{subsection.1.3}% 8
+\BOOKMARK [3][-]{subsubsection.1.3.1}{The major/minor cycle}{subsection.1.3}% 7
+\BOOKMARK [3][-]{subsubsection.1.3.2}{Reformulating as a deconvolution problem}{subsection.1.3}% 8
 \BOOKMARK [3][-]{subsubsection.1.3.3}{Approximations under the major cycle}{subsection.1.3}% 9
 \BOOKMARK [3][-]{subsubsection.1.3.4}{Alternatives to the major/minor cycle}{subsection.1.3}% 10
 \BOOKMARK [1][-]{section.2}{State of the art image reconstruction}{}% 11
