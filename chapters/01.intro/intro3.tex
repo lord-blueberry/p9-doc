@@ -100,42 +100,41 @@ The last question that remains is, how close are the most likely image, under a 
 
 \subsubsection{Exact reconstruction guarantees under the theory of compressed sensing}
 Compressed sensing\cite{candes2006robust,donoho2006compressed} is a recently developed sampling theorem. It guarantees exact reconstruction even when we have fewer samples than necessary according to the Nyquist-Shannon theorem. The compressed sensing sampling theorem has wide ranging implications and was successfully applied in various signal processing tasks like de-noising\cite{metzler2016denoising}, compression\cite{mamaghanian2011compressed} and reconstruction\cite{wiaux2009compressed}.
-This section gives a short introduction on the theory of compressed sensing. It tries to give an intuition on why we find the truly observed image at the optimum of the function \eqref{intro:linear:compressed}.
+This section gives a short introduction on the theory of compressed sensing. It tries to give an intuition on why we find the truly observed image at the optimum of the function \eqref{intro:linear:compressed}, and why the image reconstruction actually benefits from measuring in the Fourier domain.
 
-Sparseland
+The assumption underlying compressed sensing is that most natural signal are sparse in some domain, only requiring a few non-zero components for representation. Empirically, this is true for many different signals. For example natural images are sparse in a the wavelet domain. We only require a few non-zero components to represent the image with wavelets. This fact can obviously be exploited for image compression, where algorithms like JPEG2000 only need to save the non-zero wavelet components instead of the whole image. Less obvious is the application in image de-noising. Random noise in the image tends to affect all wavelet components roughly equally. Most noisy wavelet components are close to zero except the original components, which means we can de-noise the image by finding the most significant wavelet components. This is a so called "sparse prior" for de-noising, which in practice is the L1 norm in the wavelet domain ($\left \|\Psi x \right \|_1$)\footnote{The true sparse prior is actually not the L1 norm, but the indicator function of the wavelet components ($ind(\Psi x)$). But plugging this prior into the objective function \eqref{intro:linear:compressed} leads to a difficult objective to optimize, because the indicator function is both non-convex and non-differentiable. But the L1 norm is convex and is virtually guaranteed to lead to the same result in practice\cite{lustig2008compressed}.}.
 
+When we assume our image is sparse in some known wavelet domain, it seems wasteful to measure the image in terms of pixels. We measure a large amount of pixels, but the actual image can be represented in only a hand-full of non-zero wavelet components. Do we really need to measure every pixel, or could we somehow measure the non-zero wavelet components directly?
 
-
-
-With wide ranging implications for signal processing tasks like de-nosisng, compression and reconstruction.
-
-
-Compressible signals. Natural image are compressible in a wavelet domain. Meaning that they are sparse, only need a few non-zero coefficient in the wavelet domain. search the Interesting point is that noise tends to affect
-Sparse priors L0 norm in a wavelet domain. For exact reconstruction, all we actually need is the information on the location and magnitude of the non-zero wavelets.
-When we know a sparse space, we can use this as regularization for the image reconstruction.
-We can do an exact reconstruction from far fewer samples than stated by the Nyquist-Shannon rate. 
-Properties of $F$. Measurement and reconstruction space need to be as incoherent as possible.
+Yes, incoherence.
 Why, because we learn the most about the non-zero wavelet bases.
-Fourier Space and Image space are maximally incoherent. 
+\begin{equation}\label{intro:linear:compressed2}
+\underset{x}{minimize} \: \left \| y - Ax \right \|_2^2 + \lambda \left \| \Psi x \right \|_1
+\end{equation}
+Intuitively, this can work.
 
-To prove exact reconstruction of signals, the matrix $F$ needs to fulfill the restricted isometry property.
-Necessary to prove exact reconstruction. 
-Approximately orthonormal on sparse signals. (If we randomly choose ten columns of $F$, how much do they correlate. We want as little correlation as possible.)
-Calculate the RIP is NP-hard\cite{tillmann2013computational}. Approximations are also difficult to compute\cite{natarajan2014computational}. 
+At what point are we guaranteed? The matrix $A$ needs to fullfil the Restricted Isometry Porperty (RIP) \cite{candes2006robust,donoho2006compressed}.
+Approximately orthonormal on sparse signals. (If we randomly choose ten columns of $S$, how much do they correlate. We want as little correlation as possible.)
+Calculate the RIP is NP-hard\cite{tillmann2013computational}. Approximations are also difficult to compute\cite{natarajan2014computational}.
 So we can only talk about how likely a given matrix fulfills the RIP. Matrix where each element is sampled from a random Gaussian distributîon has the highest change.
-Not possible for Radio interferometers, because they sample in the fourier domain.
+Not possible for Radio interferometers, because they sample in the Fourier domain.
 Random samples in the Fourier domain also have a high chance to fulfill the RIP \cite{haviv2017restricted}.
-Depends on the antenna layout. MeerKAT quasi random antenna placement.
+ctive field of research, how we prove exact reconstruction in theory, RIP may be too strict \cite{candes2011probabilistic}.
 
-Active field of research, how we prove exact reconstruction in theory \cite{candes2011probabilistic}. For our project, it is important for designing theoretically optimal instruments. Influences how the antenna layout of an instrument is planned. This project is focused on the reconstruction algorithm, the antenna layout is given
+What does this all mean for image reconstruction?
+We cannot prove the RIP for a given sub-sampled Fourier matrix $F$.
+For us, we design reconstruction algorithms and cannot influence the matrix $F$. We do not know if it actually 
 
-Learning sparse spaces
+The theory of compressed sensing gives us a framework. There is a data modelling task, and a task for finding efficient algorithms.
+
+So there is a data modelling task in finding a good sparse prior.
+We also do not know the proper sparse space in which radio interferometric images. We know several spaces, Curvelets \cite{starck2003astronomical} Starlets \cite{starck2015starlet}, Daubechies wavelets \cite{carrillo2012sparsity}. As of the time of writing, it is currently unknown which leads to the best reconstruction.
+We can also learn dictionaries.
+
+The task for efficient algorithms is finding the best way to optimize the objective with a given prior on real hardware. Fast convergence. Also difficult, because in practice the choice of prior can also influence convergence.
 
 
-In practice, it is virtually impossible to validate these assumptions. Meaning for a given observation, we do not know if the 
-Theoretical part, since it is virtually impossible to validate the necessary assumptions in practice.
-
-Compressed sensing based reconstruction algorithm.
+Compressed sensing based reconstruction algorithm. In radio astronomy.
 
 
 \subsection{Fast image reconstruction in practice}\label{intro:major}
