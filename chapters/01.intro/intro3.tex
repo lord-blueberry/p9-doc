@@ -52,7 +52,7 @@ The radio interferometer essentially observes the sky in the Fourier domain. If 
 The third component $w$ is an example of a Directionally Dependent Effect (DDE) which have a tendency to increase the runtime costs of the image reconstruction. The $w$-component keeps us from using the Fast Fourier Transform (FFT) for the measurement equation \eqref{intro:inverseproblem}. Research in this area tries to use approximations which lets us use faster algorithms like the FFT, and correct for DDE's accurately enough \cite{veenboer2017image, offringa2014wsclean, pratley2018fast}. In this project, the $w$-correction is the only DDE we handle.
 
 
-\subsection{System of linear equations}
+\subsection{The reconstruction problem as a system of linear equations}
 Even though the Fourier Transform in the measurement equation \eqref{intro:inverseproblem} contains a $w$-correction factor, it is still linear. There exist more complex measurement equations, but the relationship often stays linear in nature \cite{smirnov2011revisiting1, smirnov2011revisiting2, smirnov2011revisiting3, smirnov2011revisiting4}. This means we can represent the measurement equation as a system of linear equations  \eqref{intro:linear:linear}, where $F$ is the Fourier Transform with $w$-correction, $x$ is the image we are searching, $V$ are the calibrated visibilities. For the sake of demonstration, we ignore the noise in the visibility measurements in \eqref{intro:linear:linear}. To reconstruct the image $x$, we simply need to search for a solution to \eqref{intro:linear:linear}.
 
 \begin{equation}\label{intro:linear:linear}
@@ -90,16 +90,25 @@ There are different ways to include regularization in the reconstruction problem
 
 The objective \eqref{intro:linear:compressed} has a data term $\left \| V - Fx \right \|_2^2$, which forces the most likely image to be as close to the measurements as possible, and the regularization term $P(x)$, which penalizes unlikely images according to our prior function. The parameter $\lambda$ represents how much we penalize unlikely images and by extend, much noise we expect in the reconstruction. The parameter $\lambda$ is either left to the user to define, can be estimated from the data \cite{miller1970least}. 
 
-The prior function $P()$ represents our prior knowledge about the image. It assigns a high penalty for unlikely images. In in radio interferometric image reconstructions tend to use similar prior functions as for image de-noising applications. Such as: Total Variation ($\left \| \triangledown x \right \|_1$) \cite{wiaux2009compressed}, L2 ($\left \|x \right \|_2$) \cite{ferrari2014distributed} or the L1 norm in a wavelet domain ($\left \|Wx \right \|_1$) \cite{girard2015sparse}.
+The prior function $P()$ represents our prior knowledge about the image. It assigns a high penalty for unlikely images. In in radio interferometric image reconstructions tend to use similar prior functions as for image de-noising applications. Such as: Total Variation ($\left \| \triangledown x \right \|_1$) \cite{wiaux2009compressed}, L2 ($\left \|x \right \|_2$) \cite{ferrari2014distributed} or the L1 norm in a wavelet domain ($\left \|\Psi x \right \|_1$) \cite{girard2015sparse}.
 
 Finally, an optimization algorithm is necessary which can optimize the objective function \eqref{intro:linear:compressed} with the chosen prior function $P()$. Typical choices for optimization algorithms in image reconstructions are Interior Point Methods like Simplex, Matching Pursuit \cite{hogbom1974aperture} and ADMM\cite{carrillo2014purify}. 
 
-A reconstruction algorithm for radio astronomy consists of an optimization objective, a prior function and an optimization algorithm. It is a three dimensional design space. Not every prior is suitable for every optimization algorithm. The choice of optimization objective influences both what prior and what optimization algorithm we can use. Although there are a different choices for the optimization objective, in this project we limit ourselves to the objective \eqref{intro:linear:compressed}.
+A reconstruction algorithm for radio astronomy consists of an optimization objective, a prior function and an optimization algorithm. It is a three dimensional design space. Not every prior is suitable for every optimization algorithm. The choice of optimization objective influences both what prior and what optimization algorithm we can use. Although there are a different choices for the optimization objective, we limit ourselves to the objective \eqref{intro:linear:compressed} and explore how we can distribute the reconstruction problem.
 
-The last question that remains is, how likely is it that the most observed image is
-We do not have the samples necessary for the Nyquist-Shannon theorem, where we need at least twice as much samples for the highest frequency in the signal. (Radio interferometers measure more than enough data, but as we already discussed, the sampling distribution is not uniform, and we are missing the information of the higher mode visibilities).
-The theory of Compressed Sensing\cite{candes2006robust,donoho2006compressed} gives us a theoretical framework for analysis. It shows that exact reconstruction is not only possible, but almost guaranteed in theory.
-Depends on the properties of the Fourier transform matrix $F$ and the prior function $P()$
+The last question that remains is, how close are the most likely image, under a given prior, to the truly observed one? Remember that the Nyquist-Shannon sampling theorem states that our uniform sampling frequency needs to be larger than twice the highest frequency in a band-limited signal\footnote{For example: if we want to record human voices with the highest frequency of 20 kHz, Nyquist-Shannon states our uniform sampling frequency has to be larger than 40 kHz to guarantee exact reconstruction}, and then the theorem guarantees exact reconstruction. For radio astronomy, we do not have uniformly sampled visibilities, and although we have a large number of samples, we are missing crucial parts of the Fourier space. Luckily, there is another sampling theorem that, under certain assumptions, guarantees exact reconstruction for the case of radio interferometers. Namely, the theory of compressed sensing.
+
+\subsubsection{Exact reconstruction guarantees under the theory of compressed sensing}
+Compressed sensing\cite{candes2006robust,donoho2006compressed} is a recently developed sampling theorem. It guarantees exact reconstruction even when we have fewer samples than necessary according to the Nyquist-Shannon theorem. The compressed sensing sampling theorem has wide ranging implications and was successfully applied in various signal processing tasks like de-noising\cite{metzler2016denoising}, compression\cite{mamaghanian2011compressed} and reconstruction\cite{wiaux2009compressed}.
+This section gives a short introduction on the theory of compressed sensing. It tries to give an intuition on why we find the truly observed image at the optimum of the function \eqref{intro:linear:compressed}.
+
+Sparseland
+
+
+
+
+With wide ranging implications for signal processing tasks like de-nosisng, compression and reconstruction.
+
 
 Compressible signals. Natural image are compressible in a wavelet domain. Meaning that they are sparse, only need a few non-zero coefficient in the wavelet domain. search the Interesting point is that noise tends to affect
 Sparse priors L0 norm in a wavelet domain. For exact reconstruction, all we actually need is the information on the location and magnitude of the non-zero wavelets.
@@ -118,9 +127,18 @@ Not possible for Radio interferometers, because they sample in the fourier domai
 Random samples in the Fourier domain also have a high chance to fulfill the RIP \cite{haviv2017restricted}.
 Depends on the antenna layout. MeerKAT quasi random antenna placement.
 
-Active field of research, how we prove exact reconstruction in theory \cite{candes2011probabilistic}. For our project, it is not as important. Currently, what the best prior function is for radio astronomy is still an open question. 
+Active field of research, how we prove exact reconstruction in theory \cite{candes2011probabilistic}. For our project, it is important for designing theoretically optimal instruments. Influences how the antenna layout of an instrument is planned. This project is focused on the reconstruction algorithm, the antenna layout is given
 
-\subsection{Image reconstruction in practice}\label{intro:major}
+Learning sparse spaces
+
+
+In practice, it is virtually impossible to validate these assumptions. Meaning for a given observation, we do not know if the 
+Theoretical part, since it is virtually impossible to validate the necessary assumptions in practice.
+
+Compressed sensing based reconstruction algorithm.
+
+
+\subsection{Fast image reconstruction in practice}\label{intro:major}
 We know how to solve the ill-posed image reconstruction problem in theory. We formulate a minimization problem \eqref{intro:linear:compressed}, specify a prior function that capture our prior knowledge, and find the optimum image with an appropriate optimization algorithm. In practice however we have a hard time representing the dense Fourier Transform matrix $F$ in the equation \eqref{intro:linear:compressed}. It is the size of number of visibilities times pixels in the reconstruction. Even older radio interferometers easily produce several million visibilities, with a million pixels in the reconstructed image. We cannot represent $F$ explicitly in memory. 
 
 The major/minor cycle architecture is widely used for reconstruction algorithms in radio astronomy.
@@ -145,6 +163,7 @@ Minor Cycle deconvolution. Creates the deconvolved "model" image.
 After the Minor Cycle, the second half of the Major Cycle continues. It takes the model image and transforms it back to the original measurement space. FFT and de-gridding. Arriving at the model visibilities.
 
 Then we subtract the model visibilities from the original measurements and start the next Major Cycle with the residual visibilities. The final reconstructed image is the result of several major cycles. Depending on the observation and deconvolution algorithm we require more or fewer major cycles. Expected number around 5
+
 
 Most expensive operations is the gridding and de-gridding followed by the deconvolution. Gridding is also where we do corrections like the $w$-term. So interpolation becomes specific for the field of radio astronomy.
 
@@ -171,6 +190,10 @@ Why is the major cycle even necessary. At first glance, it seems like we may be 
 But the $PSF$ is actually just an approximation. The $PSF$ changes over the image.
 
 Plus the gridding also introduces an error which gets reduced over several Major Cycles.
+
+
+
+
 
 \subsubsection{Alternatives to the major/minor cycle}
 Not formulating as a deconvolution, but takes the gridding and FFT step. Fastest approximation. Tends to use many major cycles.
