@@ -41,13 +41,13 @@ The last step is responsible for reconstructing an image from the calibrated, no
 \subsubsection{The measurement equation}
 The measurement equation models how the electromagnetic wave gets distorted on its path from the celestial source through the ionosphere and finally through the antenna of the interferometer\cite{smirnov2011revisiting1}. It abstracts all effects we wish to correct in the image reconstruction in one equation. As such, there is no single unified measurement equation for all interferometers, and generally depends on the instrument.
 
-In this project we use the measurement equation \eqref{intro:inverseproblem}. It consists of three parts: The visibility measurements $V(u,v,w)$\footnote{$V$ in the equation \eqref{intro:linear:linear} is a vector. We use the lower-case $v$ to denote the axis in the Fourier space $uvw$, and the upper-case letter to denote the visibility vector.}, the observed image with a normalization factor $\frac{I(x, y)}{c(x, y)}$ and the Fourier Transform $e^{2 \pi i [\ldots]}$. $u$ $v$ and $w$ represent the axes in the Fourier Domain, while the $x$ and $y$ axes represent the angles away from the image center. A pixel in $I(x,y)$ represents how much radio emission was measured from a the direction $x,y$. The image \ref{intro:inversefig:uvspace} shows an example for $V()$, while \ref{intro:inversefig:reconstruction} shows an example for $I()$.
+In this project we use the measurement equation \eqref{intro:inverseproblem}. It consists of three parts: The visibility measurements $V(u,v,w)$\footnote{$V$ in the equation \eqref{intro:linear:linear} is a vector. We use the lower-case $v$ to denote the axis in the Fourier space $uvw$, and the upper-case letter to denote the visibility vector.}, the observed image with a normalization factor $\frac{I(x, y)}{c(x, y)}$ and the Fourier Transform $e^{2 \pi i [\ldots]}$. $u$ $v$ and $w$ represent the axes in the Fourier space, while the $x$ and $y$ axes represent the angles away from the image center. A pixel in $I(x,y)$ represents how much radio emission was measured from a the direction $x,y$. The image \ref{intro:inversefig:uvspace} shows an example for $V()$, while \ref{intro:inversefig:reconstruction} shows an example for $I()$.
 
 \begin{equation}\label{intro:inverseproblem}
 V(u, v, w) = \int\int  \frac{I(x, y)}{c(x, y)}  e^{2 \pi i [ux+vy+ w(c(x, y) - 1)]} \: dx \: dy \:,  \quad c(x,y) = \sqrt{1 - x^2 - y ^2}
 \end{equation}
 
-The radio interferometer essentially observes the sky in the Fourier domain. If we want to retrieve the observed sky image $I()$, all we need to do in theory is calculate the inverse Fourier Transform. Note however that the visibilities $V(u,v,w)$ are three dimensional, while the image $I(x,y)$ only has two. Also note that the third component $w$ only depends on the directions $x$ and $y$. In a sense, the Visibilities $V()$ and the image $I()$ have a two dimensional Fourier relationship ($V(u,v,w) = \int\int I(x,y) e^{2 \pi i [ux+vy]} \: dx \: dy$), but with a directionally dependent correction factor $e^{2 \pi i [\ldots +w(c(x, y) - 1)]}$. 
+The radio interferometer essentially observes the sky in the Fourier space. If we want to retrieve the observed sky image $I()$, all we need to do in theory is calculate the inverse Fourier Transform. Note however that the visibilities $V(u,v,w)$ are three dimensional, while the image $I(x,y)$ only has two. Also note that the third component $w$ only depends on the directions $x$ and $y$. In a sense, the Visibilities $V()$ and the image $I()$ have a two dimensional Fourier relationship ($V(u,v,w) = \int\int I(x,y) e^{2 \pi i [ux+vy]} \: dx \: dy$), but with a directionally dependent correction factor $e^{2 \pi i [\ldots +w(c(x, y) - 1)]}$. 
 
 The third component $w$ is an example of a Directionally Dependent Effect (DDE) which have a tendency to increase the runtime costs of the image reconstruction. The $w$-component keeps us from using the Fast Fourier Transform (FFT) for the measurement equation \eqref{intro:inverseproblem}. Research in this area tries to use approximations which lets us use faster algorithms like the FFT, and correct for DDE's accurately enough \cite{veenboer2017image, offringa2014wsclean, pratley2018fast}. In this project, the $w$-correction is the only DDE we handle.
 
@@ -59,9 +59,7 @@ Even though the Fourier Transform in the measurement equation \eqref{intro:inver
 \underset{x}{find}\quad V - Fx = 0
 \end{equation}
 
-Even though we generally have more visibilities than pixels in the reconstruction, which makes \eqref{intro:linear:linear} over-determined, there is no unique solution to it. There are potentially many candidate images that solve the equation, which makes the image reconstruction for radio interferometers an ill-posed inverse problem.
-
-Ill-posed inverse problems arise in many different areas, such as image reconstruction\cite{}, de-noising\cite{}, and signal splitting\cite{}. The problem is considered ill-posed when it has one of the following properties:
+Even though we generally have more visibilities than pixels in the reconstruction, which makes \eqref{intro:linear:linear} over-determined, there is no unique solution to it. There are potentially many candidate images that solve the equation, which makes the image reconstruction for radio interferometers an ill-posed inverse problem. The problem is considered ill-posed when it has one of the following properties:
 \begin{enumerate}
 	\item No solution exists.
 	\item There are solutions, but no unique solution exists.
@@ -90,7 +88,7 @@ There are different ways to include regularization in the reconstruction problem
 
 The objective \eqref{intro:linear:compressed} has a data term $\left \| V - Fx \right \|_2^2$, which forces the most likely image to be as close to the measurements as possible, and the regularization term $P(x)$, which penalizes unlikely images according to our prior function. The parameter $\lambda$ represents how much we penalize unlikely images and by extend, much noise we expect in the reconstruction. The parameter $\lambda$ is either left to the user to define, can be estimated from the data \cite{miller1970least}. 
 
-The prior function $P()$ represents our prior knowledge about the image. It assigns a high penalty for unlikely images. In in radio interferometric image reconstructions tend to use similar prior functions as for image de-noising applications. Such as: Total Variation ($\left \| \triangledown x \right \|_1$) \cite{wiaux2009compressed}, L2 ($\left \|x \right \|_2$) \cite{ferrari2014distributed} or the L1 norm in a wavelet domain ($\left \|\Psi x \right \|_1$) \cite{girard2015sparse}.
+The prior function $P()$ represents our prior knowledge about the image. It assigns a high penalty for unlikely images. In in radio interferometric image reconstructions tend to use similar prior functions as for image de-noising applications. Such as: Total Variation ($\left \| \triangledown x \right \|_1$) \cite{wiaux2009compressed}, L2 ($\left \|x \right \|_2$) \cite{ferrari2014distributed} or the L1 norm in a wavelet space ($\left \|\Psi x \right \|_1$) \cite{girard2015sparse}.
 
 Finally, an optimization algorithm is necessary which can optimize the objective function \eqref{intro:linear:compressed} with the chosen prior function $P()$. Typical choices for optimization algorithms in image reconstructions are Interior Point Methods like Simplex, Matching Pursuit \cite{hogbom1974aperture} and ADMM\cite{carrillo2014purify}. 
 
@@ -98,31 +96,46 @@ A reconstruction algorithm for radio astronomy consists of an optimization objec
 
 The last question that remains is, how close are the most likely image, under a given prior, to the truly observed one? Remember that the Nyquist-Shannon sampling theorem states that our uniform sampling frequency needs to be larger than twice the highest frequency in a band-limited signal\footnote{For example: if we want to record human voices with the highest frequency of 20 kHz, Nyquist-Shannon states our uniform sampling frequency has to be larger than 40 kHz to guarantee exact reconstruction}, and then the theorem guarantees exact reconstruction. For radio astronomy, we do not have uniformly sampled visibilities, and although we have a large number of samples, we are missing crucial parts of the Fourier space. Luckily, there is another sampling theorem that, under certain assumptions, guarantees exact reconstruction for the case of radio interferometers. Namely, the theory of compressed sensing.
 
-\subsubsection{Exact reconstruction guarantees under the theory of compressed sensing}
-Compressed sensing\cite{candes2006robust,donoho2006compressed} is a recently developed sampling theorem. It guarantees exact reconstruction even when we have fewer samples than necessary according to the Nyquist-Shannon theorem. The compressed sensing sampling theorem has wide ranging implications and was successfully applied in various signal processing tasks like de-noising\cite{metzler2016denoising}, compression\cite{mamaghanian2011compressed} and reconstruction\cite{wiaux2009compressed}.
-This section gives a short introduction on the theory of compressed sensing. It tries to give an intuition on why we find the truly observed image at the optimum of the function \eqref{intro:linear:compressed}, and why the image reconstruction actually benefits from measuring in the Fourier domain.
+\subsubsection{Theory of compressed sensing}
+The theory of compressed sensing\cite{candes2006robust,donoho2006compressed} is a recently developed sampling theorem. It guarantees exact reconstruction even when we have fewer samples than necessary according to the Nyquist-Shannon theorem. The compressed sensing sampling theorem has wide ranging implications and was successfully applied in various signal processing tasks like de-noising\cite{metzler2016denoising}, compression\cite{mamaghanian2011compressed} and reconstruction\cite{wiaux2009compressed}.
+This part gives a short introduction on the theory of compressed sensing. It tries to give an intuition on why we it is even possible to find the truly observed image at the optimum of the function \eqref{intro:linear:compressed}, and why the image reconstruction can benefits from measuring in Fourier space.
 
-The assumption underlying compressed sensing is that most natural signal are sparse in some domain, only requiring a few non-zero components for representation. Empirically, this is true for many different signals. For example natural images are sparse in a the wavelet domain. We only require a few non-zero components to represent the image with wavelets. This fact can obviously be exploited for image compression, where algorithms like JPEG2000 only need to save the non-zero wavelet components instead of the whole image. Less obvious is the application in image de-noising. Random noise in the image tends to affect all wavelet components roughly equally. Most noisy wavelet components are close to zero except the original components, which means we can de-noise the image by finding the most significant wavelet components. This is a so called "sparse prior" for de-noising, which in practice is the L1 norm in the wavelet domain ($\left \|\Psi x \right \|_1$)\footnote{The true sparse prior is actually not the L1 norm, but the indicator function of the wavelet components ($ind(\Psi x)$). But plugging this prior into the objective function \eqref{intro:linear:compressed} leads to a difficult objective to optimize, because the indicator function is both non-convex and non-differentiable. But the L1 norm is convex and is virtually guaranteed to lead to the same result in practice\cite{lustig2008compressed}.}.
+The assumption underlying compressed sensing is that most natural signal are sparse in some space, only requiring a few non-zero components for representation. Empirically, this is true for many different signals. For example natural images are sparse in a the wavelet space. We only require a few non-zero components to represent the image with wavelets. This fact can obviously be exploited for image compression, where algorithms like JPEG2000 only need to save the non-zero wavelet components instead of all the pixel values. Less obvious is the application in image de-noising. Random noise in the image tends to affect all wavelet components approximately equal. Most noisy wavelet components are close to zero except the original components, which means we can de-noise the image by finding the most significant wavelet components. This is a so called "sparse prior" for de-noising  ($\left \|\Psi x \right \|_1$)\footnote{The true sparse prior is actually not the L1 norm, but the indicator function of the wavelet components ($ind(\Psi x)$). But plugging this prior into the objective function \eqref{intro:linear:compressed} leads to a difficult objective to optimize, because the indicator function is both non-convex and non-differentiable. But the L1 norm is convex and is virtually guaranteed to lead to the same result in practice\cite{lustig2008compressed}.}, which in practice is the L1 norm in some space where our signal is sparse. 
 
-When we assume our image is sparse in some known wavelet domain, it seems wasteful to measure the image in terms of pixels. We measure a large amount of pixels, but the actual image can be represented in only a hand-full of non-zero wavelet components. Do we really need to measure every pixel, or could we somehow measure the non-zero wavelet components directly?
+When we assume our image is sparse in some known space, taking as many samples as required by the Nyquist-Shannon theorem seems wasteful. We acquire a large amount of data just to then save the most significant sparse components. Can we measure the sparse component directly? The answer is yes, with a compressive sampling regime. In this regime, we need to know a space where our reconstructed image is sparse, and we take measurements in a different, incoherent space. We now show an example of how compressive sampling works with an idealized radio interferometer together with an idealized signal.
+
+\subsubsection{Compressive sampling of the sky}
+For the sake of demonstration, let us assume the radio interferometer observes a patch of sky containing ten stars. It measures an incomplete set of random Fourier components of the ten stars, and we would like to reconstruct an image of size $256^2$ pixels. The emissions from stars are concentrated into a single pixel. For compressive sampling, we need to know an space in which our reconstructed image is sparse, and we need to take measurements in a different, incoherent space.
+
+Our reconstructed image contains only zero pixels except at the ten locations of the stars, meaning the image space for this patch of the sky is already sparse. In this case, we do not need any additional sparse space like wavelets. We can reconstruct directly in the sparse image space, and we have the first requirement met for compressive sampling. 
+
+The next requirement is that the measurement and reconstruction space (which is the image in this example), are as incoherent as possible. 
 
 Yes, incoherence.
-Why, because we learn the most about the non-zero wavelet bases.
 \begin{equation}\label{intro:linear:compressed2}
-\underset{x}{minimize} \: \left \| y - Ax \right \|_2^2 + \lambda \left \| \Psi x \right \|_1
+\underset{x}{minimize} \: \left \| V - Fx \right \|_2^2 + \lambda \left \| x \right \|_1
 \end{equation}
+
+
 Intuitively, this can work.
 
+
 At what point are we guaranteed? The matrix $A$ needs to fullfil the Restricted Isometry Porperty (RIP) \cite{candes2006robust,donoho2006compressed}.
-Approximately orthonormal on sparse signals. (If we randomly choose ten columns of $S$, how much do they correlate. We want as little correlation as possible.)
+Approximately orthonormal on sparse signals. (If we randomly choose ten columns of $F$, how much do they correlate. We want as little correlation as possible.)
 Calculate the RIP is NP-hard\cite{tillmann2013computational}. Approximations are also difficult to compute\cite{natarajan2014computational}.
-So we can only talk about how likely a given matrix fulfills the RIP. Matrix where each element is sampled from a random Gaussian distributîon has the highest change.
-Not possible for Radio interferometers, because they sample in the Fourier domain.
-Random samples in the Fourier domain also have a high chance to fulfill the RIP \cite{haviv2017restricted}.
-ctive field of research, how we prove exact reconstruction in theory, RIP may be too strict \cite{candes2011probabilistic}.
+So we can only talk about how likely a given matrix fullfils the RIP. Matrix where each element is sampled from a random Gaussian distributîon has the highest change.
+
+Random samples in the Fourier space also have a high chance to fulfill the RIP \cite{haviv2017restricted}.
+
+Not possible for Radio interferometers, because they sample in the Fourier space. Not random.
+
+There are also extended emissions, clouds etc. Resulting in a lot of non-zero pixels. There may be better sparse spaces for radio astronomy.
+
+But also RIP may be too strict. Exact reconstruction can also work under less strict conditions\cite{candes2011probabilistic} active field of research.
+
+\subsubsection{Reconstruction guarantees in the real world}
 
 What does this all mean for image reconstruction?
-We cannot prove the RIP for a given sub-sampled Fourier matrix $F$.
 For us, we design reconstruction algorithms and cannot influence the matrix $F$. We do not know if it actually 
 
 The theory of compressed sensing gives us a framework. There is a data modelling task, and a task for finding efficient algorithms.
