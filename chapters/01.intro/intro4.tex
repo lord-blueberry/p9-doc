@@ -57,48 +57,34 @@ Image reconstruction generally happens after calibration. The focus of this proj
 There are cases as so called "self-calibration", where intermediate reconstructed images are used to improve upon the calibration parameters.
 Change
 
-\subsubsection{Modelling the radio interferometer}
+\subsubsection{The measurement equation}
+As we discussed so far, the radio interferometer measures visibilities of the sky image, and we wish to find the observed image from the measurements. Put formally, we wish to invert the following system of linear equations \eqref{intro2:model:linear}, where $V$ is the visibility vector\footnote{We use the lower-case $v$ to denote the axis in the Fourier space $uvw$, and the upper-case letter to denote the visibility vector.}, $F$ is the Fourier transform matrix and $I$ is the pixel vector of the observed image.
 
-In this project, we use a system of linear equations.
 \begin{equation}\label{intro2:model:linear}
 V = F I
 \end{equation}
 
-V for visibilities
-F for the Fourier transform matrix
-I for the observed image
-
-Useful for most contexts, we can show the fundamental problems on the image reconstruction. 
-
-Not complete view, it hides a few facts that become important for accurate reconstructions. 
-
-Introducing the measurement equation. Let us expand \eqref{intro2:model:linear}, into \eqref{intro2:model:smallfov}
+We wish to find the observed image $I$, while we only know the visibility vector $V$ and the Fourier transform matrix $F$. This is what we call the measurement equation. In most context for this project, looking is an adequate view of the image reconstruction problem. We will show why we cannot find the observed image $I$ by simply calculating the inverse Fourier transform. However, when we need to efficiently apply the Fourier transform, we need to know $F$ in more detail. As we will see, radio interferometers have some difficulties hidden in the Fourier transform matrix, which are difficult to handle efficiently. First, let us abandon the vector notation of \eqref{intro2:model:linear}, and represent the measurement equation with integrals \eqref{intro2:model:smallfov}.
 
 \begin{equation}\label{intro2:model:smallfov}
-V(u, v) = \int\int I(l, m)  e^{2 \pi i [ul+vm]} \: dx \: dy
+V(u, v) = \int\int I(l, m)  e^{2 \pi i [ul+vm]} \: dl \: dm
 \end{equation}
 
-Still the same, we just expanded $F$ into the Fourier transform $e^{2 \pi i [ul+vm]}$. 
-Mention the dimensions explicitly. Also the small detail that the interferometer measures in a continuous space, not discrete Visibilities.
-We wish to invert.
+This is essentially the same problem. The main difference is that we do not represent the Fourier transform as a matrix $F$, but as integrals $\int\int e^{2 \pi i [ul+vm]}$, where $u$, $v$ are the coordinates in Fourier space and $l$, $m$ are the angles away from the image center. A single pixel represents the intensity of the radio emission from the direction $l$, $m$. Note that the measurement equation \eqref{intro2:model:smallfov} shows the fact that the visibilities are measured in a continuous Fourier space. If the Fourier space would also be discrete, we could replace the integrals with sums.
 
-This is what we call the measurement equation. Models how the interferometer measures the sky. For example, equation \eqref{intro2:model:smallfov} is missing the effects of the ionosphere, or does not take into account the antenna.
+However, the measurement equation \eqref{intro2:model:smallfov} is inaccurate in the sense that it ignores many effects that distort the signal. For example, it does not account for the distortion by the ionosphere, or the distortion introduced by real-world antennas. The measurement equation \eqref{intro2:model:smallfov} shown here does not represent the real world. But depending on the instrument and the observation, these distortions may be negligible, and the measurement equation \eqref{intro2:model:smallfov} is a good approximation. 
 
-What we model, wide field of view (large $l$ and $m$)
+When there is a distortion source that cannot be ignored, it has to be modelled in the measurement equation. As such there is no unified measurement equation for all radio interferometric observations, let alone radio interferometers. The equation shown in \eqref{intro2:model:smallfov} can be seen as the basis that gets extended as necessary\cite{smirnov2011revisiting1, smirnov2011revisiting2, smirnov2011revisiting3, smirnov2011revisiting4}.
 
+For example, the measurement equation \eqref{intro2:model:smallfov} is only accurate for small field of view observations, when $l$ and $m$ are both small angles. For wide field of view observations, we need to account for the fact that the visibilities have a third term $w$, and we arrive at the wide field of view measurement equation \eqref{intro2:model:widefov}.
+ 
 \begin{equation}\label{intro2:model:widefov}
-V(u, v, w) = \int\int  \frac{I(x, y)}{c(x, y)}  e^{2 \pi i [ux+vy+ w(c(x, y) - 1)]} \: dx \: dy \:,  \quad c(x,y) = \sqrt{1 - x^2 - y ^2}
+ V(u, v, w) = \int\int  \frac{I(l, m)}{c(l, m)}  e^{2 \pi i [ul+vm+ w(c(x, y) - 1)]} \: dl \: dm \:,  \quad c(l,m) = \sqrt{1 - l^2 - m ^2}
 \end{equation}
+ 
+The third $w$-term has two effects on the measurement equation. It introduces a phase shift in the Fourier transform $e^{2 \pi i [\ldots +w(c(x, y) - 1)]}$, and a normalization factor of the image $\frac{I(x, y)}{c(x, y)}$. Note that when the angles are small, i.e. $l^2 +m^2 \ll 1$ then the wide field of view measurement equation \eqref{intro2:model:widefov} reduces to our original \eqref{intro2:model:smallfov}. This is another way of saying that for small field of views, the measurement equation \eqref{intro2:model:smallfov} is a good approximation. 
 
-Still essentially same, but the visibility measurements have a third component $w$. 
-Two effects, a phase shift in the Fourier transform $w(c(x, y) - 1)$ and a normalization factor of the image $\frac{I(x, y)}{c(x, y)}$
-Depends on the direction. Directionally dependent effects (DDE's).
-
-
-In the end, everything is still linear. We can often view it as in \eqref{intro2:model:linear} where the matrix $F$ takes care of everything.
-The distinction becomes important when we need to calculate the Fourier transform for wide field of view efficiently in practice.
-
-
+In this project, we use the wide field of view measurement equation \eqref{introntro2:model:widefov}. But as we mentioned in the beginning of this section, for most contexts, it is not important whether we ignore the $w$-term of the visibilities or not. It is important when we design an efficient implementations for applying the wide field of view Fourier transform, because the $w$-term keeps us from simply using the Fast Fourier Transform (FFT). In every other case, we can ignore this technicality. Because even more complicated measurement equation still have a linear relationship between visibilities and image \cite{smirnov2011revisiting1, smirnov2011revisiting2, smirnov2011revisiting3, smirnov2011revisiting4}, we can view the whole reconstruction problem as a system of linear equations \eqref{intro2:model:linear}, where the Matrix $F$ takes care of the exactly how the measurements and pixels relate in this case.
 
 \subsection{The ill-posed image reconstruction problem}\label{intro2:ill-posed}
 So far, we discussed how the interferometer measures in Fourier space, and we wish to find the observed image that matches the measurements. In other words, we wish to find a solution to a system of linear equation \eqref{intro2:ill-posed:linear}, where $V$ are the measurements, $x$ is the observed image and $F$ is the Fourier transform matrix. We also discussed that $F$ can be complicated in practice, but is still essentially a linear operator. Meaning we know how the inverse Fourier transform matrix $F^{-1}$, and the question arises: Why can't we solve the equations \eqref{intro2:ill-posed:linear} by calculating the inverse Fourier transform? Or, why does $x = F^{-1} V$ not lead to the observed image?
@@ -119,14 +105,12 @@ From linear algebra, we know that an over-determined system either has one or ze
 
 The radio interferometer measures noisy visibilities, meaning each amplitude and phase of a measurement is influenced by an unknown noise factor. Finding a reconstructed image is the same as finding the de-noised versions of the visibility measurements. This alone would make the problem ill-posed, but the visibilities actually have a second property that makes them ill-posed: incompleteness.
 
-When we look back at figure \ref{intro:inversefig:uvspace}, it is clear to see that the interferometer does not sample the visibilities in a uniform way. There are regions with a high sample density. The density decreases when we move further away from the center. The higher mode visibilities get fewer and fewer samples. 
-Question of resolution
-For high angular resolution images (when a pixel represents the emission from a small angle), the missing visibilities at higher mode are responsible for making the problem ill posed. For low angular resolution images on the other hand, the missing high mode visibilities become negligible and the problem is well-posed. 
+When we look back at figure \ref{intro:inversefig:uvspace}, it is clear to see that the interferometer does not sample the visibilities in a uniform way. There are regions with a high sample density. The density decreases when we move further away from the center. The higher frequency visibilities get fewer and fewer samples. This means we are missing data for crucial measurements for the reconstruction.
 
-The ill-posed reconstruction problem arises from the high angular resolution of the reconstructed image. Or in other words, by solving the ill-posed inverse problem, we can acquire an image with higher angular resolution from the same visibility measurements.
+Also note that the question whether the measurements are incomplete essentially comes down to the image resolution of the reconstruction: Since we are missing high-frequency measurements and we can choose the resolution of the image, we can also reduce the resolution of the reconstructed image until the missing frequencies become negligible. However, if we can solve the ill-posed inverse problem, we can reconstruct an image at a higher resolution from the same measurements. The question is how do we solve the ill-posed inverse problem?
 
 \subsubsection{Adding a regularization} \label{intro:linear:regularization}
-For ill-posed inverse problems, there are two viewpoints for the same idea. From the viewpoint of optimization, we can solve the ill-posed image reconstruction problem \eqref{intro:linear:linear} by adding a regularization. The regularization creates a system of linear equations with a unique solution. From the viewpoint of Bayesian Statistics, we include prior knowledge and search for most likely image given the measurements. For this project, both terms describe the same idea and we use regularization and prior interchangeably. We know that the reconstructed image from radio interferometers contain a mixture of stars (point sources located in a single pixel) and extended emissions like hydrogen clouds. By adding this prior knowledge to the reconstruction problem, we can find the most likely image given the measurements. As we will see, under the right prior, we can create a reconstruction algorithm that is almost guaranteed to find the truly observed image in theory.
+For ill-posed inverse problems, there are two viewpoints for the same idea. From the viewpoint of optimization, we can solve the ill-posed image reconstruction problem \eqref{intro:linear:linear} by adding a regularization. The regularization creates a system of linear equations with a unique solution. From the viewpoint of Bayesian Statistics, we include prior knowledge about the image, and therefore search the most likely image given the measurements. For this project, both terms describe the same idea and we use regularization and prior interchangeably. We know that the reconstructed image from radio interferometers contain a mixture of stars (point sources located in a single pixel) and extended emissions like hydrogen clouds. By adding this prior knowledge to the reconstruction problem, we can find the most likely image given the measurements. As we will see, under the right prior, we can create a reconstruction algorithm that is almost guaranteed to find the truly observed image in theory.
 
 There are different ways to include regularization in the reconstruction problem. In this project, we use the following method: We cast the image reconstruction problem into an optimization objective consisting of a data fidelity term and a regularization term. A reconstruction algorithm therefore consists of an optimization objective, a prior function and an optimization algorithm.
 
@@ -157,7 +141,7 @@ Yes, incoherence.
 \end{equation}
 
 
-Intuitively, this can work.
+Intuitively, the number of samples depend on the information content, not on the bandwidth. thi
 
 
 At what point are we guaranteed? The matrix $A$ needs to fullfil the Restricted Isometry Porperty (RIP) \cite{candes2006robust,donoho2006compressed}.
