@@ -1,22 +1,17 @@
 \section{Simple distributed image reconstruction}\label{dist}
-Distribute the major cycle we need several major cycle iterations. We cannot execute the second cycle before the first. So we need to distribute the steps in the major cycle, namely the gridding, FFT and deconvolution step. 
+How do we distribute the major cycle. We need to distribute every ste, Gridding, FFT and Deconvolution.
 
-Gridding is generally the most time intensive step. 
-Large number of visibilities, forces us to partition the input data. Meaning each node has only part of the data. This work assumes we have a copy of the full grid on each node. and exchange
-We use the Image Domain Gridding algorithm.
+Gridding, Large number of input data. This needs to be distributed
+We use the Image domain gridding introduces in section \ref{hypo:idg} and use it as the basis for the distributed gridding.
 
-The FFT is generally not worth distributing, if we can keep all the data in memory. When the gridding is done, in our setup, the grid is small enough to keep in memory.
+The FFT is generally not worth distributing, if we can keep all the data in memory. When the gridding is done, in our setup, the grid is small enough to keep in memory. (cite distributed fftw)
 
-Deconvolution is potentially the second most time consuming step after the Gridding.
-Depends on the image content.
-Deconvolution produces the model image and the residual image.
-Distributed deconvolution requires communication. How we communicate is key.
-Distributing the deconvolution generally leaves us with two possible architectures: Either we split the deconvolution problem into patches, or we create a consensus algorithm. Consensus algorithms work by each node having a copy of the model image, and as a group, decide on the equal image. Not very useful for Meerkat, since we potentially do the work several times. 
-We then want to distribute the work as evenly as possible between the nodes. 
-That is why we chose to split the data onto nodes. 
+Deconvolution is also worth distributing. CLEAN depending on the observation is the second most time consuming step. But gridding tends to be easier to distribute, so in some observations it is the most time consuming step.
+Split the image into patches and deconvolve each patch.
+Sadly not possible, we need communication. how we communicate is important.
 
+We use a distributed Gridding and a distributed deconvolution. Which leads us to the following architecture.
 
-This leads us to the following architecture.
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.80\linewidth]{./chapters/03.distribution/distributed_architecture.png}
@@ -24,17 +19,31 @@ This leads us to the following architecture.
 	\label{dist:architecture:fig}
 \end{figure}
 
-Rest of the Major Cycle. We need to get the model image patches from the nodes, FFT on node 0, and then we communicate the grid.
+Where each node is one computer, i.e. has its own, possibly multiple cpus and its shared memory.
+Split the input visibilities onto nodes. 
+Do the gridding locally on each node
+Communicate the grid
+inverse FFT on one node.
+Communicate the patches of the image.
+Deconvolve each patch and communicate
+
+How we distribute the IDG algorithm, and create a distributed deconvolution algorithm. Main contribution is the distributed deconvolution algorithm
 
 
-\subsection{Distributing the IDG Algorithm}\label{distribution:idg}
-It is simple, unlike $w$-stacking, we do not need to partition the data. So we can do just communicate the grid
+\subsection{Distributing the IDG algorithm}\label{distribution:idg}
 
 
 
-\subsection{Distributed deconvolution algorithm}
+
+\subsection{Distributed deconvolution}
+Main contribution
+We start 
+
 
 Coordinate Descent Algorithm why.
+
+\subsubsection{Coordinate Descent Method}
+
 
 Basic algorithm.
 

@@ -1,5 +1,5 @@
 
-\section{Introduction to radio interferometric imaging}
+\section{Introduction to radio interferometric imaging}\label{intro2}
 \begin{figure}[htp]
 	% preliminary
 	\sbox\twosubbox{%
@@ -84,7 +84,7 @@ For example, the measurement equation \eqref{intro2:model:smallfov} is only accu
  
 The third $w$-term has two effects on the measurement equation. It introduces a phase shift in the Fourier transform $e^{2 \pi i [\ldots +w(c(x, y) - 1)]}$, and a normalization factor of the image $\frac{I(x, y)}{c(x, y)}$. Note that when the angles are small, i.e. $l^2 +m^2 \ll 1$ then the wide field of view measurement equation \eqref{intro2:model:widefov} reduces to our original \eqref{intro2:model:smallfov}. This is another way of saying that for small field of views, the measurement equation \eqref{intro2:model:smallfov} is a good approximation. 
 
-In this project, we use the wide field of view measurement equation \eqref{introntro2:model:widefov}. But as we mentioned in the beginning of this section, for most contexts, it is not important whether we ignore the $w$-term of the visibilities or not. It is important when we design an efficient implementations for applying the wide field of view Fourier transform, because the $w$-term keeps us from simply using the Fast Fourier Transform (FFT). In every other case, we can ignore this technicality. Because even more complicated measurement equation still have a linear relationship between visibilities and image \cite{smirnov2011revisiting1, smirnov2011revisiting2, smirnov2011revisiting3, smirnov2011revisiting4}, we can view the whole reconstruction problem as a system of linear equations \eqref{intro2:model:linear}, where the Matrix $F$ takes care of the exactly how the measurements and pixels relate in this case.
+In this project, we use the wide field of view measurement equation \eqref{intro2:model:widefov}. But as we mentioned in the beginning of this section, for most contexts, it is not important whether we ignore the $w$-term of the visibilities or not. It is important when we design an efficient implementations for applying the wide field of view Fourier transform, because the $w$-term keeps us from using the Fast Fourier Transform (FFT). In every other case, we can ignore this technicality. Because even more complicated measurement equation still have a linear relationship between visibilities and image \cite{smirnov2011revisiting1, smirnov2011revisiting2, smirnov2011revisiting3, smirnov2011revisiting4}. We can view the whole reconstruction problem as a system of linear equations \eqref{intro2:model:linear}, where the matrix $F$ takes care of how exactly the measurements and pixels relate in this case.
 
 \subsection{The ill-posed image reconstruction problem}\label{intro2:ill-posed}
 So far, we discussed how the interferometer measures in Fourier space, and we wish to find the observed image that matches the measurements. In other words, we wish to find a solution to a system of linear equation \eqref{intro2:ill-posed:linear}, where $V$ are the measurements, $x$ is the observed image and $F$ is the Fourier transform matrix. We also discussed that $F$ can be complicated in practice, but is still essentially a linear operator. Meaning we know how the inverse Fourier transform matrix $F^{-1}$, and the question arises: Why can't we solve the equations \eqref{intro2:ill-posed:linear} by calculating the inverse Fourier transform? Or, why does $x = F^{-1} V$ not lead to the observed image?
@@ -178,24 +178,10 @@ Compressed sensing based reconstruction algorithm. In radio astronomy.
 
 
 
-\subsection{Introduction to the theory oc compressed sensing}
-
-\subsubsection{Adding a regularization}
-
-\subsubsection{Theory of compressed sensing}
-
-\subsubsection{Compressive sampling of the sky}
-
-\subsubsection{Reconstruction guarantees in the real world}
-
-
-
-
-
 
 
 \subsection{Introduction into optimization/RI reconstruction algorithms}\label{intro2:rec}
 
-\subsubsection{The Major/Minor cycle}
+\subsubsection{The Major/Minor cycle}\label{intro2:opt:cycle}
 
 \subsubsection{Image reconstruction as deconvolution}

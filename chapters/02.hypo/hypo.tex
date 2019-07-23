@@ -1,14 +1,19 @@
 \section{State of the art image reconstruction}
-Long time research.
-Field that is cracking up
+This section introduces the state of the art image reconstruction algorithm in radio astronomy. 
+
+Two software packages, the Common Astronomy Software Applications (CASA)\cite{casa2019main} and WSCLEAN\cite{offringa2014wsclean} use the Major/Minor cycle architecture introduced in section \ref{intro2:opt:cycle}. They have been the de-facto standard for decades and to our knowledge, are still the two most widely used implementations of image reconstruction algorithms. However, there has also been recent development to abandon the Major/Minor cycle architecture \cite{pratley2017robust, dabbech2018cygnus}. They still use a gridding algorithm, but the reconstruction it does not contain Minor cycle deconvolution. At this point, it is not known whether the Major/Minor cycle architecture will be used in the future. 
+
+
+In this section, we introduce the 
+
 
 Major cycle architecture.
 Discuss the algorithms 
 Split into two parts. We discuss the gridding first. It is responsible
 
 \subsection{Gridding algorithms}
-Biggest part is $w$-term, how to handle it efficiently. Important for wide field of view observation.
-Meaning really important for the SKA precursors like MeerKAT and MWA, and for the eventual SKA instruments.
+Biggest part is $w$-term, how to handle it efficiently.
+
 
 (show the problem of $w$-component)
 
@@ -19,17 +24,14 @@ Faceting.
 $w$-projection algorithm \cite{cornwell2008noncoplanar}
 Convolution in the Fourier domain.
 
-
-
-
- The WSCLEAN \cite{offringa2014wsclean} did a large part.
+The WSCLEAN \cite{offringa2014wsclean} did a large part.
 
 More recently, the Image domain gridding algorithm has been developed \cite{veenboer2017image}. Which can put it on the gpu, along with handling more DDE's.
 
 \subsubsection{$w$-stacking}
 Idea of $w$-stacking, creating stacks of $w$-stack. So each visibility with similar $w$-component is in the same stack. Turns out we can then move
 
-\subsubsection{Image Domain Gridder}
+\subsubsection{Image Domain Gridder}\label{hypo:idg}
 Recently developed\cite{veenboer2017image}. It works by partitioning the input visibilities into subgrids, and then calculates the interpolation and $w$-correction for each subgrid.
 
 Called image domain, because a convolution in Fourier space is a multiplication in image space, interpolation kernels can are applied in image space. uses the idea of subgrids.
@@ -72,8 +74,12 @@ Latest variants for multiscale and multi frequency CLEAN (MS-MFS-CLEAN)\cite{rau
 
 Current state-of-the-art
 
+\subsubsection{MORESANE}
+MORESANE \cite{dabbech2015moresane}
+
+
 \subsection{Reconstruction algorithms which are not based on the deconvolution}
-SARA
+SARA\cite{dabbech2018cygnus}.
 
 
 
