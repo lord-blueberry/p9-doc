@@ -42,20 +42,20 @@ Bird eyes view of the system
 	\label{intro:system}
 \end{figure}
 
-Complex correlation, receives the amplitude and phase of the incoming signal.
+%Complex correlation, receives the amplitude and phase of the incoming signal.
 
-Saved for further processing
+%Saved for further processing
 
-Calibration.
-Corruption, like radio transmission from satellites that flew over the instrument.
-Each antenna has a varying sensitivity over time. At some points, the same 
-Correct for antenna gains.
-Calibration is complex, and not part of the project
+%Calibration.
+%Corruption, like radio transmission from satellites that flew over the instrument.
+%Each antenna has a varying sensitivity over time. At some points, the same 
+%Correct for antenna gains.
+%Calibration is complex, and not part of the project
 
-Image reconstruction generally happens after calibration. The focus of this project.
+%Image reconstruction generally happens after calibration. The focus of this project.
 
-There are cases as so called "self-calibration", where intermediate reconstructed images are used to improve upon the calibration parameters.
-Change
+%There are cases as so called "self-calibration", where intermediate reconstructed images are used to improve upon the calibration parameters.
+%Change
 
 \subsubsection{The measurement equation}
 As we discussed so far, the radio interferometer measures visibilities of the sky image, and we wish to find the observed image from the measurements. Put formally, we wish to invert the following system of linear equations \eqref{intro2:model:linear}, where $V$ is the visibility vector\footnote{We use the lower-case $v$ to denote the axis in the Fourier space $uvw$, and the upper-case letter to denote the visibility vector.}, $F$ is the Fourier transform matrix and $I$ is the pixel vector of the observed image.

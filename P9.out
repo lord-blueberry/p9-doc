@@ -31,7 +31,7 @@
 \BOOKMARK [2][-]{subsection.3.3}{Reconstruction algorithms which are not based on the deconvolution}{section.3}% 31
 \BOOKMARK [1][-]{section.4}{Simple distributed image reconstruction}{}% 32
 \BOOKMARK [2][-]{subsection.4.1}{Distributing the IDG algorithm}{section.4}% 33
-\BOOKMARK [2][-]{subsection.4.2}{Distributed deconvolution algorithm}{section.4}% 34
+\BOOKMARK [2][-]{subsection.4.2}{Distributed deconvolution}{section.4}% 34
 \BOOKMARK [3][-]{subsubsection.4.2.1}{Coordinate Descent Method}{subsection.4.2}% 35
 \BOOKMARK [3][-]{subsubsection.4.2.2}{ElasticNet Regularization}{subsection.4.2}% 36
 \BOOKMARK [2][-]{subsection.4.3}{Major Cycle convergence}{section.4}% 37
