@@ -23,18 +23,18 @@
 
 The figure \ref{intro:inversefig} gives an example of the radio interferometric imaging. We wish to reconstruct an image, shown in \ref{intro:inversefig:reconstruction} from the measurements of the interferometer \ref{intro:inversefig:uvspace}. The reconstructed image contains two object types: Point sources and extended emissions. Point sources, stars for example, are far-away emissions that are concentrated in a single pixel. Extended emissions like hydrogen clouds emit radio waves over a large area of the sky and span over several pixels in the reconstructed image.
 
-The measurements of the radio interferometer are in the Fourier space. It does not measure how much emission was observed at a single pixel in the sky image, it measures the amplitude and phase of a Fourier component of the sky image. This means each dot in the figure \ref{intro:inversefig:uvspace} represents one Fourier measurement (amplitude and phase) of the observed image. The dots in the center, measurements with a low $uv$-value, measure the low-frequency components of the sky image. They contain the information about structures spanning over several pixels. Dots further away from the center measure the high-frequency components, they contain the information about the edges of the image and are responsible for a "sharp" image. In the radio astronomy literature, the measured Fourier components are called visibilities and for the sake of consistency, we will be calling the measured Fourier components visibilities.
+The measurements of the radio interferometer are in the Fourier space. It does not measure how much emission was observed at a single pixel in the sky image, it measures the amplitude and phase of a Fourier component of the sky image. This means each dot in the figure \ref{intro:inversefig:uvspace} represents one Fourier measurement (amplitude and phase) of the observed image. The dots in the center, measurements with a low $uv$-value, measure the low-frequency components of the sky image. They contain the information about structures spanning over several pixels. Dots further away from the center measure the high-frequency components, they contain the information about the edges of the image and are responsible for a "sharp" image. In the radio astronomy literature, the measured Fourier components are called visibilities and for the sake of consistency, we will be calling the measured Fourier components visibilities in this work.
 
 As we will see, we cannot retrieve the observed image by simply calculating the inverse Fourier transform. We require a reconstruction algorithm that finds the most likely observed image given the measurements. How close the most likely image is to the truly observed one depends on the reconstruction algorithm we choose. As it is often the case, how expensive an image reconstruction is in terms of runtime costs (Money spent on the necessary CPU's, time spent waiting for the results etc.) also depends on the reconstruction algorithm. We often face a trade-off between reconstruction quality and runtime costs. This work focuses on distributing the radio interferometric image reconstruction. We search for an effective way to use distributed computing hardware and test how scalable the reconstruction algorithm is with a real-world observation of the MeerKAT radio interferometer.
 
 Introduction to how a radio interferometer works
 What the fundamental problems are and how we can solve them in theory and what the implications are in practice
 how we can 
-This section gives a short introduction to interferometry and show the fundamental problems in the radio interferometric image reconstruction. In section \ref{intro2:ill-posed} we give an introduction how we can solve the radio interferometric image reconstruction in theory, and what the implications are in practice. Section \ref{intro2:rec} introduces how the common architecture for radio interferometric image reconstruction, and how the reconstruction is divided into sub-tasks in practice. 
+This section gives a short introduction to interferometry and show the fundamental problems in the radio interferometric image reconstruction. In section \ref{intro2:ill-posed} we give an introduction how we can solve the radio interferometric image reconstruction in theory, and what the implications are in practice. Section \ref{intro2:rec} introduces how the common architecture for radio interferometric image reconstruction, and how the reconstruction algorithm is divided into sub-tasks in practice. 
 
 \subsection{From electromagnetic waves over visibilities to images}
-Bird eyes view of the system
-
+We give a short introduction into how the electromagnetic wave gets measured by the interferometer, turned into visibilities and finally processed into an image. Figure \ref{intro:system} shows a radio source and its electro-magnetic (e-m) wave arriving at the antennas of the interferometer. It then shows the three processes inovlved to arrive at an image: correlation, calibration and image reconstruction.
+	
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.80\linewidth]{./chapters/01.intro/system.png}
@@ -42,20 +42,20 @@ Bird eyes view of the system
 	\label{intro:system}
 \end{figure}
 
-%Complex correlation, receives the amplitude and phase of the incoming signal.
+First, we have a source in the sky that is emitting e-m waves in the radio frequency. The waves travel to earth, through the earth's ionosphere and finally to our interferometer. Along its path, the e-m waves may get distorted from various sources. For example, it may receive a phase shift by the ionosphere.
 
-%Saved for further processing
+Then, the e-m wave arrives at our interferometer. We call each antenna pair a baseline. Each baseline will end up measuring a single visibility. The figure \ref{intro:system} shows a single baseline of the interferometer. The distance between the antennas and their orientation to the e-m wave will determine where we sample the $uv$-plane. Short baselines measure the $uv$-plane close at the origin, while long baselines sample the $uv$-space further away from the origin. Remember that the samples away from the $uv$-origin contain the information about edges and other details of our image. With a longer baseline the interferometer measures more highly resolved details, regardless of the antenna dish-diameter\footnote{Remember that this is the reason why we build radio interferometers. We do not need impossibly large dish diameters for a high angular resolution. We just need large distances between smaller antennas}.
 
-%Calibration.
-%Corruption, like radio transmission from satellites that flew over the instrument.
-%Each antenna has a varying sensitivity over time. At some points, the same 
-%Correct for antenna gains.
-%Calibration is complex, and not part of the project
 
-%Image reconstruction generally happens after calibration. The focus of this project.
+Correlator, amplitude and phase of the e-m wave at a frequency.
+saved for further processing
 
-%There are cases as so called "self-calibration", where intermediate reconstructed images are used to improve upon the calibration parameters.
-%Change
+
+Calibration. Effects from the ionosphere. Imperfections of the instrument, like varying antenna sensitivity.
+Calibration is complex, and not part of the project
+
+Image reconstruction generally happens after calibration. The focus of this project.
+self-calibration
 
 \subsubsection{The measurement equation}
 As we discussed so far, the radio interferometer measures visibilities of the sky image, and we wish to find the observed image from the measurements. Put formally, we wish to invert the following system of linear equations \eqref{intro2:model:linear}, where $V$ is the visibility vector\footnote{We use the lower-case $v$ to denote the axis in the Fourier space $uvw$, and the upper-case letter to denote the visibility vector.}, $F$ is the Fourier transform matrix and $I$ is the pixel vector of the observed image.
@@ -82,7 +82,7 @@ For example, the measurement equation \eqref{intro2:model:smallfov} is only accu
  V(u, v, w) = \int\int  \frac{I(l, m)}{c(l, m)}  e^{2 \pi i [ul+vm+ w(c(x, y) - 1)]} \: dl \: dm \:,  \quad c(l,m) = \sqrt{1 - l^2 - m ^2}
 \end{equation}
  
-The third $w$-term has two effects on the measurement equation. It introduces a phase shift in the Fourier transform $e^{2 \pi i [\ldots +w(c(x, y) - 1)]}$, and a normalization factor of the image $\frac{I(x, y)}{c(x, y)}$. Note that when the angles are small, i.e. $l^2 +m^2 \ll 1$ then the wide field of view measurement equation \eqref{intro2:model:widefov} reduces to our original \eqref{intro2:model:smallfov}. This is another way of saying that for small field of views, the measurement equation \eqref{intro2:model:smallfov} is a good approximation. 
+The third $w$-term has two effects on the measurement equation. It introduces a phase shift in the Fourier transform $e^{2 \pi i [\ldots +w(c(l, m) - 1)]}$, and a normalization factor of the image $\frac{I(l, m)}{c(l, m)}$. Note that when the angles are small, i.e. $l^2 +m^2 \ll 1$ then the wide field of view measurement equation \eqref{intro2:model:widefov} reduces to our original \eqref{intro2:model:smallfov}. This is another way of saying that for small field of views, the measurement equation \eqref{intro2:model:smallfov} is a good approximation under the right conditions. 
 
 In this project, we use the wide field of view measurement equation \eqref{intro2:model:widefov}. But as we mentioned in the beginning of this section, for most contexts, it is not important whether we ignore the $w$-term of the visibilities or not. It is important when we design an efficient implementations for applying the wide field of view Fourier transform, because the $w$-term keeps us from using the Fast Fourier Transform (FFT). In every other case, we can ignore this technicality. Because even more complicated measurement equation still have a linear relationship between visibilities and image \cite{smirnov2011revisiting1, smirnov2011revisiting2, smirnov2011revisiting3, smirnov2011revisiting4}. We can view the whole reconstruction problem as a system of linear equations \eqref{intro2:model:linear}, where the matrix $F$ takes care of how exactly the measurements and pixels relate in this case.
 
