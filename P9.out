@@ -33,27 +33,28 @@
 \BOOKMARK [2][-]{subsection.4.1}{Distributing the IDG algorithm}{section.4}% 33
 \BOOKMARK [2][-]{subsection.4.2}{Distributed deconvolution}{section.4}% 34
 \BOOKMARK [3][-]{subsubsection.4.2.1}{Coordinate Descent Method}{subsection.4.2}% 35
-\BOOKMARK [3][-]{subsubsection.4.2.2}{ElasticNet Regularization}{subsection.4.2}% 36
-\BOOKMARK [2][-]{subsection.4.3}{Major Cycle convergence}{section.4}% 37
-\BOOKMARK [2][-]{subsection.4.4}{Test on MeerKAT data}{section.4}% 38
-\BOOKMARK [1][-]{section.5}{Tests on the MeerKAT LMC observation}{}% 39
-\BOOKMARK [2][-]{subsection.5.1}{Wall clock time}{section.5}% 40
-\BOOKMARK [2][-]{subsection.5.2}{Quality}{section.5}% 41
-\BOOKMARK [1][-]{section.6}{Conclusion}{}% 42
-\BOOKMARK [1][-]{section.7}{attachment}{}% 43
-\BOOKMARK [1][-]{section.8}{Larger runtime costs for Compressed Sensing Reconstructions}{}% 44
-\BOOKMARK [2][-]{subsection.8.1}{CLEAN: The Major Cycle Architecture}{section.8}% 45
-\BOOKMARK [2][-]{subsection.8.2}{Compressed Sensing Architecture}{section.8}% 46
-\BOOKMARK [2][-]{subsection.8.3}{Hypothesis for reducing costs of Compressed Sensing Algorithms}{section.8}% 47
-\BOOKMARK [2][-]{subsection.8.4}{State of the art: WSCLEAN Software Package}{section.8}% 48
-\BOOKMARK [3][-]{subsubsection.8.4.1}{W-Stacking Major Cycle}{subsection.8.4}% 49
-\BOOKMARK [3][-]{subsubsection.8.4.2}{Deconvolution Algorithms}{subsection.8.4}% 50
-\BOOKMARK [2][-]{subsection.8.5}{Distributing the Image Reconstruction}{section.8}% 51
-\BOOKMARK [3][-]{subsubsection.8.5.1}{Distributing the Non-uniform FFT}{subsection.8.5}% 52
-\BOOKMARK [3][-]{subsubsection.8.5.2}{Distributing the Deconvolution}{subsection.8.5}% 53
-\BOOKMARK [1][-]{section.9}{Handling the Data Volume}{}% 54
-\BOOKMARK [2][-]{subsection.9.1}{Fully distributed imaging algorithm}{section.9}% 55
-\BOOKMARK [1][-]{section.10}{Image Reconstruction for Radio Interferometers}{}% 56
-\BOOKMARK [2][-]{subsection.10.1}{Distributed Image Reconstruction}{section.10}% 57
-\BOOKMARK [2][-]{subsection.10.2}{First steps towards a distributed Algorithm}{section.10}% 58
-\BOOKMARK [1][-]{section.11}{Ehrlichkeitserkl\344rung}{}% 59
+\BOOKMARK [3][-]{subsubsection.4.2.2}{Efficient Coordinate Descent implementation}{subsection.4.2}% 36
+\BOOKMARK [3][-]{subsubsection.4.2.3}{ElasticNet Regularization}{subsection.4.2}% 37
+\BOOKMARK [2][-]{subsection.4.3}{Major Cycle convergence}{section.4}% 38
+\BOOKMARK [2][-]{subsection.4.4}{Test on MeerKAT data}{section.4}% 39
+\BOOKMARK [1][-]{section.5}{Tests on the MeerKAT LMC observation}{}% 40
+\BOOKMARK [2][-]{subsection.5.1}{Wall clock time}{section.5}% 41
+\BOOKMARK [2][-]{subsection.5.2}{Quality}{section.5}% 42
+\BOOKMARK [1][-]{section.6}{Conclusion}{}% 43
+\BOOKMARK [1][-]{section.7}{attachment}{}% 44
+\BOOKMARK [1][-]{section.8}{Larger runtime costs for Compressed Sensing Reconstructions}{}% 45
+\BOOKMARK [2][-]{subsection.8.1}{CLEAN: The Major Cycle Architecture}{section.8}% 46
+\BOOKMARK [2][-]{subsection.8.2}{Compressed Sensing Architecture}{section.8}% 47
+\BOOKMARK [2][-]{subsection.8.3}{Hypothesis for reducing costs of Compressed Sensing Algorithms}{section.8}% 48
+\BOOKMARK [2][-]{subsection.8.4}{State of the art: WSCLEAN Software Package}{section.8}% 49
+\BOOKMARK [3][-]{subsubsection.8.4.1}{W-Stacking Major Cycle}{subsection.8.4}% 50
+\BOOKMARK [3][-]{subsubsection.8.4.2}{Deconvolution Algorithms}{subsection.8.4}% 51
+\BOOKMARK [2][-]{subsection.8.5}{Distributing the Image Reconstruction}{section.8}% 52
+\BOOKMARK [3][-]{subsubsection.8.5.1}{Distributing the Non-uniform FFT}{subsection.8.5}% 53
+\BOOKMARK [3][-]{subsubsection.8.5.2}{Distributing the Deconvolution}{subsection.8.5}% 54
+\BOOKMARK [1][-]{section.9}{Handling the Data Volume}{}% 55
+\BOOKMARK [2][-]{subsection.9.1}{Fully distributed imaging algorithm}{section.9}% 56
+\BOOKMARK [1][-]{section.10}{Image Reconstruction for Radio Interferometers}{}% 57
+\BOOKMARK [2][-]{subsection.10.1}{Distributed Image Reconstruction}{section.10}% 58
+\BOOKMARK [2][-]{subsection.10.2}{First steps towards a distributed Algorithm}{section.10}% 59
+\BOOKMARK [1][-]{section.11}{Ehrlichkeitserkl\344rung}{}% 60

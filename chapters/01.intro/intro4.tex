@@ -33,7 +33,7 @@ how we can
 This section gives a short introduction to interferometry and show the fundamental problems in the radio interferometric image reconstruction. In section \ref{intro2:ill-posed} we give an introduction how we can solve the radio interferometric image reconstruction in theory, and what the implications are in practice. Section \ref{intro2:rec} introduces how the common architecture for radio interferometric image reconstruction, and how the reconstruction algorithm is divided into sub-tasks in practice. 
 
 \subsection{From electromagnetic waves over visibilities to images}
-We give a short introduction into how the electromagnetic wave gets measured by the interferometer, turned into visibilities and finally processed into an image. Figure \ref{intro:system} shows a radio source and its electro-magnetic (e-m) wave arriving at the antennas of the interferometer. It then shows the three processes inovlved to arrive at an image: correlation, calibration and image reconstruction.
+We give a short introduction into how the electromagnetic wave gets measured by the interferometer, turned into visibilities and finally processed into an image. Figure \ref{intro:system} shows a radio source and its electro-magnetic (e-m) wave arriving at the antennas of the interferometer. It then shows the three processes involved to arrive at an image: Correlation, calibration and image reconstruction.
 	
 \begin{figure}[h]
 	\centering
@@ -46,7 +46,7 @@ First, we have a source in the sky that is emitting e-m waves in the radio frequ
 
 Then, the e-m wave arrives at our interferometer. We call each antenna pair a baseline. Each baseline will end up measuring a single visibility. The figure \ref{intro:system} shows a single baseline of the interferometer. The distance between the antennas and their orientation to the e-m wave will determine where we sample the $uv$-plane. Short baselines measure the $uv$-plane close at the origin, while long baselines sample the $uv$-space further away from the origin. Remember that the samples away from the $uv$-origin contain the information about edges and other details of our image. With a longer baseline the interferometer measures more highly resolved details, regardless of the antenna dish-diameter\footnote{Remember that this is the reason why we build radio interferometers. We do not need impossibly large dish diameters for a high angular resolution. We just need large distances between smaller antennas}.
 
-
+Not yet visibilities. This happens in the correlator
 Correlator, amplitude and phase of the e-m wave at a frequency.
 saved for further processing
 
