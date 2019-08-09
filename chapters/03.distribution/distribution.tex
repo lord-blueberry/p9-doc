@@ -89,7 +89,7 @@ do
 
 The core of the algorithm consists of three functions: $ApplyElasticNet()$ which applies the closed form solution of the ElasticNet regularization (discussed in section \ref{dist:deconv:reg}), the $Minimize()$ function which minimizes a single pixel at a time and the iteration strategy. We derive a closed form solution for minimizing a single pixel independently of each other and then discuss the basics of the iteration strategy.
 
-For the closed form solution, we exclude the regularization for a moment and focus on the data fidelity term $\left \| I_{dirty} - x * PSF \right \|_2^2$. As we will see later, the ElasticNet regularization we chose also has a closed form solution and it does not influence the data fidelity term in our case. Let us start by writing the data fidelity term as a quadratic equation: $(I_{dirty} - pixel * PSF)^2$, where $pixel$ is a scalar. Further, let us assume we only have a single pixel in the dirty image $I_{dirty}$ and a single pixel in the $PSF$. Everything is a scalar, it is easy to see that we are dealing with a parabola ($a*x^2 + b*x + c$. When we use our variable names we get $PSF^2 * pixel^2 - 2*(I_{dirty}*PSF)*pixel + (I_{dirty})^2$). We have a closed form solution to find the optimum of a parabola, i.e. $x_{opt} = \frac{-b}{2a}$, or when we use our variable names explicitly, we get $x_{opt} = \frac{(pixel*PSF)*I_{dirty}}{PSF^2}$. If we are dealing with more than one pixel in the dirty image $I_{dirty}$ and $PSF$, we multiply element-wise and sum up all the dimensions (i.e. $b = -2 SUM(pixel*PSF*I_{dirty})$). We found our closed form solution in the one dimensional case and we can implement $Minimize()$.
+Let us derive the closed form solution to the $Minimize()$ function. We start by writing the data fidelity term as a quadratic equation: $(I_{dirty} - pixel * PSF)^2$, where $pixel$ is a scalar. Further, let us assume we only have a single pixel in the dirty image $I_{dirty}$ and a single pixel in the $PSF$. Everything is a scalar, it is easy to see that we are dealing with a parabola ($a*x^2 + b*x + c$. When we use our variable names we get $PSF^2 * pixel^2 - 2*(I_{dirty}*PSF)*pixel + (I_{dirty})^2$). We have a closed form solution to find the optimum of a parabola, i.e. $x_{opt} = \frac{-b}{2a}$, or when we use our variable names explicitly, we get $x_{opt} = \frac{(pixel*PSF)*I_{dirty}}{PSF^2}$. If we are dealing with more than one pixel in the dirty image $I_{dirty}$ and $PSF$, we multiply element-wise and sum up all the dimensions (i.e. $b = -2 SUM(pixel*PSF*I_{dirty})$). We found our closed form solution in the one dimensional case and we can implement $Minimize()$.
 
 The next point is the iteration strategy. This is where Coordinate Descent methods are robust. They are proven to converge by simply choosing randomly. Or a greedy strategy where the pixel which reduces the objective \eqref{dist:deconv} by the largest amount. It was proven to converge for a variety of strategies. For this project, we are interested in which takes fewer computing resources to converge. 
 Start with a greedy scheme, well known convergence guarantees at least linearly (with respect to iteration count?)\cite{luo1992convergence}
@@ -111,20 +111,25 @@ Iteration scheme. For a greedy iteration scheme, we would need to first:
 
 For the first step, we can cache intermediate results and drastically reduce the computation. The second step can be approximated in a way that we do not need to evaluate the objective function.
 
-\textbf{Caching intermediate results}
+\textbf{Caching intermediate results}\\
 Caching of intermediate results. We have seen in section \ref{dist:deconv:cd} how we can find the optimum for a single pixel. We need to calculate  $x_{opt} = \frac{-b}{2a}$ where  $b = -2 SUM( pixel*PSF*I_{dirty})$ and $a = SUM(PSF * PSF)$. First, we note that $a$ depends only on the $PSF$ which is constant, which means $a$ is also constant. However, this is not true depending on the convolution we use.
+$PSF$ at the corner gets masked off, and the $a$ value changes.
+We can calucalte a lookup map in linear time.
+\begin{lstlisting}
 
-How to cache $b$. Use correlation
+\end{lstlisting}
+
+How to cache $b$. Use correlation of the dirty image with the $PSF$. Then we have a lookup map. Can be done efficiently in the Fourier domain. But the question then becomes in how to update bMap efficiently.
 
 
 Unsolved problem of varying $PSF^2$
 
-\textbf{Approximating the objective function}
+\textbf{Approximating the objective function}\\
 $a$ is constant in $\frac{-b}{2a}$
 
 
 
-
+Putting it all together. Creating lookup maps for $a$ and $b$, and do not evalue the ojbective function.
 \begin{lstlisting}
 dirty = IFFT(Gridding(visibilities))
 
@@ -134,13 +139,10 @@ fourierDirtyPadded = FFT(dirtyPadded)
 fourierPsf = FFT(invert(psf))		//we require the correlation, that is why we invert the psf
 bMap = IFFT(fourierDirtyPadded * fourierPsf)
 
-//pre-calculate aMap. aMap stays constant over all iterations
-aMap = new Array
-for each pixelLocation in dirty 
-{
-	aMap[pixelLocation] = CalcA(pixelLocation, psf)
-}
-    
+//pre-calculate aMap. aMap stays constant over all CD iterations
+aMap = 
+ 
+x = new Array   
 do 
 {
 	oldObjectiveValue = objectiveValue
@@ -162,6 +164,8 @@ do
 \subsubsection{ElasticNet Regularization} \label{dist:deconv:reg}
 L2 norm was used in other work. \cite{ferrari2014distributed}
 
+"Sparsifying L2 norm"
+Remember the theory of compressed sensing.
 
 Formula
 
