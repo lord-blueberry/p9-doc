@@ -1,15 +1,9 @@
 \section{The image reconstruction problem of radio interferometers}
-Astronomy observe the sky in the radio spectrum.
-measure the sky with high angular resolution.
-What is angular resolution. arc-minutes, arc-seconds.
-Angular resolution for radio antennas depend on the antenna dish diameter. Become too expensive
-Radio interferometers go around this problem. They use several antennas together to act like one large antenna. Achieve higher angular resolution than single-dish instruments with cheaper hardware.
+In Radio Astronomy, the angular resolution of a single antenna is limited by the dish-diameter. Of course, there is a practical limit on the size of antenna-dishes we can build. Radio interferometers go around this problem. They use several smaller antennas together, acting like a single large dish. Several smaller dishes together can achieve higher angular resolution than single-dish instruments.
 
-But there are drawbacks. First, the interferometer does not measure the sky in pixels, but in Fourier components. Each antenna pair measures a single Fourier component of the sky. The observed image has to be reconstructed from the measurements. And second, radio interferometers produce a large volume of Fourier measurements. 
-MeerKAT new radio interferometer in the desert of "", measures 41 million Fourier components at each time interval, over possibly several hours of observation.
-Reconstructing an image from the Fourier measurements is a big data problem.
+But there are drawbacks. First, the interferometer does not measure the sky in pixels. It measures the amplitude and phase of Fourier components at a given $u$ and $v$ location. The observed image has to be reconstructed from the measurements. And second, radio interferometers produce an ever increasing volume of Fourier measurements. Recently, the new MeerKAT radio interferometer was completed. It can produce roughly 80 million Fourier components every second, and a single observation may be conducted over several hours. Reconstructing an image for radio interferometers is therefore a big data problem.
 
-At first glance, we might believe that the image reconstruction is trivial: The interferometer measures Fourier components, and the inverse Fast Fourier Transform is well-known. However two properties of the measured Fourier components make the image reconstruction difficult: The measurements are both noisy and incomplete.
+At first glance, we might believe that the image reconstruction is trivial: The interferometer measures Fourier components, and efficient algorithms for the inverse Fourier transforms are known. However, two properties of the measured Fourier components make the image reconstruction difficult: The measurements are both noisy and incomplete.
 
 The amplitude and phase of each measured Fourier component contains noise.
 Radio waves on their way to earth experience distortions from various sources. and from the equipment. Changing conditions can create heavy interference, and the Fourier measurements are heavily corrupted by noise. Image reconstruction has to de-noise the measured Fourier components.

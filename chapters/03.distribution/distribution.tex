@@ -45,7 +45,7 @@ What we need: An optimization objective, an optimization algorithm and a regular
 We use \eqref{dist:deconv} as our optimization objective with data fidelity term and regularization term. We use Coordinate Descent Methods as our optimization algorithm, which we introduce in section \ref{dist:deconv:cd}, and the ElasticNet regularization, which we discuss in section \ref{dist:deconv:reg}
 
 \begin{equation}\label{dist:deconv}
-\underset{x}{minimize} \: \left \| I_{dirty} - x * PSF \right \|_2^2 + \lambda P(x)
+\underset{x}{minimize} \: \left \| I_{dirty} - x * PSF \right \|_2^2 + \lambda ElasticNet(x)
 \end{equation}
 
 
@@ -60,7 +60,6 @@ Coordinate Descent then optimizes a single pixel at a time, and we iterate over 
 Monotone decreasing.
 Robust
 Many different variants.
-
 
 Outperforms other algorithms like Gradient based methods, FISTA and ADMM if a single iteration (minimizing a single pixel in our case) is "cheap" to compute. 
 How fast it is in practice depends on the regularization $P(x)$ we use.
@@ -87,7 +86,7 @@ do
 	//housekeeping
 	x[pixelLocation] += optimalValue
 	residuals = (dirty - Convolve(x, psf))
-	objectiveValue = SUM(residuals * residuals) + ElasticNet(x)
+	objectiveValue = SUM(residuals * residuals) + lambda * ElasticNet(x)
 } while (oldObjectiveValue - objectiveValue)  < epsilon
 \end{lstlisting}
 
@@ -104,7 +103,16 @@ he next point is the iteration strategy. This is where Coordinate Descent method
 Start with a greedy scheme, well known convergence guarantees at least linearly (with respect to iteration count?)\cite{luo1992convergence}
 Cyclic scheme.
 
-The task of the $Minimize()$ function is to reduce the data objective, i.e. $\left \| I_{dirty} - x * PSF \right \|_2^2$. There are many different ways to implement $Minimize()$. For example,  we could use a line search algorithm, which tries different values for the pixel and saves the value with the lowest data objective. Luckily for our case we have a closed form solution. Meaning we have a formula that results in the optimal pixel value. It's derived from the fact that the data term reduces to a parabola when we only have one unknown pixel. The equation \eqref{dist:deconv:cd:minimizer} shows the parabola derived from the data term, where $\langle x, y\rangle$ is the inner product\footnote{As the reader is probably aware, there is no one inner product. Rather, there are several ways to define a valid inner product. Here we use the element-wise multiplication followed by a sum.}, the element-wise multiplication followed by a sum of the two vectors.
+The task of the $Minimize()$ function is to reduce the data term of the objective \eqref{dist:deconv}, i.e. $\left \| I_{dirty} - x * PSF \right \|_2^2$. There are many different ways to implement $Minimize()$. For example,  we could use a line search algorithm, which tries different values for the pixel and saves the value with the lowest data objective. Luckily for our case we have a closed form solution. Meaning we have a formula that results in the optimal pixel value. It's derived from the fact that the data term reduces to a parabola when we only have one unknown pixel. The equation \eqref{dist:deconv:cd:derivation} derives the parabola from the data term, and the equation \eqref{dist:deconv:cd:minimizer} shows the closed form solution, where $\langle x, y\rangle$ is the inner product\footnote{As the reader is probably aware, there is no one inner product. Rather, there are several ways to define a valid inner product. Here we use the element-wise multiplication followed by a sum.}, the element-wise multiplication followed by a sum of the two vectors.
+
+\begin{equation} \label{dist:deconv:cd:derivation}
+\begin{split}
+objective(pixel) & = \left \| I_{res} - PSF * pixel \right \|_2^2\\
+objective(pixel) & = (I_{res} - PSF * pixel)^2\\
+objective(pixel) & = \langle I_{res}, I_{res} \rangle - 2*\langle I_{res},PSF\rangle * pixel + \langle PSF, PSF \rangle * pixel^2\\
+objective(pixel) & = \langle PSF, PSF \rangle * pixel^2 - 2*\langle I_{res},PSF\rangle * pixel + \langle I_{res}, I_{res} \rangle
+\end{split}
+\end{equation}
 
 \begin{equation} \label{dist:deconv:cd:minimizer}
 \begin{split}
@@ -124,13 +132,17 @@ pixel_{min} & = \frac{\langle I_{res},PSF\rangle}{\langle PSF, PSF \rangle}
 \end{split}
 \end{equation}
 
-
-
-Let us derive the closed form solution to the $Minimize()$ function. We start by writing the data fidelity term as a quadratic equation: $(I_{dirty} - pixel * PSF)^2$, where $pixel$ is a scalar. Further, let us assume we only have a single pixel in the dirty image $I_{dirty}$ and a single pixel in the $PSF$. Everything is a scalar, it is easy to see that we are dealing with a parabola ($a*x^2 + b*x + c$. When we use our variable names we get $PSF^2 * pixel^2 - 2*(I_{dirty}*PSF)*pixel + (I_{dirty})^2$). We have a closed form solution to find the optimum of a parabola, i.e. $x_{opt} = \frac{-b}{2a}$, or when we use our variable names explicitly, we get $x_{opt} = \frac{(pixel*PSF)*I_{dirty}}{PSF^2}$. If we are dealing with more than one pixel in the dirty image $I_{dirty}$ and $PSF$, we multiply element-wise and sum up all the dimensions (i.e. $b = -2 SUM(pixel*PSF*I_{dirty})$). We found our closed form solution in the one dimensional case and we can implement $Minimize()$.
-
+Note that the $PSF$ in \eqref{dist:deconv:cd:minimizer} is centred at the pixel we wish to minimize. Also, if the pixel is located at the edges of the image, it may be partially cut off. This fact becomes relevant as soon as we want to implement $Minimize()$ efficiently and pre-calculate the inner-products $\langle I_{dirty},PSF\rangle$ and $\langle PSF, PSF \rangle$. From here on forward, we use the terminology $b$-map to denote the pre-calculated inner products $\langle I_{dirty},PSF\rangle$ for each pixel, and $a$-map for all pre-calculated $\langle PSF, PSF \rangle$ products (from the fact that $x_{min} = \frac{-b}{2a}$). 
 
 
 \subsubsection{Efficient Coordinate Descent implementation}\label{dist:deconv:efficient}
+Coordinate Descent is only useful when one iteration is cheap to compute.
+
+Pre-calculation of the two inner products
+Efficiently
+
+
+
 The question of efficient implementation. In the previous section, we have seen how coordinate descent works in general. But now we have to look at the details and see how we can implement it efficiently.
 
 Question of convolution scheme. 
@@ -146,7 +158,7 @@ Iteration scheme. For a greedy iteration scheme, we would need to first:
 
 For the first step, we can cache intermediate results and drastically reduce the computation. The second step can be approximated in a way that we do not need to evaluate the objective function.
 
-\textbf{Caching intermediate results}\\
+\textbf{Pre-Calculating $b$- and $a$-maps}\\
 Caching of intermediate results. We have seen in section \ref{dist:deconv:cd} how we can find the optimum for a single pixel. We need to calculate  $x_{opt} = \frac{-b}{2a}$ where  $b = -2 SUM( pixel*PSF*I_{dirty})$ and $a = SUM(PSF * PSF)$. First, we note that $a$ depends only on the $PSF$ which is constant, which means $a$ is also constant. However, this is not true depending on the convolution we use.
 $PSF$ at the corner gets masked off, and the $a$ value changes.
 We can calucalte a lookup map in linear time.
