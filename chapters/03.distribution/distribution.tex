@@ -52,7 +52,7 @@ We use \eqref{dist:deconv} as our optimization objective with data fidelity term
 
 \subsubsection{Coordinate Descent Method}\label{dist:deconv:cd}
 Coordinate Descent has gained more interest, because it may exploit sparse structures in the data.
-Optimization for large data volume
+Optimization for large data volume\cite{richtarik2016distributed}
 
 Most problems become simple when we look at them in the one dimensional case. Finding the optimum to our objective \eqref{dist:deconv} is hard. But when we try to find the optimum of a single pixel, independent of all other pixels, the problem becomes simple. As we will see, we can find a closed form solution to find the optimum of a single pixel.
 Coordinate Descent then optimizes a single pixel at a time, and we iterate over the whole image with some strategy until we converge. We may need to optimize the same pixel several times.
@@ -60,8 +60,12 @@ Coordinate Descent then optimizes a single pixel at a time, and we iterate over 
 Monotone decreasing.
 Robust
 Many different variants.
-How fast it is in practice depends on the regularization $P(x)$ we use.
+
+
 Outperforms other algorithms like Gradient based methods, FISTA and ADMM if a single iteration (minimizing a single pixel in our case) is "cheap" to compute. 
+How fast it is in practice depends on the regularization $P(x)$ we use.
+
+The basic algorithm is as follows in pseudocode: A major cycle has calculated the dirty image and the $PSF$. We do not care yet about computation speed.
 
 \begin{lstlisting}
 dirty = IFFT(Gridding(visibilities))
@@ -77,23 +81,54 @@ do
 
 	//the core of the algorithm
 	pixelLocation = IterationStrategy(residuals)
-	optimalValue = Minimize(residuals, pixelLocation)
+	optimalValue = Minimize(residuals, psf, pixelLocation)
 	optimalValue = ApplyElasticNet(optimalValue)
 	
 	//housekeeping
-	x[pixelLocation] = optimalValue
+	x[pixelLocation] += optimalValue
 	residuals = (dirty - Convolve(x, psf))
 	objectiveValue = SUM(residuals * residuals) + ElasticNet(x)
 } while (oldObjectiveValue - objectiveValue)  < epsilon
 \end{lstlisting}
 
-The core of the algorithm consists of three functions: $ApplyElasticNet()$ which applies the closed form solution of the ElasticNet regularization (discussed in section \ref{dist:deconv:reg}), the $Minimize()$ function which minimizes a single pixel at a time and the iteration strategy. We derive a closed form solution for minimizing a single pixel independently of each other and then discuss the basics of the iteration strategy.
+The core of the algorithm consists of three functions: $IterationStrategy$ which selects a pixel to optimize according to some strategy, $Minimize()$ which then finds the minimum value of the pixel, and $ApplyElasticNet()$ , which finds the regularized value of the pixel according to the Elastic Net regularization. First we discuss the iteration strategy and derive the  $Minimize()$ function is in our deconvolution task. How the function $ApplyElasticNet()$ looks is discussed in section section \ref{dist:deconv:reg}.
+
+The iteration strategy
+\begin{itemize}
+	\item Random
+	\item Cyclic
+	\item Greedy
+\end{itemize}
+Random 
+he next point is the iteration strategy. This is where Coordinate Descent methods are robust. They are proven to converge by simply choosing randomly. Or a greedy strategy where the pixel which reduces the objective \eqref{dist:deconv} by the largest amount. It was proven to converge for a variety of strategies. For this project, we are interested in which takes fewer computing resources to converge. 
+Start with a greedy scheme, well known convergence guarantees at least linearly (with respect to iteration count?)\cite{luo1992convergence}
+Cyclic scheme.
+
+The task of the $Minimize()$ function is to reduce the data objective, i.e. $\left \| I_{dirty} - x * PSF \right \|_2^2$. There are many different ways to implement $Minimize()$. For example,  we could use a line search algorithm, which tries different values for the pixel and saves the value with the lowest data objective. Luckily for our case we have a closed form solution. Meaning we have a formula that results in the optimal pixel value. It's derived from the fact that the data term reduces to a parabola when we only have one unknown pixel. The equation \eqref{dist:deconv:cd:minimizer} shows the parabola derived from the data term, where $\langle x, y\rangle$ is the inner product\footnote{As the reader is probably aware, there is no one inner product. Rather, there are several ways to define a valid inner product. Here we use the element-wise multiplication followed by a sum.}, the element-wise multiplication followed by a sum of the two vectors.
+
+\begin{equation} \label{dist:deconv:cd:minimizer}
+\begin{split}
+f(x) & = a*x^2 \\
+ & + b*x \\
+ & + c\\
+ \\
+x_{min} & = \frac{-b}{2a}
+\end{split}
+\quad \quad
+\begin{split}
+objective(pixel) & = \langle PSF, PSF \rangle * pixel^2 \\
+ & - 2*\langle I_{res},PSF\rangle * pixel \\
+ &+ \langle I_{res}, I_{res} \rangle\\
+ \\
+pixel_{min} & = \frac{\langle I_{res},PSF\rangle}{\langle PSF, PSF \rangle}
+\end{split}
+\end{equation}
+
+
 
 Let us derive the closed form solution to the $Minimize()$ function. We start by writing the data fidelity term as a quadratic equation: $(I_{dirty} - pixel * PSF)^2$, where $pixel$ is a scalar. Further, let us assume we only have a single pixel in the dirty image $I_{dirty}$ and a single pixel in the $PSF$. Everything is a scalar, it is easy to see that we are dealing with a parabola ($a*x^2 + b*x + c$. When we use our variable names we get $PSF^2 * pixel^2 - 2*(I_{dirty}*PSF)*pixel + (I_{dirty})^2$). We have a closed form solution to find the optimum of a parabola, i.e. $x_{opt} = \frac{-b}{2a}$, or when we use our variable names explicitly, we get $x_{opt} = \frac{(pixel*PSF)*I_{dirty}}{PSF^2}$. If we are dealing with more than one pixel in the dirty image $I_{dirty}$ and $PSF$, we multiply element-wise and sum up all the dimensions (i.e. $b = -2 SUM(pixel*PSF*I_{dirty})$). We found our closed form solution in the one dimensional case and we can implement $Minimize()$.
 
-The next point is the iteration strategy. This is where Coordinate Descent methods are robust. They are proven to converge by simply choosing randomly. Or a greedy strategy where the pixel which reduces the objective \eqref{dist:deconv} by the largest amount. It was proven to converge for a variety of strategies. For this project, we are interested in which takes fewer computing resources to converge. 
-Start with a greedy scheme, well known convergence guarantees at least linearly (with respect to iteration count?)\cite{luo1992convergence}
-Cyclic scheme.
+
 
 \subsubsection{Efficient Coordinate Descent implementation}\label{dist:deconv:efficient}
 The question of efficient implementation. In the previous section, we have seen how coordinate descent works in general. But now we have to look at the details and see how we can implement it efficiently.
