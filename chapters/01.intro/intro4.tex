@@ -20,45 +20,40 @@
 	\caption{The image reconstruction problem, the observed image has to be reconstructed from the Fourier measurements.}\label{intro0:inversefig}
 \end{figure}
 
-In Radio Astronomy, the angular resolution of a single antenna is limited by the dish-diameter. Of course, there is a practical limit on the size of antenna-dishes we can build. Radio interferometers go around this problem. They use several smaller antennas together, acting like a single large dish. Several smaller dishes together can achieve higher angular resolution than single-dish instruments.
+In Astronomy, one goal is to find ever smaller objects in the sky. For this purpose, we build instruments with higher angular resolution. The instruments angular resolution depends on two factors: On the diameter of the antenna-dish or mirror, and on the observed wavelength. With longer wavelengths we need bigger dishes/mirrors to achieve a similar angular resolution. 
 
-But there are drawbacks. First, the interferometer does not measure the sky in pixels. It measures the amplitude and phase of Fourier components at a given $u$ and $v$ location\footnote{$u$ and $v$ are the axis in Fourier space}. The observed image has to be reconstructed from the measurements. The figure \ref{intro0:inversefig} shows an example of the image reconstruction problem. The figure \ref{intro0:inversefig:uvspace} shows the measurements in the Fourier space, and the figure \ref{intro0:inversefig:reconstruction} shows the observed image of the sky, with two stars close to each other. The image reconstruction has to find the observed image \ref{intro0:inversefig:reconstruction} from the measurements \ref{intro0:inversefig:uvspace}. 
+This is an issue for Radio Astronomy. The long radio wavelengths require huge dishes for a high angular resolution. Of course there is a practical limit on the antenna-dish diameter we can build. The famous Arecibo observatory is one of the largest single-dish radio telescopes with a diameter of 305 meters. Antennas with such a large diameter become difficult to steer accurately, let alone the construction costs. We have reached the practical limits of single-dish telescopes. If we require higher angular resolution, we need to look at another type of instrument: The radio interferometer. They use several smaller antennas together, acting like a single large dish. An interferometer can achieve angular resolutions which are comparable to dishes with a diameter of several kilometers.
+
+But there are drawbacks: The interferometer does not measure the sky in pixels. It measures the amplitude and phase of Fourier components at a given $u$ and $v$ location\footnote{$u$ and $v$ are the axis in Fourier space}. The observed image has to be reconstructed from the measurements. The figure \ref{intro0:inversefig} shows an example of the image reconstruction problem. The figure \ref{intro0:inversefig:uvspace} shows the measurements in the Fourier space, and the figure \ref{intro0:inversefig:reconstruction} shows the observed image of the sky, with two stars close to each other. The image reconstruction has to find the observed image \ref{intro0:inversefig:reconstruction} from the measurements \ref{intro0:inversefig:uvspace}. 
 
 At first glance, we might believe that the image reconstruction is trivial: The interferometer measures Fourier components, and efficient algorithms for the inverse Fourier transforms are well-known. However, two properties of the measured Fourier components make the image reconstruction difficult: The measurements are both noisy and incomplete.
 
-For example the ionosphere of the earth is a source for noise in the measurement. It adds noise to the amplitude and phase of each measured Fourier component. The ionosphere changes over time and can under the right circumstances introduce a high level of noise compared to the signal. The ideal image reconstruction should be able to find the observed image from very noisy Fourier measurements.
+The atmosphere of the earth is one source that introduces noise.. It adds noise to the amplitude and phase of each measured Fourier component. The atmosphere changes over time and can under the right circumstances introduce a high level of noise compared to the signal. The image reconstruction should be able to find the observed image from potentially very noisy Fourier measurements.
 
 The interferometer measures an incomplete set of Fourier components note that the figure \ref{intro0:inversefig:uvspace} does not contain a noisy measurement of every non-zero Fourier component. There are Fourier components with non-zero amplitudes that the interferometer has not seen. The reconstruction algorithm has to find the observed image even though important Fourier components are missing from the measurements.
 
 These two difficulties, the noise and the incomplete measurements make the image reconstruction an ill-posed inverse problem. There are many different images that fit the measurements, and from the measurements alone, we cannot decide which is the truly observed image. 
 
-Numerical optimization algorithm that finds the optimal trade-off between being as close to the data, and being as consistent with our prior knowledge as possible.
+We cannot find the observed image, all we can do is find the most likely observed image. This is the what an image reconstruction algorithm produces: It uses prior knowledge about the image and finds the most likely observed image given the data. It uses a numerical optimization algorithm to find the optimal trade-off between being as close to the data, and being as consistent with the prior knowledge as possible.
 
-Introduce some prior knowledge and return the most-likely observed image given the measurements.
-
-Describe the solution
-Reconstruction algorithm
-
-
-A reconstruction algorithm that can:
+The question that comes to mind is: How close are the most-likely image of the reconstruction algorithms to the observed image? The answer depends on the noise level in the measurements. On a low noise level, recently developed algorithms were shown to super-resolve the observed image\cite{dabbech2018cygnus, dabbech2015moresane}, to reconstruct the image above the accuracy limit of the instrument. However, not all algorithms perform equally well when the noise level in the measurements is high. Also, computing resources required for each algorithm can vary significantly. In short, a reconstruction algorithm in Radio Astronomy has three opposing goals:
 \begin{enumerate}
-	\item The best possible resolution from the measurements
-	\item Is robust to even heavy noise in the measurements.
-	\item Uses as few computing resources as possible.
+	\item Produce a reconstruction with the highest possible resolution from the measurements.
+	\item Robust against even heavy noise in the measurements.
+	\item Use as few computing resources as possible.
 \end{enumerate}
 
-There is no reconstruction algorithm that solves all three problems.
+T
 
-Furthermore a radio interferometers produce an ever increasing volume of Fourier measurements. Recently, the new MeerKAT radio interferometer was completed. It can produce roughly 80 million Fourier components every second, and a single observation may be conducted over several hours. Reconstructing an image for radio interferometers is therefore a big data problem.
+There is no reconstruction algorithm that has the optimal trade-off between all three goals. It is an active field of research.
 
+To complicate things further, newly constructed radio interferometers pose the reconstruction problem on a big data scale. The recently finished MeerKAT radio interferometer produces roughly 80 million Fourier measurements each second.
+We need to distribute the image reconstruction. This is an active field of research.
+Research into how we can perform the image reconstruction in a
 
-We need distributed algorithms.
+The ideal reconstruction algorithm not only achieves all three opposing goals, but is also distributable in a super-computer environment, preferably on the GPU. This is a tall order. So far, the go-to reconstruction algorithm CLEAN was performing its numerical optimization on a single machine. The new data volume raises the need for distributed and GPU-Accelerated optimization algorithms.
 
-The CLEAN algorithm, staple in radio astronomy.
-Is robust and so far one of the faster algorithms
-
-Big data problem is not sovled. Not every part is of the image reconstruction is distributed
-
+We explore coordinate Descent.
 
 This Project focuses on the third point, distributed image reconstruction with real-world meerkat observations
 Received from SARAO for the purpose of algorithmic validation.

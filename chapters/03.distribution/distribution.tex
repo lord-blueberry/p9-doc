@@ -100,6 +100,8 @@ do
 
 The core of the algorithm consists of three functions: $IterationStrategy$ which selects a pixel to optimize according to some strategy, $Minimize()$ which then finds the minimum value of the pixel, and $ApplyElasticNet()$ , which finds the regularized value of the pixel according to the Elastic Net regularization. First we discuss the iteration strategy and derive the  $Minimize()$ function is in our deconvolution task. How the function $ApplyElasticNet()$ looks is discussed in section section \ref{dist:deconv:reg}.
 
+From the viewpoint of numerical optimization, Minimize is always an "implementation" detail of the algorithm.
+
 The iteration strategy
 \begin{itemize}
 	\item Random
