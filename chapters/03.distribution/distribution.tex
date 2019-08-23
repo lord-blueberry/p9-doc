@@ -52,7 +52,15 @@ We use \eqref{dist:deconv} as our optimization objective with data fidelity term
 
 \subsubsection{Coordinate Descent Method}\label{dist:deconv:cd}
 Coordinate Descent has gained more interest, because it may exploit sparse structures in the data.
+
+Different versions.
 Optimization for large data volume\cite{richtarik2016distributed}
+
+4 multiplications and additions only\cite{richtarik2012efficient}
+
+error tolerance O( n ˜LR / e ), \cite{richtarik2016parallel}
+
+can be more efficient on big data problems than gradient methods \cite{nesterov2012efficiency,nesterov2013gradient}
 
 Most problems become simple when we look at them in the one dimensional case. Finding the optimum to our objective \eqref{dist:deconv} is hard. But when we try to find the optimum of a single pixel, independent of all other pixels, the problem becomes simple. As we will see, we can find a closed form solution to find the optimum of a single pixel.
 Coordinate Descent then optimizes a single pixel at a time, and we iterate over the whole image with some strategy until we converge. We may need to optimize the same pixel several times.
