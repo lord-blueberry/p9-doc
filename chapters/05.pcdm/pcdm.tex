@@ -1,0 +1,21 @@
+\section{Towards parallel coordinate descent}
+
+Bells and whistles
+
+\begin{itemize}
+	\item Random
+	\item Block
+	\item Parallel
+	\item Accelerated
+\end{itemize}
+
+PCDM algorithm, and later APPROX.
+
+\subsection{Problems}
+Problem with pure random: each update is fast, but problem with useful updates. --> we need blocks where we have a higher chance to update a pixel.
+
+Expansion to BlockCD. Still closed form solution. But numerical problems with closed form. Solution: \cite{richtarik2014iteration}. We use the gradient step divided by the lipschitz constant.
+
+Towards parallel updates
+
+
