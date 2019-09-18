@@ -74,6 +74,8 @@ How fast it is in practice depends on the regularization $P(x)$ we use.
 
 The basic algorithm is as follows in pseudocode: A major cycle has calculated the dirty image and the $PSF$. We do not care yet about computation speed.
 
+Because it is a separable objective function, we can handle ElasticNET() seperately
+
 \begin{lstlisting}
 dirty = IFFT(Gridding(visibilities))
 residuals = dirty

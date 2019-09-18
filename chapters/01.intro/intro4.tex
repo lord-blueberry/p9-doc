@@ -28,20 +28,22 @@ But there are drawbacks: The interferometer does not measure the sky in pixels. 
 
 At first glance, we might believe that the image reconstruction is trivial: The interferometer measures Fourier components, and efficient algorithms for the inverse Fourier transforms are well-known. However, two properties of the measured Fourier components make the image reconstruction difficult: The measurements are both noisy and incomplete.
 
-The atmosphere of the earth is one source that introduces noise.. It adds noise to the amplitude and phase of each measured Fourier component. The atmosphere changes over time and can under the right circumstances introduce a high level of noise compared to the signal. The image reconstruction should be able to find the observed image from potentially very noisy Fourier measurements.
+The atmosphere of the earth is one source that introduces noise. It adds noise to the amplitude and phase of each measured Fourier component. The atmosphere changes over time and can under the right circumstances introduce a high level of noise compared to the signal. The image reconstruction should be able to find the observed image from potentially very noisy Fourier measurements.
 
-The interferometer measures an incomplete set of Fourier components note that the figure \ref{intro0:inversefig:uvspace} does not contain a noisy measurement of every non-zero Fourier component. There are Fourier components with non-zero amplitudes that the interferometer has not seen. The reconstruction algorithm has to find the observed image even though important Fourier components are missing from the measurements.
+The interferometer measures an incomplete set of Fourier components. Note that the figure \ref{intro0:inversefig:uvspace} shows the Fourier space, which has missing components. The interferometer can only measure a limited set of Fourier components. The reconstruction algorithm has to find the observed image even though important Fourier components are missing from the measurements.
 
-These two difficulties, the noise and the incomplete measurements make the image reconstruction an ill-posed inverse problem. There are many different images that fit the measurements, and from the measurements alone, we cannot decide which is the truly observed image. 
+These two difficulties, the noise and the incomplete measurements, lead to the fact that there are many different candidate images that fit the measurements. From the measurements alone, we cannot decide which candidate is the truly observed image. However, we have additional knowledge that simplifies the problem: We know it is an image of the sky, which consists of stars, hydrogen clouds, etc. By including prior knowledge in the reconstruction, we can find the most likely image given the measurements. 
 
-We cannot find the observed image, all we can do is find the most likely observed image. This is the what an image reconstruction algorithm produces: It uses prior knowledge about the image and finds the most likely observed image given the data. It uses a numerical optimization algorithm to find the optimal trade-off between being as close to the data, and being as consistent with the prior knowledge as possible.
-
-The question that comes to mind is: How close are the most-likely image of the reconstruction algorithms to the observed image? The answer depends on the noise level in the measurements. On a low noise level, recently developed algorithms were shown to super-resolve the observed image\cite{dabbech2018cygnus, dabbech2015moresane}, to reconstruct the image above the accuracy limit of the instrument. However, not all algorithms perform equally well when the noise level in the measurements is high. Also, computing resources required for each algorithm can vary significantly. In short, a reconstruction algorithm in Radio Astronomy has three opposing goals:
+The question remains is: How close is the most likely image to the observed one? Is exact reconstruction possible where the most likely and observed image are equal? Surprisingly the answer is yes. In theory, it is possible to even create a super-resolved reconstruction (where we retrieve an image below the accuracy limit of the instrument)\cite{candes2006robust,donoho2006compressed}, and was shown in practice on low noise measurements\cite{dabbech2018cygnus, dabbech2015moresane}. However, not all algorithms perform equally well when the noise level in the measurements is high. Also, computing resources required for each algorithm can vary significantly. In short, a reconstruction algorithm has three opposing goals:
 \begin{enumerate}
 	\item Produce a reconstruction with the highest possible resolution from the measurements.
 	\item Robust against even heavy noise in the measurements.
 	\item Use as few computing resources as possible.
 \end{enumerate}
+
+No reconstruction algorithm performs equally well on all three goals. The CLEAN algorithm\cite{hogbom1974aperture, rau2011multi} has shown to be robust against heavy noise and, depending on the observation, uses fewer computing resources than other algorithms\cite{offringa2017optimized}. It is one of the oldest algorithms still in use today. As such, it was developed before the advent of distributed and gpu-accelerated computing.
+
+
 
 T
 
@@ -51,9 +53,13 @@ To complicate things further, newly constructed radio interferometers pose the r
 We need to distribute the image reconstruction. This is an active field of research.
 Research into how we can perform the image reconstruction in a
 
+Part of data modelling. What is the prior knowledge
+
+and Optimization algorithm, which finds the optimum trade-off
+
 The ideal reconstruction algorithm not only achieves all three opposing goals, but is also distributable in a super-computer environment, preferably on the GPU. This is a tall order. So far, the go-to reconstruction algorithm CLEAN was performing its numerical optimization on a single machine. The new data volume raises the need for distributed and GPU-Accelerated optimization algorithms.
 
-We explore coordinate Descent.
+We explore coordinate Descent based methods
 
 This Project focuses on the third point, distributed image reconstruction with real-world meerkat observations
 Received from SARAO for the purpose of algorithmic validation.
