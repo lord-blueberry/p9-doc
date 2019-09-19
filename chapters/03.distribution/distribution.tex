@@ -1,56 +1,58 @@
-\section{Simple distributed image reconstruction}\label{dist}
-How do we distribute the major cycle. We need to distribute every step, Gridding, FFT and Deconvolution.
+\section{Coordinate descent deconvolution}\label{cd}
+Coordinate descent methods are a family of algorithms. Various variants exist\cite{richtarik2014iteration, richtarik2016distributed, richtarik2016parallel}, but they share one common idea: Most of our problems become simple when we reduce the number of dimensions. Deconvolving a whole image is difficult. But deconvolving a single pixel is easy. As we will show in section \ref{cd:deriving}, we can derive a closed form solution\footnote{Deriving a formula which we can implement in a few lines of code.} for deconvolving a single pixel. We then iterate over all pixels, possibly several times, until we converge to a deconvolved image. 
 
-Gridding, Large number of input data. This needs to be distributed
-We use the Image domain gridding introduces in section \ref{hypo:idg} and use it as the basis for the distributed gridding.
+This is the idea behind coordinate descent methods. By reducing the dimensions of the problem, we can often find an optimization algorithm where each iteration is "cheap" to compute. In these cases, coordinate descent methods produce competitive results\cite{nesterov2012efficiency,nesterov2013gradient}.
 
-The FFT is generally not worth distributing, if we can keep all the data in memory. When the gridding is done, in our setup, the grid is small enough to keep in memory. (cite distributed fftw)
 
-Deconvolution is also worth distributing. CLEAN depending on the observation is the second most time consuming step. But gridding tends to be easier to distribute, so in some observations it is the most time consuming step.
-Split the image into patches and deconvolve each patch.
-Sadly not possible, we need communication. how we communicate is important.
+T
 
-We use a distributed Gridding and a distributed deconvolution. Which leads us to the following architecture.
+
+We do deconvolution for radio astronomy images. 
+
+\begin{equation}\label{cd:deconv}
+\underset{x}{minimize} \: \left \| I_{dirty} - x * PSF \right \|_2^2 + \lambda ElasticNet(x)
+\end{equation}
+
+\subsection{ElasticNet Regularization} \label{dist:deconv:reg}
+L2 norm was used in other work. \cite{ferrari2014distributed}
+
+"Sparsifying L2 norm"
+Remember the theory of compressed sensing.
+
+Formula
 
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=0.80\linewidth]{./chapters/03.distribution/distributed_architecture.png}
-	\caption{Distributed architecture for half a major cycle}
-	\label{dist:architecture:fig}
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/03.distribution/L1.png}
+		\caption{Effect of the pure L1 norm ($\lambda$ = 1.0) on a single point source.}
+		\label{dist:cd:elastic:L1}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/03.distribution/L2.png}
+		\caption{Effect of the pure L2 norm ($\lambda$ = 1.0) on a single point source.}
+		\label{dist:cd:elastic:L2}
+	\end{subfigure}
+	
+	\caption{Effect of the L1 and L2 Norm separately.}
+	\label{dist:cd:elastic}
 \end{figure}
 
-Where each node is one computer, i.e. has its own, possibly multiple cpus and its shared memory.
-Split the input visibilities onto nodes. 
-Do the gridding locally on each node
-Communicate the grid
-inverse FFT on one node.
-Communicate the patches of the image.
-Deconvolve each patch and communicate
+
+Effect
+
+Implementation, closed form solution.
+Implementation, proximal operator. Shrinkage of a division.
+
+
+
+May even speed up convergence for correlated pixel values compared to L1 or L2\cite{friedman2010regularization}. But was not investigated in this project
+
 
 How we distribute the IDG algorithm, and create a distributed deconvolution algorithm. Main contribution is the distributed deconvolution algorithm
 
 
-\subsection{Distributing the IDG algorithm}\label{distribution:idg}
-
-
-
-
-\subsection{Distributed deconvolution}
-
-Main contribution
-We start 
-
-What we need: An optimization objective, an optimization algorithm and a regularization. 
-
-We use \eqref{dist:deconv} as our optimization objective with data fidelity term and regularization term. We use Coordinate Descent Methods as our optimization algorithm, which we introduce in section \ref{dist:deconv:cd}, and the ElasticNet regularization, which we discuss in section \ref{dist:deconv:reg}
-
-\begin{equation}\label{dist:deconv}
-\underset{x}{minimize} \: \left \| I_{dirty} - x * PSF \right \|_2^2 + \lambda ElasticNet(x)
-\end{equation}
-
-
-
-\subsubsection{Coordinate Descent Method}\label{dist:deconv:cd}
+\subsection{Deriving the basic coordinate descent deconvolution algorithm}\label{cd:deriving}
 Coordinate Descent has gained more interest, because it may exploit sparse structures in the data.
 
 Different versions.
@@ -60,10 +62,8 @@ Optimization for large data volume\cite{richtarik2016distributed}
 
 error tolerance O( n ˜LR / e ), \cite{richtarik2016parallel}
 
-can be more efficient on big data problems than gradient methods \cite{nesterov2012efficiency,nesterov2013gradient}
 
-Most problems become simple when we look at them in the one dimensional case. Finding the optimum to our objective \eqref{dist:deconv} is hard. But when we try to find the optimum of a single pixel, independent of all other pixels, the problem becomes simple. As we will see, we can find a closed form solution to find the optimum of a single pixel.
-Coordinate Descent then optimizes a single pixel at a time, and we iterate over the whole image with some strategy until we converge. We may need to optimize the same pixel several times.
+
 
 Monotone decreasing.
 Robust
@@ -220,39 +220,7 @@ do
 
 
 
-\subsubsection{ElasticNet Regularization} \label{dist:deconv:reg}
-L2 norm was used in other work. \cite{ferrari2014distributed}
 
-"Sparsifying L2 norm"
-Remember the theory of compressed sensing.
-
-Formula
-
-\begin{figure}[h]
-	\centering
-	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=\linewidth]{./chapters/03.distribution/L1.png}
-		\caption{Effect of the pure L1 norm ($\lambda$ = 1.0) on a single point source.}
-		\label{dist:cd:elastic:L1}
-	\end{subfigure}
-	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=\linewidth]{./chapters/03.distribution/L2.png}
-		\caption{Effect of the pure L2 norm ($\lambda$ = 1.0) on a single point source.}
-		\label{dist:cd:elastic:L2}
-	\end{subfigure}
-	
-	\caption{Effect of the L1 and L2 Norm separately.}
-	\label{dist:cd:elastic}
-\end{figure}
-
-
-Effect
-
-Implementation, proximal operator. Shrinkage of a division.
-
-
-
-May even speed up convergence for correlated pixel values compared to L1 or L2\cite{friedman2010regularization}. But was not investigated in this project
 
 \subsection{Major Cycle convergence}
 Putting it all together
@@ -265,3 +233,31 @@ Danger that CD takes too many pixel into a Major Cycle. Lower bound per iteratio
 
 \subsection{Test on MeerKAT data}
 
+\subsection{Distributed Deconvolution}
+How do we distribute the major cycle. We need to distribute every step, Gridding, FFT and Deconvolution.
+
+Gridding, Large number of input data. This needs to be distributed
+We use the Image domain gridding introduces in sectionand use it as the basis for the distributed gridding.
+
+The FFT is generally not worth distributing, if we can keep all the data in memory. When the gridding is done, in our setup, the grid is small enough to keep in memory. (cite distributed fftw)
+
+Deconvolution is also worth distributing. CLEAN depending on the observation is the second most time consuming step. But gridding tends to be easier to distribute, so in some observations it is the most time consuming step.
+Split the image into patches and deconvolve each patch.
+Sadly not possible, we need communication. how we communicate is important.
+
+We use a distributed Gridding and a distributed deconvolution. Which leads us to the following architecture.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.80\linewidth]{./chapters/03.distribution/distributed_architecture.png}
+	\caption{Distributed architecture for half a major cycle}
+	\label{dist:architecture:fig}
+\end{figure}
+
+Where each node is one computer, i.e. has its own, possibly multiple cpus and its shared memory.
+Split the input visibilities onto nodes. 
+Do the gridding locally on each node
+Communicate the grid
+inverse FFT on one node.
+Communicate the patches of the image.
+Deconvolve each patch and communicate

@@ -17,19 +17,20 @@
 	\subcaptionbox{Reconstructed image.\label{intro:inversefig:reconstruction}}{%
 		\includegraphics[height=\twosubht]{./chapters/01.intro/mk2/clean.png}%
 	}
-	\caption{Example of an image reconstruction for visibility measurements of the MeerKAT radio interferometer}\label{intro:inversefig}
+	\caption{Example of an image reconstruction for Fourier measurements of the MeerKAT radio interferometer}\label{intro:inversefig}
 \end{figure}
 
-The figure \ref{intro:inversefig} gives an example of the radio interferometric imaging. We wish to reconstruct an image, shown in \ref{intro:inversefig:reconstruction} from the measurements of the interferometer \ref{intro:inversefig:uvspace}. The reconstructed image contains two object types: Point sources and extended emissions. Point sources, stars for example, are far-away emissions that are concentrated in a single pixel. Extended emissions like hydrogen clouds emit radio waves over a large area of the sky and span over several pixels in the reconstructed image.
+Radio interferometers sample an incomplete set of Fourier components of the sky. Each Fourier component consists of the noisy amplitude plus phase measurements and the $uv$ location on where it was measured in the Fourier space. Figure \ref{intro:inversefig:uvspace} shows the location of the measurement points in Fourier space of a real-world MeerKAT observation. We wish to reconstruct the observed image \ref{intro:inversefig:reconstruction} from the measurements.
 
-The measurements of the radio interferometer are in the Fourier space. It does not measure how much emission was observed at a single pixel in the sky image, it measures the amplitude and phase of a Fourier component of the sky image. This means each dot in the figure \ref{intro:inversefig:uvspace} represents one Fourier measurement (amplitude and phase) of the observed image. The dots in the center, measurements with a low $uv$-value, measure the low-frequency components of the sky image. They contain the information about structures spanning over several pixels. Dots further away from the center measure the high-frequency components, they contain the information about the edges of the image and are responsible for a "sharp" image. In the radio astronomy literature, the measured Fourier components are called visibilities and for the sake of consistency, we will be calling the measured Fourier components visibilities in this work.
+T
 
-As we will see, we cannot retrieve the observed image by simply calculating the inverse Fourier transform. We require a reconstruction algorithm that finds the most likely observed image given the measurements. How close the most likely image is to the truly observed one depends on the reconstruction algorithm we choose. As it is often the case, how expensive an image reconstruction is in terms of runtime costs (Money spent on the necessary CPU's, time spent waiting for the results etc.) also depends on the reconstruction algorithm. We often face a trade-off between reconstruction quality and runtime costs. This work focuses on distributing the radio interferometric image reconstruction. We search for an effective way to use distributed computing hardware and test how scalable the reconstruction algorithm is with a real-world observation of the MeerKAT radio interferometer.
+From the measurements alone, this is not possible. 
+We need to add prior knowledge about the image.
+Ill-posed inverse problem 
+It is an optimization problem. We need to find the optimum between being as close to the measurements, and being consistent with our prior information.
 
-Introduction to how a radio interferometer works
-What the fundamental problems are and how we can solve them in theory and what the implications are in practice
-how we can 
-This section gives a short introduction to interferometry and show the fundamental problems in the radio interferometric image reconstruction. In section \ref{intro2:ill-posed} we give an introduction how we can solve the radio interferometric image reconstruction in theory, and what the implications are in practice. Section \ref{intro2:rec} introduces how the common architecture for radio interferometric image reconstruction, and how the reconstruction algorithm is divided into sub-tasks in practice. 
+Radio astronomy is difficult, a lot more effects than we have time to handle.
+Fourier components are called visibilities in
 
 \subsection{From electromagnetic waves over visibilities to images}
 We give a short introduction into how the electromagnetic wave gets measured by the interferometer, turned into visibilities and finally processed into an image. Figure \ref{intro:system} shows a radio source and its electro-magnetic (em) wave arriving at the antennas of the interferometer. It then shows the three processes involved to arrive at an image: Correlation, calibration and image reconstruction.

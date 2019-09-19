@@ -41,25 +41,25 @@ The question remains is: How close is the most likely image to the observed one?
 	\item Use as few computing resources as possible.
 \end{enumerate}
 
-No reconstruction algorithm performs equally well on all three goals. The CLEAN algorithm\cite{hogbom1974aperture, rau2011multi} has shown to be robust against heavy noise and, depending on the observation, uses fewer computing resources than other algorithms\cite{offringa2017optimized}. It is one of the oldest algorithms still in use today. As such, it was developed before the advent of distributed and gpu-accelerated computing.
+No reconstruction algorithm performs equally well on all three goals. The CLEAN algorithm\cite{hogbom1974aperture, rau2011multi} has shown to be robust against heavy noise and, depending on the observation, uses fewer computing resources than other algorithms\cite{offringa2017optimized}. It is one of the oldest algorithms still in use today. As such, it was developed before the advent of distributed and gpu-accelerated computing. 
 
 
 
 T
 
-There is no reconstruction algorithm that has the optimal trade-off between all three goals. It is an active field of research.
+It is not clear how CLEAN works in this modern environment.
+
 
 To complicate things further, newly constructed radio interferometers pose the reconstruction problem on a big data scale. The recently finished MeerKAT radio interferometer produces roughly 80 million Fourier measurements each second.
 We need to distribute the image reconstruction. This is an active field of research.
-Research into how we can perform the image reconstruction in a
 
-Part of data modelling. What is the prior knowledge
 
-and Optimization algorithm, which finds the optimum trade-off
 
-The ideal reconstruction algorithm not only achieves all three opposing goals, but is also distributable in a super-computer environment, preferably on the GPU. This is a tall order. So far, the go-to reconstruction algorithm CLEAN was performing its numerical optimization on a single machine. The new data volume raises the need for distributed and GPU-Accelerated optimization algorithms.
+Coordinate Descent based methods work well on similar problems \cite{nesterov2012efficiency}, distributed\cite{fercoq2014fast}, and GPU accelerated\cite{mcgaffin2015edge}. To our knowledge Coordinate Descent methods have not been explored for image reconstruction in radio astronomy.
 
-We explore coordinate Descent based methods
+Optimization for large data volume\cite{richtarik2016distributed}
+
+Test coordinate descent based methods on real world meerkat observations
 
 This Project focuses on the third point, distributed image reconstruction with real-world meerkat observations
 Received from SARAO for the purpose of algorithmic validation.
