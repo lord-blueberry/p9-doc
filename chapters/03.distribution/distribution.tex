@@ -12,51 +12,39 @@ For a deconvolution algorithm in radio astronomy, we need three parts: An optimi
 As we have shown before, the objective function consists of two parts. The data term $\left \| I_{dirty} - x * PSF \right \|_2^2$ and the regularization term $ElasticNet(x)$. The data term forces the image to be as close to the measurements as possible which forces the image to be as close to the measurements as possible, the regularization term forces the image to be as consistent as possible with our prior knowledge. The parameter $\lambda$ is a weight that either forces more or less regularization. It is left to the user to define for each image. We will derive the coordinate descent algorithm that optimizes the objective \eqref{cd:deconv} in section \ref{cd:deriving}. First, let us explain what the elastic net regularization does.
 
 \subsection{Elastic net regularization} \label{cd:reg}
+This regularization is a mixture between the L1 and L2 regularization. The figure \ref{cd:elastic} shows the effect of the L1 and L2 norm on a single star. The L1 regularization forces the image to contain few non-zero pixels as possible. It encodes our prior knowledge that the image will contain stars.
 
 T
 
-This regularization is a mixture between the L1 and L2 regularization. The L1 regularization 
-
-
-
-L2 norm was used in other work. \cite{ferrari2014distributed}
-
-can be faster than both L1 or L2
-
-"Sparsifying L2 norm"
-Remember the theory of compressed sensing.
-
-Formula
+The L2 regularization, but it is not sparse. L2 norm was used in other work. \cite{ferrari2014distributed}
+By mixing L1 and L2, we create a "sparsifying L2 norm". 
+May even speed up convergence for correlated pixel values compared to L1 or L2\cite{friedman2010regularization}. But was not investigated in this project
 
 \begin{figure}[h]
 	\centering
 	\begin{subfigure}[b]{0.3\linewidth}
 		\includegraphics[width=\linewidth]{./chapters/03.distribution/L1.png}
 		\caption{Effect of the pure L1 norm ($\lambda$ = 1.0) on a single point source.}
-		\label{dist:cd:elastic:L1}
+		\label{cd:elastic:L1}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.3\linewidth}
 		\includegraphics[width=\linewidth]{./chapters/03.distribution/L2.png}
 		\caption{Effect of the pure L2 norm ($\lambda$ = 1.0) on a single point source.}
-		\label{dist:cd:elastic:L2}
+		\label{cd:elastic:L2}
 	\end{subfigure}
 	
 	\caption{Effect of the L1 and L2 Norm separately.}
-	\label{dist:cd:elastic}
+	\label{cd:elastic}
 \end{figure}
 
+Formally, elastic net regularization is defined as the following:
+\begin{equation}\label{cd:elastic:formula}
+ElasticNet(x) = \: \alpha \left \|x \right \|_1 + \frac{1-\alpha}{2}  \left \|x \right \|_2
+\end{equation}
 
-Effect
+Where $\alpha$ is between 0 and 1, and represents the mixture coefficient between the two norms.
 
 Implementation, closed form solution.
-Implementation, proximal operator. Shrinkage of a division.
-
-
-
-May even speed up convergence for correlated pixel values compared to L1 or L2\cite{friedman2010regularization}. But was not investigated in this project
-
-
-How we distribute the IDG algorithm, and create a distributed deconvolution algorithm. Main contribution is the distributed deconvolution algorithm
 
 
 \subsection{Deriving the basic coordinate descent deconvolution algorithm}\label{cd:deriving}
