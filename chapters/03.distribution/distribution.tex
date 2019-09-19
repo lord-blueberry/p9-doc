@@ -1,20 +1,27 @@
 \section{Coordinate descent deconvolution}\label{cd}
 Coordinate descent methods are a family of algorithms. Various variants exist\cite{richtarik2014iteration, richtarik2016distributed, richtarik2016parallel}, but they share one common idea: Most of our problems become simple when we reduce the number of dimensions. Deconvolving a whole image is difficult. But deconvolving a single pixel is easy. As we will show in section \ref{cd:deriving}, we can derive a closed form solution\footnote{Deriving a formula which we can implement in a few lines of code.} for deconvolving a single pixel. We then iterate over all pixels, possibly several times, until we converge to a deconvolved image. 
 
-This is the idea behind coordinate descent methods. By reducing the dimensions of the problem, we can often find an optimization algorithm where each iteration is "cheap" to compute. In these cases, coordinate descent methods produce competitive results\cite{nesterov2012efficiency,nesterov2013gradient}.
+This is the idea behind coordinate descent methods. By reducing the dimensions of the problem, we can often find an optimization algorithm where each iteration is "cheap" to compute. In these cases, coordinate descent methods produce competitive results\cite{nesterov2012efficiency, nesterov2013gradient}.
 
-
-T
-
-
-We do deconvolution for radio astronomy images. 
+For a deconvolution algorithm in radio astronomy, we need three parts: An optimization algorithm, a regularization, and an optimization objective. We use coordinate Descent as the optimization algorithm, take Elastic Net as the regularization and use the following objective function:
 
 \begin{equation}\label{cd:deconv}
 \underset{x}{minimize} \: \left \| I_{dirty} - x * PSF \right \|_2^2 + \lambda ElasticNet(x)
 \end{equation}
 
-\subsection{ElasticNet Regularization} \label{dist:deconv:reg}
+As we have shown before, the objective function consists of two parts. The data term $\left \| I_{dirty} - x * PSF \right \|_2^2$ and the regularization term $ElasticNet(x)$. The data term forces the image to be as close to the measurements as possible which forces the image to be as close to the measurements as possible, the regularization term forces the image to be as consistent as possible with our prior knowledge. The parameter $\lambda$ is a weight that either forces more or less regularization. It is left to the user to define for each image. We will derive the coordinate descent algorithm that optimizes the objective \eqref{cd:deconv} in section \ref{cd:deriving}. First, let us explain what the elastic net regularization does.
+
+\subsection{Elastic net regularization} \label{cd:reg}
+
+T
+
+This regularization is a mixture between the L1 and L2 regularization. The L1 regularization 
+
+
+
 L2 norm was used in other work. \cite{ferrari2014distributed}
+
+can be faster than both L1 or L2
 
 "Sparsifying L2 norm"
 Remember the theory of compressed sensing.

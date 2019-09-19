@@ -41,21 +41,19 @@ The question remains is: How close is the most likely image to the observed one?
 	\item Use as few computing resources as possible.
 \end{enumerate}
 
-No reconstruction algorithm performs equally well on all three goals. The CLEAN algorithm\cite{hogbom1974aperture, rau2011multi} has shown to be robust against heavy noise and, depending on the observation, uses fewer computing resources than other algorithms\cite{offringa2017optimized}. It is one of the oldest algorithms still in use today. As such, it was developed before the advent of distributed and gpu-accelerated computing. 
-
-
+No reconstruction algorithm performs equally well on all three goals. The CLEAN algorithm\cite{hogbom1974aperture, rau2011multi} has shown to be robust against heavy noise and, depending on the observation, uses fewer computing resources than other algorithms\cite{offringa2017optimized}. It is one of the oldest algorithms still in use today. As such, it was developed before the advent of distributed and gpu-accelerated computing. Today with radio interferometers producing ever more measurements, distributed and gpu-accelerated computing has become a necessity. The recently finished MeerKAT radio interferometer produces roughly 80 million Fourier measurements each second. Astronomers wish to reconstruct an image from several hours worth of measurement data. How to manage this data volume is still an open problem.
 
 T
 
-It is not clear how CLEAN works in this modern environment.
+Coordinate descent methods have been successfully applied in similar image reconstruction tasks, such as reconstruction of CT scans\cite{bouman1996unified}, or X-Ray imaging\cite{felix2017compressed}. They produce competitive results when compared to 
 
-
-To complicate things further, newly constructed radio interferometers pose the reconstruction problem on a big data scale. The recently finished MeerKAT radio interferometer produces roughly 80 million Fourier measurements each second.
-We need to distribute the image reconstruction. This is an active field of research.
+They   \cite{nesterov2012efficiency}, distributed\cite{fercoq2014fast}, and GPU accelerated\cite{mcgaffin2015edge}. To our knowledge Coordinate Descent methods have not been explored for image reconstruction in radio astronomy. 
 
 
 
-Coordinate Descent based methods work well on similar problems \cite{nesterov2012efficiency}, distributed\cite{fercoq2014fast}, and GPU accelerated\cite{mcgaffin2015edge}. To our knowledge Coordinate Descent methods have not been explored for image reconstruction in radio astronomy.
+In this work, we apply coordinate descent
+Platform independent 
+
 
 Optimization for large data volume\cite{richtarik2016distributed}
 
