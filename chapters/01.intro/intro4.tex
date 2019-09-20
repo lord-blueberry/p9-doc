@@ -41,23 +41,11 @@ The question remains is: How close is the most likely image to the observed one?
 	\item Use as few computing resources as possible.
 \end{enumerate}
 
-No reconstruction algorithm performs equally well on all three goals. The CLEAN algorithm\cite{hogbom1974aperture, rau2011multi} has shown to be robust against heavy noise and, depending on the observation, uses fewer computing resources than other algorithms\cite{offringa2017optimized}. It is one of the oldest algorithms still in use today. As such, it was developed before the advent of distributed and gpu-accelerated computing. Today with radio interferometers producing ever more measurements, distributed and gpu-accelerated computing has become a necessity. The recently finished MeerKAT radio interferometer produces roughly 80 million Fourier measurements each second. Astronomers wish to reconstruct an image from several hours worth of measurement data. How to manage this data volume is still an open problem.
+No reconstruction algorithm performs equally well on all three goals. One of the most widely used reconstruction algorithms is CLEAN \cite{hogbom1974aperture, rau2011multi}. It has shown to be robust against heavy noise and, depending on the observation, uses fewer computing resources than competing algorithms\cite{offringa2017optimized}. It is one of the oldest algorithms still in use today. As such, it was developed before the advent of distributed and gpu-accelerated computing. Today's new radio interferometers produce ever more measurements. The recently finished MeerKAT radio interferometer produces roughly 80 million Fourier measurements each second. Astronomers wish to reconstruct an image from several hours worth of measurement data. Reconstructing an image from this data volume requires gpu and distributed computation. But how to use gpu and distributed computing effectively is still an open problem.
 
-T
+Coordinate descent methods have been successfully applied in signal processing tasks, such as reconstruction of CT scans\cite{bouman1996unified}, or X-Ray imaging\cite{felix2017compressed}. GPU accelerated\cite{mcgaffin2015edge} and distributed\cite{fercoq2014fast} variants have been developed. To our knowledge, coordinate descent methods have not been explored for image reconstruction in radio astronomy.
 
-Coordinate descent methods have been successfully applied in similar image reconstruction tasks, such as reconstruction of CT scans\cite{bouman1996unified}, or X-Ray imaging\cite{felix2017compressed}. They produce competitive results when compared to 
+In this work, we develop our own proof-of-concept image reconstruction algorithm based on coordinate descent methods. We apply the reconstruction on a real world MeerKAT observation provided by SARAO. We explore the possible speedups we can achieve by using gpu and distributed computation. The algorithm is implemented platform independent in .netcore.
 
-They   \cite{nesterov2012efficiency}, distributed\cite{fercoq2014fast}, and GPU accelerated\cite{mcgaffin2015edge}. To our knowledge Coordinate Descent methods have not been explored for image reconstruction in radio astronomy. 
+The rest of this work is structured as follows. First in section \ref{radio}, we give an introduction to radio interferometric imaging, and give the theoretical background to why a reconstruction can even achieve a higher resolution than the instrument. Next we present the current state-of-the-art in image reconstruction for radio interferometers in section \ref{state}. Then we derive a basic image reconstruction algorithm based on coordinate descent in section \ref{cd}, and show how we can use gpu acceleration and distribution to speed up reconstruction.
 
-
-
-In this work, we apply coordinate descent
-Platform independent 
-
-
-Optimization for large data volume\cite{richtarik2016distributed}
-
-Test coordinate descent based methods on real world meerkat observations
-
-This Project focuses on the third point, distributed image reconstruction with real-world meerkat observations
-Received from SARAO for the purpose of algorithmic validation.
