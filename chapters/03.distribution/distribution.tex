@@ -41,29 +41,31 @@ ElasticNet(x) = \: \alpha \left \|x \right \|_1 + \frac{1-\alpha}{2}  \left \|x 
 Elastic net has three properties which make it an interesting regularization for coordinate descent: It was shown to speed up convergence rates compared to the pure L1 or L2 norm\cite{friedman2010regularization}, is a separable function, and has a closed form solution. The first property was not further investigated in this work. The second property, separability, means that we can calculate the regularization for each pixel independently of each other, and we still arrive at the same result. Lastly, we can find a simple formula for each pixel that applies the elastic net regularization:
 
 \begin{equation}\label{cd:elastic:closed}
-\lambda ElasticNet(x) = \: \frac{max(x - \lambda * \alpha), 0)}{1+\lambda(1 - \alpha)}
+\lambda ElasticNet(pixel) = \: \frac{max(pixel - \lambda * \alpha, 0)}{1+\lambda(1 - \alpha)}
 \end{equation}
+
+The closed form solution \eqref{cd:elastic:closed} of the elastic net regularization is also a mixture of the closed form solutions of the L1 and L2 norm. The closed form solution of the L1 norm is shrinkage: $max(pixel - \lambda, 0)$, we reduce the pixel value by $\lambda$ and clamp negative values. For the L2 norm, we divide the pixel value: $\frac{pixel}{1+\lambda}$.
 
 %Proximal operator But the second property leads to an optimization algorithm 
 
+Note that the shrink operation in this project always clamps negative pixels to zero. We constrain the image to only contain zero or positive pixel values. This has become a widely used constraint in radio interferometric image reconstruction and may lead to improved image quality\cite{mcewen2011compressed}.
 
-
-Note on non-zero pixels
-
-T
-
-The L2 regularization, but it is not sparse. L2 norm was used in other work. 
-By mixing L1 and L2, we create a "sparsifying L2 norm". 
-May even speed up convergence for correlated pixel values compared to L1 or L2. But was not investigated in this project
-
-
-
-
-
-Implementation, closed form solution.
+Elastic net is the regularization we use throughout this work. It is separable (we can calculate it for each pixel independently) and has an easy to compute closed form solution.
 
 
 \subsection{Deriving the basic coordinate descent deconvolution algorithm}\label{cd:deriving}
+In this section we derive the basic coordinate descent deconvolution algorithm, which minimizes the objective \eqref{cd:deconv}. Coordinate descent methods have a tendency to need a more iterations to converge compared to other methods like gradient descent. However, when a single iteration is cheap to compute, they can be faster in practice. The elastic net regularization has an easy to compute closed form solution \eqref{cd:elastic:closed}, which makes coordinate descent an interesting group of algorithms to explore for this problem.
+
+We call the coordinate descent algorithm described here "basic". Other coordinate descent algorithms in the literature\cite{richtarik2016parallel,fercoq2015accelerated, richtarik2016distributed} can be seen as generalizations of the "basic" algorithm. The basic algorithm optimizes a single pixel at each iteration, while other algorithms can optimize one or several pixels.
+
+T
+
+Why basic algorithm.
+
+There are many different coordinate descent algorithms We describe this algorithm as "basic", because there are 
+The word basic.
+
+
 Coordinate Descent has gained more interest, because it may exploit sparse structures in the data.
 
 Different versions.
