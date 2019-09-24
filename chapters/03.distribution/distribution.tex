@@ -6,7 +6,7 @@ This is the idea behind coordinate descent methods. By reducing the dimensions o
 For a deconvolution algorithm in radio astronomy, we need three parts: An optimization algorithm, a regularization, and an optimization objective. We use coordinate Descent as the optimization algorithm, take Elastic Net as the regularization and use the following objective function:
 
 \begin{equation}\label{cd:deconv}
-\underset{x}{minimize} \: \left \| I_{dirty} - x * PSF \right \|_2^2 + \lambda ElasticNet(x)
+\underset{x}{minimize} \: \frac{1}{2} \left \| I_{dirty} - x * PSF \right \|_2^2 + \lambda ElasticNet(x)
 \end{equation}
 
 As we have shown before, the objective function consists of two parts. The data term $\left \| I_{dirty} - x * PSF \right \|_2^2$ and the regularization term $ElasticNet(x)$. The data term forces the image to be as close to the measurements as possible which forces the image to be as close to the measurements as possible, the regularization term forces the image to be as consistent as possible with our prior knowledge. The parameter $\lambda$ is a weight that either forces more or less regularization. It is left to the user to define for each image. We will derive the coordinate descent algorithm that optimizes the objective \eqref{cd:deconv} in section \ref{cd:deriving}. First, let us explain what the elastic net regularization does.
@@ -54,41 +54,20 @@ Elastic net is the regularization we use throughout this work. It is separable (
 
 
 \subsection{Deriving the basic coordinate descent deconvolution algorithm}\label{cd:deriving}
-In this section we derive the basic coordinate descent deconvolution algorithm, which minimizes the objective \eqref{cd:deconv}. Coordinate descent methods have a tendency to need a more iterations to converge compared to other methods like gradient descent. However, when a single iteration is cheap to compute, they can be faster in practice. The elastic net regularization has an easy to compute closed form solution \eqref{cd:elastic:closed}, which makes coordinate descent an interesting group of algorithms to explore for this problem.
+In this section we derive the basic coordinate descent deconvolution algorithm, which minimizes the objective \eqref{cd:deconv}. Coordinate descent methods have a tendency to need a more iterations to converge compared to other methods like gradient descent. However, when a single iteration is cheap to compute, they can be faster in practice\cite{shalev2011stochastic}. The elastic net regularization has an easy to compute closed form solution \eqref{cd:elastic:closed}, and a single iteration is cheap to compute.
 
-We call the coordinate descent algorithm described here "basic". Other coordinate descent algorithms in the literature\cite{richtarik2016parallel,fercoq2015accelerated, richtarik2016distributed} can be seen as generalizations of the "basic" algorithm. The basic algorithm optimizes a single pixel at each iteration, while other algorithms can optimize one or several pixels.
+We call the coordinate descent algorithm described here "basic". Other coordinate descent algorithms in the literature\cite{richtarik2016parallel,fercoq2015accelerated, richtarik2016distributed} can be seen as generalizations of the "basic" algorithm. The basic algorithm optimizes a single pixel at each iteration, while other algorithms can optimize one or several pixels. 
+%We look at the basic coordinate descent algorithm first and use it as a baseline for comparing different coordinate descent algorithms.
 
-T
+In this section, we derive the basic coordinate descent algorithm that optimizes a single pixel in each iteration, and iterates over all pixels several times, with a specific strategy, until convergence. There are three types of iteration strategy we can choose:
+\begin{enumerate}
+	\item Random: where we choose a pixel to optimize uniformly at random.
+	\item Greedy: where we first choose the pixel which minimizes our objective the most
+	\item Cyclic: where we choose a subset of pixels and cycle through them until convergence. 
+\end{enumerate}
 
-Why basic algorithm. Because it is simple to implement, and a good baseline to compare how the more
+The iteration strategy is not important for convergence. We can for example create a mixture of the different strategies and the algorithm would still converge to the optimum. However, the strategy we choose has an impact on how many iterations we need until convergence. For example: if the image consists of a single star in the center of the image, a greedy strategy would first optimize the pixel at the center, while a random strategy may waste the computing resources in checking every other pixel several times before finally landing on the center. We choose a greedy strategy, and we arrive at the following coordinate descent algorithm in pseudocode:
 
-There are many different coordinate descent algorithms We describe this algorithm as "basic", because there are 
-The word basic.
-
-
-Coordinate Descent has gained more interest, because it may exploit sparse structures in the data.
-
-Different versions.
-Optimization for large data volume\cite{richtarik2016distributed}
-
-4 multiplications and additions only\cite{richtarik2012efficient}
-
-error tolerance O( n ˜LR / e ), \cite{richtarik2016parallel}
-
-
-
-
-Monotone decreasing.
-Robust
-Many different variants.
-
-Outperforms other algorithms like Gradient based methods, FISTA and ADMM if a single iteration (minimizing a single pixel in our case) is "cheap" to compute. 
-How fast it is in practice depends on the regularization $P(x)$ we use.
-
-The basic algorithm is as follows in pseudocode: A major cycle has calculated the dirty image and the $PSF$. 
-We do not care yet about computation speed.
-
-Because it is a separable objective function, we can handle ElasticNET() seperately
 
 \begin{lstlisting}
 dirty = IFFT(Gridding(visibilities))
@@ -103,44 +82,34 @@ do
 	oldObjectiveValue = objectiveValue
 
 	//the core of the algorithm
-	pixelLocation = IterationStrategy(residuals)
-	optimalValue = Minimize(residuals, psf, pixelLocation)
+	pixelLocation = GreedyStrategy(residuals)
+	oldValue = x[pixelLocation]
+	optimalValue = oldValue + Minimize(residuals, psf, pixelLocation)
 	optimalValue = ApplyElasticNet(optimalValue)
 	
 	//housekeeping
-	x[pixelLocation] += optimalValue
+	x[pixelLocation] = optimalValue
 	residuals = (dirty - Convolve(x, psf))
-	objectiveValue = SUM(residuals * residuals) + lambda * ElasticNet(x)
+	objectiveValue = 0.5 * SUM(residuals * residuals) + lambda * ElasticNet(x)
 } while (oldObjectiveValue - objectiveValue)  < epsilon
 \end{lstlisting}
 
-The core of the algorithm consists of three functions: $IterationStrategy$ which selects a pixel to optimize according to some strategy, $Minimize()$ which then finds the minimum value of the pixel, and $ApplyElasticNet()$ , which finds the regularized value of the pixel according to the Elastic Net regularization. First we discuss the iteration strategy and derive the  $Minimize()$ function is in our deconvolution task. How the function $ApplyElasticNet()$ looks is discussed in section section \ref{dist:deconv:reg}.
+The core of the algorithm consists of the three functions: $GreedyStrategy()$, $Minimize()$ and $ApplyElasticNet()$. The function $GreedyStrategy()$ will be discussed in Section \ref{cd:efficient}. The function $ApplyElasticNet()$ was already described in equation \eqref{cd:elastic:closed}. The $Minimize()$ function is responsible for minimizing the data term of our objective \eqref{cd:deconv}. Because we only minimize a single pixel, we are dealing with a one dimensional minimization problem and can derive a closed form solution for it.
 
-From the viewpoint of numerical optimization, Minimize is always an "implementation" detail of the algorithm.
+When we only have one pixel to minimize, the data term of our objective \eqref{cd:deconv} reduces itself to a parabola. We derive the standard parabola form in \eqref{cd:deriving:derivation}, where $\langle x, y\rangle$ is the inner product(element-wise multiplication followed by a sum over all elements):
 
-The iteration strategy
-\begin{itemize}
-	\item Random
-	\item Cyclic
-	\item Greedy
-\end{itemize}
-Random 
-he next point is the iteration strategy. This is where Coordinate Descent methods are robust. They are proven to converge by simply choosing randomly. Or a greedy strategy where the pixel which reduces the objective \eqref{dist:deconv} by the largest amount. It was proven to converge for a variety of strategies. For this project, we are interested in which takes fewer computing resources to converge. 
-Start with a greedy scheme, well known convergence guarantees at least linearly (with respect to iteration count?)\cite{luo1992convergence}
-Cyclic scheme.
-
-The task of the $Minimize()$ function is to reduce the data term of the objective \eqref{dist:deconv}, i.e. $\left \| I_{dirty} - x * PSF \right \|_2^2$. There are many different ways to implement $Minimize()$. For example,  we could use a line search algorithm, which tries different values for the pixel and saves the value with the lowest data objective. Luckily for our case we have a closed form solution. Meaning we have a formula that results in the optimal pixel value. It's derived from the fact that the data term reduces to a parabola when we only have one unknown pixel. The equation \eqref{dist:deconv:cd:derivation} derives the parabola from the data term, and the equation \eqref{dist:deconv:cd:minimizer} shows the closed form solution, where $\langle x, y\rangle$ is the inner product\footnote{As the reader is probably aware, there is no one inner product. Rather, there are several ways to define a valid inner product. Here we use the element-wise multiplication followed by a sum.}, the element-wise multiplication followed by a sum of the two vectors.
-
-\begin{equation} \label{dist:deconv:cd:derivation}
+\begin{equation} \label{cd:deriving:derivation}
 \begin{split}
-objective(pixel) & = \left \| I_{res} - PSF * pixel \right \|_2^2\\
-objective(pixel) & = (I_{res} - PSF * pixel)^2\\
-objective(pixel) & = \langle I_{res}, I_{res} \rangle - 2*\langle I_{res},PSF\rangle * pixel + \langle PSF, PSF \rangle * pixel^2\\
-objective(pixel) & = \langle PSF, PSF \rangle * pixel^2 - 2*\langle I_{res},PSF\rangle * pixel + \langle I_{res}, I_{res} \rangle
+Minimize(pixel) & = \left \| I_{res} - PSF * pixel \right \|_2^2\\
+Minimize(pixel) & = (I_{res} - PSF * pixel)^2\\
+Minimize(pixel) & = \langle I_{res}, I_{res} \rangle - 2*\langle I_{res},PSF\rangle * pixel + \langle PSF, PSF \rangle * pixel^2\\
+Minimize(pixel) & = \langle PSF, PSF \rangle * pixel^2 - 2*\langle I_{res},PSF\rangle * pixel + \langle I_{res}, I_{res} \rangle
 \end{split}
 \end{equation}
 
-\begin{equation} \label{dist:deconv:cd:minimizer}
+Now finding the optimal value for the pixel is the same as finding the optimal value of the parabola:
+
+\begin{equation} \label{cd:deriving:minimizer}
 \begin{split}
 f(x) & = a*x^2 \\
  & + b*x \\
@@ -150,18 +119,24 @@ x_{min} & = \frac{-b}{2a}
 \end{split}
 \quad \quad
 \begin{split}
-objective(pixel) & = \langle PSF, PSF \rangle * pixel^2 \\
+Minimize(pixel) & = \langle PSF, PSF \rangle * pixel^2 \\
  & - 2*\langle I_{res},PSF\rangle * pixel \\
  &+ \langle I_{res}, I_{res} \rangle\\
  \\
-pixel_{min} & = \frac{\langle I_{res},PSF\rangle}{\langle PSF, PSF \rangle}
+pixel_{min} & = \frac{-(-2*\langle I_{res},PSF\rangle)}{2\langle PSF, PSF \rangle}
 \end{split}
 \end{equation}
 
-Note that the $PSF$ in \eqref{dist:deconv:cd:minimizer} is centred at the pixel we wish to minimize. Also, if the pixel is located at the edges of the image, it may be partially cut off. This fact becomes relevant as soon as we want to implement $Minimize()$ efficiently and pre-calculate the inner-products $\langle I_{dirty},PSF\rangle$ and $\langle PSF, PSF \rangle$. From here on forward, we use the terminology $b$-map to denote the pre-calculated inner products $\langle I_{dirty},PSF\rangle$ for each pixel, and $a$-map for all pre-calculated $\langle PSF, PSF \rangle$ products (from the fact that $x_{min} = \frac{-b}{2a}$). 
+This means we can find the optimum value of a single pixel by following the formula in \eqref{cd:deriving:minimizer}. Note that the $PSF$ in formula \eqref{cd:deriving:derivation} and \eqref{cd:deriving:minimizer} are shifted to the pixel position we wish to optimize.
+
+T
+
+View from calculus. Calculating the gradient and the Lipschitz constant.
+
+Inner products. Expensive to calculate. We go to efficient calculation. Pre-calculate the gradient map $b$, and the Lipschitz constants $a$ for each pixel.
 
 
-\subsubsection{Efficient Coordinate Descent implementation}\label{dist:deconv:efficient}
+\subsection{Efficient implementation of basic coordinate descent deconvolutions}\label{cd:efficient}
 Coordinate Descent is only useful when one iteration is cheap to compute.
 
 Pre-calculation of the two inner products
