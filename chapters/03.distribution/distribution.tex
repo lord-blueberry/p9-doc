@@ -127,24 +127,37 @@ pixel_{min} & = \frac{-(-2*\langle I_{res},PSF\rangle)}{2\langle PSF, PSF \rangl
 \end{split}
 \end{equation}
 
-This means we can find the optimum value of a single pixel by following the formula in \eqref{cd:deriving:minimizer}. Note that the $PSF$ in formula \eqref{cd:deriving:derivation} and \eqref{cd:deriving:minimizer} are shifted to the pixel position we wish to optimize.
+This means we can find the optimum value of a single pixel by following the formula in \eqref{cd:deriving:minimizer}. Note that the $PSF$ in formula \eqref{cd:deriving:derivation} and \eqref{cd:deriving:minimizer} is shifted to the pixel position we wish to optimize.
+
+We derived the closed form solution \eqref{cd:deriving:minimizer} by looking at the data objective as a parabola. When we take another look at the closed form solution with Calculus in mind, we can see that the numerator $-2*\langle I_{res},PSF\rangle)$ is actually the same as calculating the gradient for this pixel, and the denominator $\langle PSF, PSF \rangle$ is the Lipschitz constant. 
+
+Intuitively, the Lipschitz constant describes how fast a function $f(x)$ changes with $x$. If $f(x)$ changes slowly, we can descend larger distances along the gradient without the fear for de-convergence. In short, it is a data-defined step size. Because our function $Minimize()$ is simply a parabola, the gradient together with the Lipschitz constant point to the optimum of our function.
+
+This is how the basic coordinate descent deconvolution algorithm works. But as it is described here, one iteration is too expensive to be practical. The $Minimize()$ function calculates both the gradient and the Lipschitz constant in each iteration and the residual update in line 20 requires a convolution. We can drastically improve the runtime costs by caching intermediate results, and using approximations.
+
+\subsection{Efficient implementation of basic coordinate descent deconvolutions}\label{cd:efficient}
 
 T
 
-View from calculus. Calculating the gradient and the Lipschitz constant.
-
-Inner products. Expensive to calculate. We go to efficient calculation. Pre-calculate the gradient map $b$, and the Lipschitz constants $a$ for each pixel.
-
-
-\subsection{Efficient implementation of basic coordinate descent deconvolutions}\label{cd:efficient}
+Details matter we need to be as fast as possible per iteration. We need many, many iterations.
 Coordinate Descent is only useful when one iteration is cheap to compute.
-
-Pre-calculation of the two inner products
-Efficiently
+Pre-calculation of everything. But other details matter. Topics we are going to go over.
 
 
+\begin{enumerate}
+	\item Edge handling of the convolution
+	\item Efficient Greedy Strategy
+	\item Pre-calculation of gradients
+	\item Efficient update of gradients
+	\item Pre-calculation of the Lipschitz constants
+\end{enumerate}
 
-The question of efficient implementation. In the previous section, we have seen how coordinate descent works in general. But now we have to look at the details and see how we can implement it efficiently.
+
+We are in the realm of convolution. Remember that a convolution in image space is a multiplication in fourier space.
+We can multiply
+
+
+
 
 Question of convolution scheme. 
 Circular convolution is physically not possible. The $PSF$ of the lower left corner does not wrap around the image and influence all other corners of the image. But as we will see, for an efficient coordinate descent we need to calculate a convolution to cache. The circular convolution is the output of the FFT. This is why reconstruction algorithms sometimes choose to use circular convolution \cite{ferrari2014distributed}.
