@@ -66,7 +66,7 @@ In this section, we derive the basic coordinate descent algorithm that optimizes
 	\item Cyclic: where we choose a subset of pixels and cycle through them until convergence. 
 \end{enumerate}
 
-The iteration strategy is not important for convergence. We can for example create a mixture of the different strategies and the algorithm would still converge to the optimum. However, the strategy we choose has an impact on how many iterations we need until convergence. For example: if the image consists of a single star in the center of the image, a greedy strategy would first optimize the pixel at the center, while a random strategy may waste the computing resources in checking every other pixel several times before finally landing on the center. We choose a greedy strategy, and we arrive at the following coordinate descent algorithm in pseudocode:
+The iteration strategy is not important for convergence. We can for example create a mixture of the different strategies and the algorithm would still converge to the optimum. However, the strategy we choose has an impact on how many iterations we need until convergence. For example: if the image consists of a single star in the center of the image, a greedy strategy would first optimize the pixel at the center, while a random strategy may waste the computing resources in checking every other pixel several times before finally landing on the center. In this implementation, we chose the greedy strategy. Each iteration takes the best possible step towards the optimum. We arrive at the following coordinate descent algorithm in pseudocode:
 
 
 \begin{lstlisting}
@@ -102,8 +102,8 @@ When we only have one pixel to minimize, the data term of our objective \eqref{c
 \begin{split}
 Minimize(pixel) & = \left \| I_{res} - PSF * pixel \right \|_2^2\\
 Minimize(pixel) & = (I_{res} - PSF * pixel)^2\\
-Minimize(pixel) & = \langle I_{res}, I_{res} \rangle - 2*\langle I_{res},PSF\rangle * pixel + \langle PSF, PSF \rangle * pixel^2\\
-Minimize(pixel) & = \langle PSF, PSF \rangle * pixel^2 - 2*\langle I_{res},PSF\rangle * pixel + \langle I_{res}, I_{res} \rangle
+Minimize(pixel) & = \langle I_{res}, I_{res} \rangle - 2\langle I_{res},PSF\rangle * pixel + \langle PSF, PSF \rangle * pixel^2\\
+Minimize(pixel) & = \langle PSF, PSF \rangle * pixel^2 - 2\langle I_{res},PSF\rangle * pixel + \langle I_{res}, I_{res} \rangle
 \end{split}
 \end{equation}
 
@@ -120,37 +120,115 @@ x_{min} & = \frac{-b}{2a}
 \quad \quad
 \begin{split}
 Minimize(pixel) & = \langle PSF, PSF \rangle * pixel^2 \\
- & - 2*\langle I_{res},PSF\rangle * pixel \\
+ & - 2\langle I_{res},PSF\rangle * pixel \\
  &+ \langle I_{res}, I_{res} \rangle\\
  \\
-pixel_{min} & = \frac{-(-2*\langle I_{res},PSF\rangle)}{2\langle PSF, PSF \rangle}
+pixel_{min} & = \frac{-(-2\langle I_{res},PSF\rangle)}{2\langle PSF, PSF \rangle}
 \end{split}
 \end{equation}
 
 This means we can find the optimum value of a single pixel by following the formula in \eqref{cd:deriving:minimizer}. Note that the $PSF$ in formula \eqref{cd:deriving:derivation} and \eqref{cd:deriving:minimizer} is shifted to the pixel position we wish to optimize.
 
-We derived the closed form solution \eqref{cd:deriving:minimizer} by looking at the data objective as a parabola. When we take another look at the closed form solution with Calculus in mind, we can see that the numerator $-2*\langle I_{res},PSF\rangle)$ is actually the same as calculating the gradient for this pixel, and the denominator $\langle PSF, PSF \rangle$ is the Lipschitz constant. 
+We derived the closed form solution \eqref{cd:deriving:minimizer} by looking at the data objective as a parabola. When we take another look at the closed form solution with Calculus in mind, we can see that the numerator $-2\langle I_{res},PSF\rangle)$ is actually the same as calculating the gradient for this pixel, and the denominator $\langle PSF, PSF \rangle$ is the Lipschitz constant. 
 
 Intuitively, the Lipschitz constant describes how fast a function $f(x)$ changes with $x$. If $f(x)$ changes slowly, we can descend larger distances along the gradient without the fear for de-convergence. In short, it is a data-defined step size. Because our function $Minimize()$ is simply a parabola, the gradient together with the Lipschitz constant point to the optimum of our function.
 
 This is how the basic coordinate descent deconvolution algorithm works. But as it is described here, one iteration is too expensive to be practical. The $Minimize()$ function calculates both the gradient and the Lipschitz constant in each iteration and the residual update in line 20 requires a convolution. We can drastically improve the runtime costs by caching intermediate results, and using approximations.
 
 \subsection{Efficient implementation of basic coordinate descent deconvolutions}\label{cd:efficient}
-
-T
-
-Details matter we need to be as fast as possible per iteration. We need many, many iterations.
-Coordinate Descent is only useful when one iteration is cheap to compute.
-Pre-calculation of everything. But other details matter. Topics we are going to go over.
-
+In Section \ref{cd:deriving}, we derived the basic coordinate descent deconvolution algorithm. There are several "tricks" to speed up each iteration. We can cache intermediate results, and exploit the convolution to efficiently calculate the gradients and Lipschitz constants for each pixel. We discuss:
 
 \begin{enumerate}
 	\item Edge handling of the convolution
-	\item Efficient Greedy Strategy
-	\item Pre-calculation of gradients
-	\item Efficient update of gradients
 	\item Pre-calculation of the Lipschitz constants
+	\item Efficient greedy strategy
+ 	\item Pre-calculation of gradients
+	\item Efficient update of gradients
+	\item Approximation of gradients
 \end{enumerate}
+
+Gradient calculation is the most time consuming step. We can exploit the convolution to efficiently pre-calculate, update and approximate the gradients for each pixel. This will be discussed in detail in this Section. To our knowledge, we are the first to explore ways to approximate the gradient in radio interferometric image reconstruction.
+%
+
+T
+
+Later we can exploit the approximation techniques to speed up iterations and increase the level of parallel execution.
+Speed up iterations
+Central to later parallel and distributed strategies.
+
+First, we dive into the implementation details of our algorithm which are not linked to the gradient calculation.
+
+
+
+\subsubsection{Edge handling of the convolution}
+As the reader is probably aware, there are several ways to define the convolution in image processing, depending on how we handle the edges on the image. Two possibilities are relevant for radio interferometric image reconstruction: Circular and zero padded.
+
+Circular convolution assumes the image "wraps" around itself. If we travel over the right edge of the image, we arrive at the left edge. The convolution in Fourier space is circular. Remember: A convonlution in image space is a multiplication in Fourier space, and vice versa. When we convolve the reconstructed image $x$ with the $PSF$ using circular convolution, then non-zero pixels at the right edge of the image "shine" over to the left edge. This is physically impossible.
+
+Zero padding assumes that after the edge, the image is zero. Non-zero pixels at the right edges of the image do not influence the left edge after convolution. This is the physically plausible solution. However, the zero padded convolution is more expensive to calculate. We either have to calculate the convolution in image space, which is too expensive for large kernels, or apply the FFT on a zero-padded image. Either way, it is more expensive than the circular convolution. 
+
+T
+
+Choice between investing more computing resources for a physically plausible convolution. Reconstruction algorithms also choose to use the faster circular convolution scheme\cite{ferrari2014distributed}, or sometimes it is left to the user to define(pyMORESANE).
+
+We chose the zero-padded convolution for our algorithms. This influences the rest of the algorithm. How details work.
+
+
+\subsubsection{Pre-calculation fo the Lipschitz constants}
+
+Lipschitz constants are $\langle PSF, PSF \rangle$. We just square the PSF
+
+Because we do not use the circular deconvolution scheme, the $PSF$ is cut at the edges of the image. Pixels at the center have the full PSF, while pixels at the edges deal with a cutoff.
+
+The scan algorithm. Running sum of squares.
+
+At most, we need 4 
+
+\subsubsection{Efficient Greedy strategy}
+
+Calculate what each update would lead to what objective.
+Expensive to calculate.
+
+However, we can use another strategy, we use the biggest change in pixel value.
+A lot cheaper to compute
+Biggest change in pixel value is in toy examples the same as the best pixel. 
+
+Not sure if this is always true.
+
+
+\subsubsection{Pre-calculation of gradients}
+
+dot product for each pixel.
+In greedy strategy, we touch every pixel and look how much we can change it.
+Lucky for us, we have an easy way to pre-calculate the gradients for each pixel.
+
+$\langle I_{res},PSF\rangle$ is the same as calculating the correlation of the residuals with the PSF.
+Convolution, we first flip the convolution kernel.
+Correlation, we do not flip the kernel.
+
+Use the FFT. Pad and flip the kernel. Now we can have all the gradients for each pixel saved to a lookup-map. How we can efficiently update the lookup map in each iteration.
+
+It is faster to calculate the gradient lookup map than $\langle I_{res},PSF\rangle$ for each pixel.
+
+\subsubsection{Efficient update of gradients}
+Map of gradients. How can we efficiently update this map after we calculated the deconvolution for a single pixel.
+
+The naive solution is to first update the residuals, and then calculate the correlation with the PSF again.
+$residuals = residuals - PSF * optimalValue$
+$gradients = residuals \star PSF$
+
+
+But we can simplify this. We can directly update the map of gradients by calculating:
+
+$gradients = gradients - (PSF \star PSF) * optimalValue$
+
+Calculate the PSF correlation with itself. Calculate the PSF correlation once, and use it to update the gradient map directly.
+
+Edges again. We have the problem that, when the PSF is cutoff by the edges of the image, we would need to calculate $(PSF \star PSF)$ again. This is too expensive. Does not change dramatically, unless the pixel we optimize is at the full edge.
+
+
+
+\subsubsection{Approximation of gradients}
 
 
 We are in the realm of convolution. Remember that a convolution in image space is a multiplication in fourier space.
@@ -191,6 +269,12 @@ $a$ is constant in $\frac{-b}{2a}$
 
 
 Putting it all together. Creating lookup maps for $a$ and $b$, and do not evalue the ojbective function.
+
+
+
+
+\subsection{Pseudo-code of the basic, optimized algorithm}
+
 \begin{lstlisting}
 dirty = IFFT(Gridding(visibilities))
 
@@ -202,26 +286,23 @@ bMap = IFFT(fourierDirtyPadded * fourierPsf)
 
 //pre-calculate aMap. aMap stays constant over all CD iterations
 aMap = 
- 
+
 x = new Array   
 do 
 {
-	oldObjectiveValue = objectiveValue
-	
-	//the core of the algorithm
-	pixelLocation = IterationStrategy(residuals)
-	optimalValue = Minimize(residuals, pixelLocation)
-	optimalValue = ApplyElasticNet(optimalValue)
-	
-	//housekeeping
-	x[pixelLocation] = optimalValue
-	residuals = (dirty - Convolve(x, psf))
-	objectiveValue = SUM(residuals * residuals) + ElasticNet(x)
+oldObjectiveValue = objectiveValue
+
+//the core of the algorithm
+pixelLocation = IterationStrategy(residuals)
+optimalValue = Minimize(residuals, pixelLocation)
+optimalValue = ApplyElasticNet(optimalValue)
+
+//housekeeping
+x[pixelLocation] = optimalValue
+residuals = (dirty - Convolve(x, psf))
+objectiveValue = SUM(residuals * residuals) + ElasticNet(x)
 } while (oldObjectiveValue - objectiveValue)  < epsilon
 \end{lstlisting}
-
-
-
 
 
 \subsection{Major Cycle convergence}
