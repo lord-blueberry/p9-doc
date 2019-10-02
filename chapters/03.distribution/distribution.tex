@@ -85,7 +85,7 @@ do
 	pixelLocation = GreedyStrategy(residuals)
 	oldValue = x[pixelLocation]
 	optimalValue = oldValue + Minimize(residuals, psf, pixelLocation)
-	optimalValue = ApplyElasticNet(optimalValue)
+	optimalValue = ApplyElasticNet(optimalValue, lambda, alpha)
 	
 	//housekeeping
 	x[pixelLocation] = optimalValue
@@ -133,9 +133,11 @@ We derived the closed form solution \eqref{cd:deriving:minimizer} by looking at 
 
 Intuitively, the Lipschitz constant describes how fast a function $f(x)$ changes with $x$. If $f(x)$ changes slowly, we can descend larger distances along the gradient without the fear for de-convergence. In short, it is a data-defined step size. Because our function $Minimize()$ is simply a parabola, the gradient together with the Lipschitz constant point to the optimum of our function.
 
+Because the minimizer \eqref{cd:deriving:minimizer} of our coordinate descent algorithm calculates the gradient, one might ask what the differentiates the coordinate descent method from gradient descent. The main difference is that coordinate descent uses the gradient of a single pixel (or subset of pixels in other versions), in each iteration, while gradient descent generally uses the gradients of all pixels in each iteration. Conceptually, coordinate descent does is not bound to use the gradient. We could also minimize the pixel with a line-search algorithm, trying different values for the pixel, and it is still a coordinate descent method.
+
 This is how the basic coordinate descent deconvolution algorithm works. But as it is described here, one iteration is too expensive to be practical. The $Minimize()$ function calculates both the gradient and the Lipschitz constant in each iteration and the residual update in line 20 requires a convolution. We can drastically improve the runtime costs by caching intermediate results, and using approximations.
 
-\subsection{Efficient implementation of basic coordinate descent deconvolutions}\label{cd:efficient}
+\subsection{Efficient implementation of basic coordinate descent deconvolution}\label{cd:efficient}
 In Section \ref{cd:deriving}, we derived the basic coordinate descent deconvolution algorithm. There are several "tricks" to speed up each iteration. We can cache intermediate results, and exploit the convolution to efficiently calculate the gradients and Lipschitz constants for each pixel. We discuss:
 
 \begin{enumerate}
@@ -147,36 +149,29 @@ In Section \ref{cd:deriving}, we derived the basic coordinate descent deconvolut
 	\item Approximation of gradients
 \end{enumerate}
 
-Gradient calculation is the most time consuming step. We can exploit the convolution to efficiently pre-calculate, update and approximate the gradients for each pixel. This will be discussed in detail in this Section. To our knowledge, we are the first to explore ways to approximate the gradient in radio interferometric image reconstruction.
-%
+Gradient calculation is the most time consuming step. We can exploit the convolution to efficiently pre-calculate, update and approximate the gradients for each pixel. This will be discussed in detail in this Section. To our knowledge, we are the first to explore ways to approximate the gradient in radio interferometric image reconstruction, and their effect on parallel and distributed deconvolution. As we will se in the later sections, approximating the gradients can help us to distribute the deconvolution. 
 
-T
-
-Later we can exploit the approximation techniques to speed up iterations and increase the level of parallel execution.
-Speed up iterations
-Central to later parallel and distributed strategies.
-
-First, we dive into the implementation details of our algorithm which are not linked to the gradient calculation.
-
-
+First, we dive into the implementation of the convolution operator and the pre-calculation of the Lipschitz constants, and then we discuss the gradient calculation in detail.
 
 \subsubsection{Edge handling of the convolution}
 As the reader is probably aware, there are several ways to define the convolution in image processing, depending on how we handle the edges on the image. Two possibilities are relevant for radio interferometric image reconstruction: Circular and zero padded.
 
 Circular convolution assumes the image "wraps" around itself. If we travel over the right edge of the image, we arrive at the left edge. The convolution in Fourier space is circular. Remember: A convonlution in image space is a multiplication in Fourier space, and vice versa. When we convolve the reconstructed image $x$ with the $PSF$ using circular convolution, then non-zero pixels at the right edge of the image "shine" over to the left edge. This is physically impossible.
 
-Zero padding assumes that after the edge, the image is zero. Non-zero pixels at the right edges of the image do not influence the left edge after convolution. This is the physically plausible solution. However, the zero padded convolution is more expensive to calculate. We either have to calculate the convolution in image space, which is too expensive for large kernels, or apply the FFT on a zero-padded image. Either way, it is more expensive than the circular convolution. 
+Zero padding assumes that after the edge, the image is zero. Non-zero pixels at the right edges of the image do not influence the left edge after convolution. This is the physically plausible solution. However, the zero padded convolution is more expensive to calculate. We either have to calculate the convolution in image space, which is too expensive for large kernels, or apply the FFT on a zero-padded image. Either way, it is more expensive than the circular convolution.
+
+In designing a deconvolution algorithm, we have the choice between the circular and the zero-padded convolution scheme. Circular convolution is more efficient to calculate, while zero-padded convolution is closer to the reality. Both choices are possible. The PyMORESANE reconstruction algorithm \cite{kenyon2019pymoresane} leaves this choice to the user. We decided on using the zero-padded convolution. This choice influences other parts of the coordinate descent deconvolution algorithm, like how we can efficiently calculate the Lipschitz constants.
+
+\subsubsection{Pre-calculation of the Lipschitz constants}
+Lipschitz constants are $\langle PSF, PSF \rangle$. We simply multiply the $PSF$ with itself and sum up the values. However, we are using the zero-padded convolution. This means the $PSF$ for pixels at the edges is not only shifted, but also cropped. In other words, every pixel has a different Lipschitz constant depending on how much the $PSF$ gets cropped by the image edges.
 
 T
 
-Choice between investing more computing resources for a physically plausible convolution. Reconstruction algorithms also choose to use the faster circular convolution scheme\cite{ferrari2014distributed}, or sometimes it is left to the user to define(pyMORESANE).
+For an efficient 
 
-We chose the zero-padded convolution for our algorithms. This influences the rest of the algorithm. How details work.
+Side note on the Lipschitz constants: We could also just use the maximum Lipschitz constant for all pixels. Remember that all we need in theory is we would constantly under-estimate pixels towards the edges of the image, resulting in more iterations until we arrive at the same result.
 
 
-\subsubsection{Pre-calculation fo the Lipschitz constants}
-
-Lipschitz constants are $\langle PSF, PSF \rangle$. We just square the PSF
 
 Because we do not use the circular deconvolution scheme, the $PSF$ is cut at the edges of the image. Pixels at the center have the full PSF, while pixels at the edges deal with a cutoff.
 

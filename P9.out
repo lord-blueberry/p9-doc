@@ -19,36 +19,37 @@
 \BOOKMARK [1][-]{section.4}{Coordinate descent deconvolution}{}% 19
 \BOOKMARK [2][-]{subsection.4.1}{Elastic net regularization}{section.4}% 20
 \BOOKMARK [2][-]{subsection.4.2}{Deriving the basic coordinate descent deconvolution algorithm}{section.4}% 21
-\BOOKMARK [2][-]{subsection.4.3}{Efficient implementation of basic coordinate descent deconvolutions}{section.4}% 22
+\BOOKMARK [2][-]{subsection.4.3}{Efficient implementation of basic coordinate descent deconvolution}{section.4}% 22
 \BOOKMARK [3][-]{subsubsection.4.3.1}{Edge handling of the convolution}{subsection.4.3}% 23
-\BOOKMARK [3][-]{subsubsection.4.3.2}{Pre-calculation fo the Lipschitz constants}{subsection.4.3}% 24
+\BOOKMARK [3][-]{subsubsection.4.3.2}{Pre-calculation of the Lipschitz constants}{subsection.4.3}% 24
 \BOOKMARK [3][-]{subsubsection.4.3.3}{Efficient Greedy strategy}{subsection.4.3}% 25
 \BOOKMARK [3][-]{subsubsection.4.3.4}{Pre-calculation of gradients}{subsection.4.3}% 26
 \BOOKMARK [3][-]{subsubsection.4.3.5}{Efficient update of gradients}{subsection.4.3}% 27
 \BOOKMARK [3][-]{subsubsection.4.3.6}{Approximation of gradients}{subsection.4.3}% 28
-\BOOKMARK [2][-]{subsection.4.4}{Major Cycle convergence}{section.4}% 29
-\BOOKMARK [2][-]{subsection.4.5}{Test on MeerKAT data}{section.4}% 30
-\BOOKMARK [2][-]{subsection.4.6}{Distributed Deconvolution}{section.4}% 31
-\BOOKMARK [1][-]{section.5}{Towards parallel coordinate descent}{}% 32
-\BOOKMARK [2][-]{subsection.5.1}{Problems}{section.5}% 33
-\BOOKMARK [1][-]{section.6}{Tests on the MeerKAT LMC observation}{}% 34
-\BOOKMARK [2][-]{subsection.6.1}{Wall clock time}{section.6}% 35
-\BOOKMARK [2][-]{subsection.6.2}{Quality}{section.6}% 36
-\BOOKMARK [1][-]{section.7}{Conclusion}{}% 37
-\BOOKMARK [1][-]{section.8}{attachment}{}% 38
-\BOOKMARK [1][-]{section.9}{Larger runtime costs for Compressed Sensing Reconstructions}{}% 39
-\BOOKMARK [2][-]{subsection.9.1}{CLEAN: The Major Cycle Architecture}{section.9}% 40
-\BOOKMARK [2][-]{subsection.9.2}{Compressed Sensing Architecture}{section.9}% 41
-\BOOKMARK [2][-]{subsection.9.3}{Hypothesis for reducing costs of Compressed Sensing Algorithms}{section.9}% 42
-\BOOKMARK [2][-]{subsection.9.4}{State of the art: WSCLEAN Software Package}{section.9}% 43
-\BOOKMARK [3][-]{subsubsection.9.4.1}{W-Stacking Major Cycle}{subsection.9.4}% 44
-\BOOKMARK [3][-]{subsubsection.9.4.2}{Deconvolution Algorithms}{subsection.9.4}% 45
-\BOOKMARK [2][-]{subsection.9.5}{Distributing the Image Reconstruction}{section.9}% 46
-\BOOKMARK [3][-]{subsubsection.9.5.1}{Distributing the Non-uniform FFT}{subsection.9.5}% 47
-\BOOKMARK [3][-]{subsubsection.9.5.2}{Distributing the Deconvolution}{subsection.9.5}% 48
-\BOOKMARK [1][-]{section.10}{Handling the Data Volume}{}% 49
-\BOOKMARK [2][-]{subsection.10.1}{Fully distributed imaging algorithm}{section.10}% 50
-\BOOKMARK [1][-]{section.11}{Image Reconstruction for Radio Interferometers}{}% 51
-\BOOKMARK [2][-]{subsection.11.1}{Distributed Image Reconstruction}{section.11}% 52
-\BOOKMARK [2][-]{subsection.11.2}{First steps towards a distributed Algorithm}{section.11}% 53
-\BOOKMARK [1][-]{section.12}{Ehrlichkeitserkl\344rung}{}% 54
+\BOOKMARK [2][-]{subsection.4.4}{Pseudo-code of the basic, optimized algorithm}{section.4}% 29
+\BOOKMARK [2][-]{subsection.4.5}{Major Cycle convergence}{section.4}% 30
+\BOOKMARK [2][-]{subsection.4.6}{Test on MeerKAT data}{section.4}% 31
+\BOOKMARK [2][-]{subsection.4.7}{Distributed Deconvolution}{section.4}% 32
+\BOOKMARK [1][-]{section.5}{Towards parallel coordinate descent}{}% 33
+\BOOKMARK [2][-]{subsection.5.1}{Problems}{section.5}% 34
+\BOOKMARK [1][-]{section.6}{Tests on the MeerKAT LMC observation}{}% 35
+\BOOKMARK [2][-]{subsection.6.1}{Wall clock time}{section.6}% 36
+\BOOKMARK [2][-]{subsection.6.2}{Quality}{section.6}% 37
+\BOOKMARK [1][-]{section.7}{Conclusion}{}% 38
+\BOOKMARK [1][-]{section.8}{attachment}{}% 39
+\BOOKMARK [1][-]{section.9}{Larger runtime costs for Compressed Sensing Reconstructions}{}% 40
+\BOOKMARK [2][-]{subsection.9.1}{CLEAN: The Major Cycle Architecture}{section.9}% 41
+\BOOKMARK [2][-]{subsection.9.2}{Compressed Sensing Architecture}{section.9}% 42
+\BOOKMARK [2][-]{subsection.9.3}{Hypothesis for reducing costs of Compressed Sensing Algorithms}{section.9}% 43
+\BOOKMARK [2][-]{subsection.9.4}{State of the art: WSCLEAN Software Package}{section.9}% 44
+\BOOKMARK [3][-]{subsubsection.9.4.1}{W-Stacking Major Cycle}{subsection.9.4}% 45
+\BOOKMARK [3][-]{subsubsection.9.4.2}{Deconvolution Algorithms}{subsection.9.4}% 46
+\BOOKMARK [2][-]{subsection.9.5}{Distributing the Image Reconstruction}{section.9}% 47
+\BOOKMARK [3][-]{subsubsection.9.5.1}{Distributing the Non-uniform FFT}{subsection.9.5}% 48
+\BOOKMARK [3][-]{subsubsection.9.5.2}{Distributing the Deconvolution}{subsection.9.5}% 49
+\BOOKMARK [1][-]{section.10}{Handling the Data Volume}{}% 50
+\BOOKMARK [2][-]{subsection.10.1}{Fully distributed imaging algorithm}{section.10}% 51
+\BOOKMARK [1][-]{section.11}{Image Reconstruction for Radio Interferometers}{}% 52
+\BOOKMARK [2][-]{subsection.11.1}{Distributed Image Reconstruction}{section.11}% 53
+\BOOKMARK [2][-]{subsection.11.2}{First steps towards a distributed Algorithm}{section.11}% 54
+\BOOKMARK [1][-]{section.12}{Ehrlichkeitserkl\344rung}{}% 55
