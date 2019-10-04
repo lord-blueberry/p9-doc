@@ -35,16 +35,16 @@ This regularization is a mixture between the L1 and L2 regularization. The Figur
 Elastic net mixes these two norms together, becoming "sparsifying L2 norm". It retains the sparsifying property of the L1 norm, while also keeping extended emissions in the image. Formally, elastic net regularization is defined as the following:
 
 \begin{equation}\label{cd:elastic:formula}
-ElasticNet(x) = \: \alpha \left \|x \right \|_1 + \frac{1-\alpha}{2}  \left \|x \right \|_2
+ElasticNet(x, \alpha) = \: \alpha \left \|x \right \|_1 + \frac{1-\alpha}{2}  \left \|x \right \|_2
 \end{equation}
 
 Elastic net has three properties which make it an interesting regularization for coordinate descent: It was shown to speed up convergence rates compared to the pure L1 or L2 norm\cite{friedman2010regularization}, is a separable function, and has a closed form solution. The first property was not further investigated in this work. The second property, separability, means that we can calculate the regularization for each pixel independently of each other, and we still arrive at the same result. Lastly, we can find a simple formula for each pixel that applies the elastic net regularization:
 
 \begin{equation}\label{cd:elastic:closed}
-\lambda ElasticNet(pixel) = \: \frac{max(pixel - \lambda * \alpha, 0)}{1+\lambda(1 - \alpha)}
+ElasticNetClosedForm(x, \lambda ,\alpha) = \: \frac{max(x - \lambda * \alpha, 0)}{1+\lambda(1 - \alpha)}
 \end{equation}
 
-The closed form solution \eqref{cd:elastic:closed} of the elastic net regularization is also a mixture of the closed form solutions of the L1 and L2 norm. The closed form solution of the L1 norm is shrinkage: $max(pixel - \lambda, 0)$, we reduce the pixel value by $\lambda$ and clamp negative values. For the L2 norm, we divide the pixel value: $\frac{pixel}{1+\lambda}$.
+The closed form solution \eqref{cd:elastic:closed} of the elastic net regularization is also a mixture of the closed form solutions of the L1 and L2 norm. The closed form solution of the L1 norm is shrinkage: $max(x - \lambda, 0)$, we reduce the pixel value by $\lambda$ and clamp negative values. For the L2 norm, we divide the pixel value: $\frac{x}{1+\lambda}$.
 
 %Proximal operator But the second property leads to an optimization algorithm 
 
@@ -90,7 +90,7 @@ do
 	//housekeeping
 	x[pixelLocation] = optimalValue
 	residuals = (dirty - Convolve(x, psf))
-	objectiveValue = 0.5 * SUM(residuals * residuals) + lambda * ElasticNet(x)
+	objectiveValue = 0.5 * SUM(residuals * residuals) + lambda * ElasticNet(x, alpha)
 } while (oldObjectiveValue - objectiveValue)  < epsilon
 \end{lstlisting}
 
@@ -165,19 +165,15 @@ In designing a deconvolution algorithm, we have the choice between the circular 
 \subsubsection{Pre-calculation of the Lipschitz constants}
 Lipschitz constants are $\langle PSF, PSF \rangle$. We simply multiply the $PSF$ with itself and sum up the values. However, we are using the zero-padded convolution. This means the $PSF$ for pixels at the edges is not only shifted, but also cropped. In other words, every pixel has a different Lipschitz constant depending on how much the $PSF$ gets cropped by the image edges.
 
-T
+This is not an issue for convergence. The Lipschitz constant of the edge pixels is always lower than the center. The Lipschitz constant describes the largest step we can take without overshooting the target. We can always make smaller steps, but may pay it with more iterations. Luckily, there is a way to re-use intermediate results, and efficiently calculate the Lipschitz constant for each pixel.
 
-For an efficient 
-
-Side note on the Lipschitz constants: We could also just use the maximum Lipschitz constant for all pixels. Remember that all we need in theory is we would constantly under-estimate pixels towards the edges of the image, resulting in more iterations until we arrive at the same result.
-
-
-
-Because we do not use the circular deconvolution scheme, the $PSF$ is cut at the edges of the image. Pixels at the center have the full PSF, while pixels at the edges deal with a cutoff.
+Scan algorithm.
 
 The scan algorithm. Running sum of squares.
 
 At most, we need 4 
+
+Numerical issues with float precision.
 
 \subsubsection{Efficient Greedy strategy}
 
