@@ -28,4 +28,4 @@ combined <- readExperimet("psfExperiment/changeLipschitz", "LipschitzApprox", ta
 combined <- readExperimet("psfExperiment/mine", "Combined", combined)
 
 
-ggplot(data = combined, mapping = aes(x = cycle, y = objective, color=experimentName)) + geom_path() + geom_point() + scale_y_continuous() + coord_cartesian(ylim=c(30, 40))
+ggplot(data = combined, mapping = aes(x = cycle, y = objective, color=experimentName)) + geom_path() + geom_point() + scale_y_continuous(trans= asinh) + coord_cartesian(ylim=c(30, 40))
