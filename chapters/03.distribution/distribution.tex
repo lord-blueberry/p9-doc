@@ -138,7 +138,7 @@ Because the minimizer \eqref{cd:deriving:minimizer} of our coordinate descent al
 This is how the basic coordinate descent deconvolution algorithm works. But as it is described here, one iteration is too expensive to be practical. The $Minimize()$ function calculates both the gradient and the Lipschitz constant in each iteration and the residual update in line 20 requires a convolution. We can drastically improve the runtime costs by caching intermediate results, and using approximations.
 
 \subsection{Efficient implementation of basic coordinate descent deconvolution}\label{cd:efficient}
-In Section \ref{cd:deriving}, we derived the basic coordinate descent deconvolution algorithm. There are several "tricks" to speed up each iteration. We can cache intermediate results, and exploit the convolution to efficiently calculate the gradients and Lipschitz constants for each pixel. We discuss:
+In Section \ref{cd:deriving}, we derived the basic coordinate descent deconvolution algorithm. There are several "tricks" to speed up each iteration. We can cache intermediate results, and exploit the convolution to efficiently calculate the inner products of the basic algorithm We discuss:
 
 \begin{enumerate}
 	\item Edge handling of the convolution
@@ -150,10 +150,49 @@ In Section \ref{cd:deriving}, we derived the basic coordinate descent deconvolut
 
 Gradient calculation is the most time consuming step. We can exploit the convolution to efficiently pre-calculate, update and approximate the gradients for each pixel. This will be discussed in detail in this Section. To our knowledge, we are the first to explore ways to approximate the gradient in radio interferometric image reconstruction, and their effect on parallel and distributed deconvolution. As we will se in the later sections, approximating the gradients can help us to distribute the deconvolution. 
 
+Visual aid:
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/dirty.png}
+		\caption{Dirty Image.}
+		\label{cd:efficient:aid:dirty}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/psf.png}
+		\caption{Point Spread Function.}
+		\label{cd:efficient:aid:psf}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/elastic.png}
+		\caption{ElasticNet deconvolution}
+		\label{cd:efficient:aid:elastic}
+	\end{subfigure}
+	
+	\caption{Example problem with two point sources.}
+	\label{cd:efficient:aid:figure}
+\end{figure}
+
 First, we dive into the implementation of the convolution operator and the pre-calculation of the Lipschitz constants, and then we discuss the gradient calculation in detail.
 
 \subsubsection{Edge handling of the convolution}
 As the reader is probably aware, there are several ways to define the convolution in image processing, depending on how we handle the edges on the image. Two possibilities are relevant for radio interferometric image reconstruction: Circular and zero padded.
+
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/padded.png}
+		\caption{Zero padded convolution.}
+		\label{cd:efficient:convolution:padded}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/circular.png}
+		\caption{Circular convolution.}
+		\label{cd:efficient:convolution:circular}
+	\end{subfigure}
+	\caption{Comparison of the two convolution schemes.}
+	\label{cd:efficient:convolution:figure}
+\end{figure}
 
 Circular convolution assumes the image "wraps" around itself. If we travel over the right edge of the image, we arrive at the left edge. The convolution in Fourier space is circular. Remember: A convonlution in image space is a multiplication in Fourier space, and vice versa. When we convolve the reconstructed image $x$ with the $PSF$ using circular convolution, then non-zero pixels at the right edge of the image "shine" over to the left edge. This is physically impossible.
 
@@ -164,15 +203,41 @@ In designing a deconvolution algorithm, we have the choice between the circular 
 \subsubsection{Pre-calculation of the Lipschitz constants}
 Lipschitz constants are $\langle PSF, PSF \rangle$. We simply multiply the $PSF$ with itself and sum up the values. However, we are using the zero-padded convolution. This means the $PSF$ for pixels at the edges is not only shifted, but also cropped. In other words, every pixel has a different Lipschitz constant depending on how much the $PSF$ gets cropped by the image edges.
 
-This is not an issue for convergence. The Lipschitz constant of the edge pixels is always lower than the center. The Lipschitz constant describes the largest step we can take without overshooting the target. We can always make smaller steps, but may pay it with more iterations. Luckily, there is a way to re-use intermediate results, and efficiently calculate the Lipschitz constant for each pixel.
+Note that it is not an issue for convergence: The Lipschitz constant describes the largest step we can take without overshooting the target. We can always make smaller steps, but may pay it with more iterations. The Lipschitz constant of the edge pixels is always lower than the center. The coordinate descent algorithm does converge, but needs more iterations for pixels at the edges of the image. Luckily, there is a way to re-use intermediate results, and efficiently calculate the Lipschitz constant for each pixel in the image.
 
+Sum all values inside a rectangle.
+Precalculate all rectangles from the index (0,0). Then we just query.
+Describe the query
+Up to 4 
+
+For the Lipschitz constant, square and we sum up all the $PSF$ values which are not masked by the image edges. The masking is always rectangular. We can use a scan algorithm to cache intermediate results:
+
+\begin{lstlisting}
+var scan = new double[,];
+for (i in (0, PSF.Length(0))
+{
+	for (j in (0, PSF.Length(1))
+	{
+		var iBefore = scan[i - 1, j];
+		var jBefore = scan[i, j - 1];
+		var ijBefore = scan[i - 1, j - 1];
+		var current = PSF[i, j] * PSF[i, j];
+		scan[i, j] = current + iBefore + jBefore - ijBefore;
+	}
+}
+\end{lstlisting}
+
+Instead of keeping the square value of the $PSF$, each element of $scan$ represents the sum of the squared $PSF$ values up to the indices $i$ and $j$.
+
+This means the last element,  $scan[PSF.Length(0) - 1, PSF.Length(1) -1]$ contains the sum  $scan[i, j]$
+Each location of $scan[i, j]$ contains the sum of squares inside the the sum of a rectangle,  $PSF$ $(0, i)$ and $(0, j)$
 Scan algorithm.
 
 The scan algorithm. Running sum of squares.
 
 At most, we need 4 
 
-Numerical issues with float precision.
+%Numerical issues with float precision.
 
 \subsubsection{Efficient Greedy strategy}
 
@@ -190,7 +255,33 @@ Not sure if this is always true.
 
 dot product for each pixel.
 In greedy strategy, we touch every pixel and look how much we can change it.
+A map of pixels
 Lucky for us, we have an easy way to pre-calculate the gradients for each pixel.
+
+
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/dirty.png}
+		\caption{Dirty Image.}
+		\label{cd:efficient:gradients:dirty}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/psf.png}
+		\caption{Point Spread Function.}
+		\label{cd:efficient:gradients:psf}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/gradients.png}
+		\caption{Gradient for each pixel.}
+		\label{cd:efficient:gradients:gradients}
+	\end{subfigure}
+	
+	\caption{Example problem with two point sources.}
+	\label{cd:efficient:gradients:figure}
+\end{figure}
+
+It is actually a correlation operation.
 
 $\langle I_{res},PSF\rangle$ is the same as calculating the correlation of the residuals with the PSF.
 Convolution, we first flip the convolution kernel.
@@ -203,6 +294,9 @@ It is faster to calculate the gradient lookup map than $\langle I_{res},PSF\rang
 \subsubsection{Efficient update of gradients}
 Map of gradients. How can we efficiently update this map after we calculated the deconvolution for a single pixel.
 
+
+
+
 The naive solution is to first update the residuals, and then calculate the correlation with the PSF again.
 $residuals = residuals - PSF * optimalValue$
 $gradients = residuals \star PSF$
@@ -211,6 +305,22 @@ $gradients = residuals \star PSF$
 But we can simplify this. We can directly update the map of gradients by calculating:
 
 $gradients = gradients - (PSF \star PSF) * optimalValue$
+
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/psf.png}
+		\caption{Dirty Image.}
+		\label{cd:efficient:update:dirty}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/psf2.png}
+		\caption{Point Spread Function.}
+		\label{cd:efficient:update:psf}
+	\end{subfigure}
+	\caption{Example problem with two point sources.}
+	\label{cd:efficient:update:figure}
+\end{figure}
 
 Calculate the PSF correlation with itself. Calculate the PSF correlation once, and use it to update the gradient map directly.
 
@@ -222,41 +332,15 @@ Edges again. We have the problem that, when the PSF is cutoff by the edges of th
 
 putting it all together
 
-\begin{lstlisting}
-dirty = IFFT(Gridding(visibilities))
 
-//pre-calculate bMap
-dirtyPadded = ZeroPadding(dirty, psfSize)
-fourierDirtyPadded = FFT(dirtyPadded)
-fourierPsf = FFT(invert(psf))		//we require the correlation, that is why we invert the psf
-bMap = IFFT(fourierDirtyPadded * fourierPsf)
-
-//pre-calculate aMap. aMap stays constant over all CD iterations
-aMap = 
-
-x = new Array   
-do 
-{
-oldObjectiveValue = objectiveValue
-
-//the core of the algorithm
-pixelLocation = IterationStrategy(residuals)
-optimalValue = Minimize(residuals, pixelLocation)
-optimalValue = ApplyElasticNet(optimalValue)
-
-//housekeeping
-x[pixelLocation] = optimalValue
-residuals = (dirty - Convolve(x, psf))
-objectiveValue = SUM(residuals * residuals) + ElasticNet(x)
-} while (oldObjectiveValue - objectiveValue)  < epsilon
-\end{lstlisting}
-
-Comparison to CLEAN. Similar algorithm, but we descend in the actual gradient direction.
 
 
 GPU implementation
 
 \subsection{Similarities to the CLEAN algorithm}
+
+Comparison to CLEAN. Similar algorithm, but we descend in the actual gradient direction.
+
 
 \subsection{Distributed Deconvolution}
 How do we distribute the major cycle. We need to distribute every step, Gridding, FFT and Deconvolution.
