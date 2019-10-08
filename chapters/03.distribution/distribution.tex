@@ -66,7 +66,7 @@ In this section, we derive the basic coordinate descent algorithm that optimizes
 	\item Cyclic: where we choose a subset of pixels and cycle through them until convergence. 
 \end{enumerate}
 
-The iteration strategy is not important for convergence. We can for example create a mixture of the different strategies and the algorithm would still converge to the optimum. However, the strategy we choose has an impact on how many iterations we need until convergence. For example: if the image consists of a single star in the center of the image, a greedy strategy would first optimize the pixel at the center, while a random strategy may waste the computing resources in checking every other pixel several times before finally landing on the center. In this implementation, we chose the greedy strategy. Each iteration takes the best possible step towards the optimum. We arrive at the following coordinate descent algorithm in pseudocode:
+The iteration strategy is not important for convergence. We can for example create a mixture of the different strategies and the algorithm would still converge to the optimum. However, the strategy we choose has an impact on how many iterations we need until convergence. For example: if the image consists of a single star in the center of the image, a greedy strategy would first optimize the pixel at the center, while a random strategy may waste the computing resources in checking every other pixel several times before finally landing on the center. In this implementation, we chose the greedy strategy. Each iteration takes the best possible step towards the optimum. We arrive at the following coordinate descent algorithm in pseudo code:
 
 
 \begin{lstlisting}
@@ -205,12 +205,7 @@ Lipschitz constants are $\langle PSF, PSF \rangle$. We simply multiply the $PSF$
 
 Note that it is not an issue for convergence: The Lipschitz constant describes the largest step we can take without overshooting the target. We can always make smaller steps, but may pay it with more iterations. The Lipschitz constant of the edge pixels is always lower than the center. The coordinate descent algorithm does converge, but needs more iterations for pixels at the edges of the image. Luckily, there is a way to re-use intermediate results, and efficiently calculate the Lipschitz constant for each pixel in the image.
 
-Sum all values inside a rectangle.
-Precalculate all rectangles from the index (0,0). Then we just query.
-Describe the query
-Up to 4 
-
-For the Lipschitz constant, square and we sum up all the $PSF$ values which are not masked by the image edges. The masking is always rectangular. We can use a scan algorithm to cache intermediate results:
+The first observation is that the image edges always create a rectangular crop of the $PSF$. To calculate the Lipschitz constant, we square and sum up all the values that lie inside the rectangle. This can be exploited with a scan algorithm: We store the $PSF$ as a running sum of squares. 
 
 \begin{lstlisting}
 var scan = new double[,];
@@ -227,15 +222,9 @@ for (i in (0, PSF.Length(0))
 }
 \end{lstlisting}
 
-Instead of keeping the square value of the $PSF$, each element of $scan$ represents the sum of the squared $PSF$ values up to the indices $i$ and $j$.
+$scan[0, 13]$ contains the sum of the squared $PSF$ values from index $(0,0)$ up to and including index $(0, 13)$. The last element, $scan[PSF.Length(0) - 1, PSF.Length(1) -1]$ contains the sum of squares over the whole $PSF$. In short, we have stored the sum of all possible rectangles starting from index $(0,0)$. If a part of the $PSF$ is cropped, we can look up $scan$ and find out by how much it affects the total sum.
 
-This means the last element,  $scan[PSF.Length(0) - 1, PSF.Length(1) -1]$ contains the sum  $scan[i, j]$
-Each location of $scan[i, j]$ contains the sum of squares inside the the sum of a rectangle,  $PSF$ $(0, i)$ and $(0, j)$
-Scan algorithm.
-
-The scan algorithm. Running sum of squares.
-
-At most, we need 4 
+Up to 4 
 
 %Numerical issues with float precision.
 
@@ -252,12 +241,9 @@ Not sure if this is always true.
 
 
 \subsubsection{Pre-calculation of gradients}
+In each iteration, we need to know the gradient for all pixels. We need to calculate the inner product $\langle I_{res},PSF\rangle$ for each pixel. It is easy to see that this becomes expensive. When the $PSF$ and the image have the same number of pixels, we need a quadratic number of operations to calculate all gradients.
 
-dot product for each pixel.
-In greedy strategy, we touch every pixel and look how much we can change it.
-A map of pixels
-Lucky for us, we have an easy way to pre-calculate the gradients for each pixel.
-
+But this is not necessary. The inner product $\langle I_{res},PSF\rangle$ is equivalent to calculating the correlation of the residuals with the $PSF$. Remember that the convolution and correlation operators are related: The convolution is equal to a correlation with a flipped kernel. Since a convolution in image space is a multiplication in Fourier space, we can calculate the $PSF$ correlation efficiently in Fourier space.
 
 \begin{figure}[h]
 	\centering
@@ -277,21 +263,21 @@ Lucky for us, we have an easy way to pre-calculate the gradients for each pixel.
 		\label{cd:efficient:gradients:gradients}
 	\end{subfigure}
 	
-	\caption{Example problem with two point sources.}
+	\caption{Example of the gradient calculation.}
 	\label{cd:efficient:gradients:figure}
 \end{figure}
 
-It is actually a correlation operation.
+To calculate all gradients, we first flip the $PSF$ then calculate the FFT. Then we can proceed the same way as calculating a convolution in Fourier space:
+\begin{lstlisting}
+var psfCorrelationFourier = FFT(FLIP((PSF))
+var residualFourier = FFT(residuals)
+var gradients = iFFT(MULTIPLY(residualFourier, psfCorrelationFourier))
+\end{lstlisting}
 
-$\langle I_{res},PSF\rangle$ is the same as calculating the correlation of the residuals with the PSF.
-Convolution, we first flip the convolution kernel.
-Correlation, we do not flip the kernel.
-
-Use the FFT. Pad and flip the kernel. Now we can have all the gradients for each pixel saved to a lookup-map. How we can efficiently update the lookup map in each iteration.
-
-It is faster to calculate the gradient lookup map than $\langle I_{res},PSF\rangle$ for each pixel.
+The Figure \ref{cd:efficient:gradients:gradients} shows the resulting map of gradients. Now, at the start of each coordinate descent iteration, we can simply look up the gradient for each pixel instead of calculating  $\langle I_{res},PSF\rangle$ for each pixel. 
 
 \subsubsection{Efficient update of gradients}
+For the first iteration, we can efficiently calculate the gradient for each pixel. 
 Map of gradients. How can we efficiently update this map after we calculated the deconvolution for a single pixel.
 
 
@@ -306,16 +292,16 @@ But we can simplify this. We can directly update the map of gradients by calcula
 
 $gradients = gradients - (PSF \star PSF) * optimalValue$
 
-\begin{figure}[h]
+\begin{figure}[!h]
 	\centering
 	\begin{subfigure}[b]{0.3\linewidth}
 		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/psf.png}
-		\caption{Dirty Image.}
+		\caption{Point Spread Function.}
 		\label{cd:efficient:update:dirty}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.3\linewidth}
 		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/psf2.png}
-		\caption{Point Spread Function.}
+		\caption{Gradient update.}
 		\label{cd:efficient:update:psf}
 	\end{subfigure}
 	\caption{Example problem with two point sources.}

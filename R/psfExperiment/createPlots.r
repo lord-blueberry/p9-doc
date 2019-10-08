@@ -66,6 +66,17 @@ ggplot(subset, mapping = aes(x = cycle, y = objective, color=experimentName)) +
   scale_y_continuous(trans="log10")
 dev.off() 
 
-
-
-+ coord_cartesian(ylim=c(30, 40))
+png("./psfExperiment/plots/comparison_zoom.png",
+    width = 12.0,
+    height = 6.0,
+    units = "in",
+    res = 200)
+ggplot(subset, mapping = aes(x = cycle, y = objective, color=experimentName)) + 
+  xlab("Major cycle index") +
+  ylab("Objective value") +
+  labs(color="Method") +
+  geom_line() + 
+  geom_point() + 
+  scale_y_continuous() +
+  coord_cartesian(xlim= c(0, 7), ylim=c(138.35, 138.45))
+dev.off()

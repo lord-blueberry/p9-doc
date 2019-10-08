@@ -12,10 +12,12 @@ In the center, the $PSF$ approximates a Gaussian function, which spans only over
 Also, the values of the $PSF$ become smaller the further we walk away from the center. Although the $PSF$ spans over the whole image, its values become insiginificant.
 
 MeerKAT has wide field of view observations with an increasingly Gaussian-like $PSF$. Can we use the significant fraction of the $PSF$ instead? Is this enough?
+We have two operations, calculating the gradients of the image, and updating the gradients.
+View of stochastic gradient descent. So if we calculate the gradient of a pixel with $-2 \langle residuals, PSF \rangle$, then we should be able to approximate the gradient with only a fraction fo the $SF$. But the pre-calculation of gradients is actually cheap, the thing. But what about updating the gradients?
+We
 
-Have the view of gradients. 
-Similar to stochastic gradient descent
-So if we calculate the gradient of a pixel with $-2 \langle residuals, PSF \rangle$, then we should be able to approximate the gradient with only a fraction fo the $SF$.
+
+Also,
 Plus the major cycle framework: It already corrects for the fact that the $PSF$ we use is only an approximation of the true $PSF$. $w$-term changes the $PSF$ over the image. 
 
 
@@ -25,6 +27,10 @@ The answer to this is yes, we can. In Section \ref{results:gradients} we demonst
 
 
 The problem is arriving at the same optimum. Not trivial.
+
+
+
+\subsection{Difficulty in approximating the $PSF$}
 
 In our coordinate descent deconvolution, we use the $PSF$ in two steps. Before we run coordinate descent, we pre-calculate the gradient for each pixel with a correlation operation. During coordinate descent deconvolutions, we update the gradient-map directly. Two opposing solutions: We use the full $PSF$ to pre-calculate the gradients, but only update the gradients with a fraction of the $PSF$. That way we always start from the correct gradients, but get less accurate over coordinate descent deconvolutions.
 
