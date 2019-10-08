@@ -1,0 +1,58 @@
+\section{Gradient/PSF approximation for distributed deconvolution}
+
+Distributed deconvolution, we would like to deconvovle patches of the final image independently from each other. 
+Concept of seperability. Number of non-zero components.
+
+The size of the $PSF$ tells us how far the patches have to be apart from each other to be independent.
+Limiting factor for distribution is the size of the $PSF$. We would like to deconvolve pixels, or patches of the image independently from each other. But the $PSF$ does not let us do that. As soon as the $PSF$ overlap, they are not independent anymore.
+Generally the $PSF$ spans over the whole image. 
+
+But the $PSF$ for MeerKAT is peculiar.
+In the center, the $PSF$ approximates a Gaussian function, which spans only over a fraction of the image. Indeed, with increasing number of visibility measurements, the $PSF$ becomes more and more like a Gaussian function.
+Also, the values of the $PSF$ become smaller the further we walk away from the center. Although the $PSF$ spans over the whole image, its values become insiginificant.
+
+MeerKAT has wide field of view observations with an increasingly Gaussian-like $PSF$. Can we use the significant fraction of the $PSF$ instead? Is this enough?
+
+Have the view of gradients. 
+Similar to stochastic gradient descent
+So if we calculate the gradient of a pixel with $-2 \langle residuals, PSF \rangle$, then we should be able to approximate the gradient with only a fraction fo the $SF$.
+Plus the major cycle framework: It already corrects for the fact that the $PSF$ we use is only an approximation of the true $PSF$. $w$-term changes the $PSF$ over the image. 
+
+
+
+The answer to this is yes, we can. In Section \ref{results:gradients} we demonstrate the speedup of the deconvolution with only a fraction of the $PSF$ on a real world MeerKAT dataset. In this Section, we show how this can be done. 
+
+
+
+The problem is arriving at the same optimum. Not trivial.
+
+In our coordinate descent deconvolution, we use the $PSF$ in two steps. Before we run coordinate descent, we pre-calculate the gradient for each pixel with a correlation operation. During coordinate descent deconvolutions, we update the gradient-map directly. Two opposing solutions: We use the full $PSF$ to pre-calculate the gradients, but only update the gradients with a fraction of the $PSF$. That way we always start from the correct gradients, but get less accurate over coordinate descent deconvolutions.
+
+\subsection{Approximate gradient update}
+
+So we use the full $PSF$
+
+only update with a fraction of the $PSF$
+
+$PSF$ squared update. Scaling.
+So we become less and less accurate
+
+
+\subsection{Approximate deconvolution}
+
+We never use the full PSF
+
+But the problem of gradient magnitude. 
+
+Change lambda. We do an approximate deconvolution. 
+
+
+\subsection{Major Cycle convergence}
+\cite{clark1980efficient} and the question on how many iterations per major cycle
+Putting it all together
+
+We have the Minor Cycle, which is easy to converge.
+
+Coordinate Descent Path optimization \cite{friedman2010regularization}
+Danger that CD takes too many pixel into a Major Cycle. Lower bound per iteration, PSF sidelobe
+can still be too low, danger when many psf sidelobes overlap

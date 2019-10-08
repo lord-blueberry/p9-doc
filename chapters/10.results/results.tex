@@ -14,21 +14,11 @@ For algorithmic testing
 
 \subsection{Comparison with CLEAN reconstruction}
 
-\subsection{Speedup}
+\subsection{GPU Acceleration}
 
-\subsection{PSF as the limiting factor}
+\subsection{Distributed coordinate descent}
 
 
-\subsection{Approximation of gradients}
-
-\subsubsection{Major Cycle convergence}
-Putting it all together
-
-We have the Minor Cycle, which is easy to converge.
-
-Coordinate Descent Path optimization \cite{friedman2010regularization}
-Danger that CD takes too many pixel into a Major Cycle. Lower bound per iteration, PSF sidelobe
-can still be too low, danger when many psf sidelobes overlap
 
 
 We are in the realm of convolution. Remember that a convolution in image space is a multiplication in fourier space.
@@ -41,3 +31,6 @@ We can multiply
 	\caption{Wall-clock time of the distributed reconstruction}
 	\label{results:time:fig}
 \end{figure}
+
+
+\subsection{Validity of gradient approximation} \label{results:gradients}
