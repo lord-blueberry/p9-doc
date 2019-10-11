@@ -1,0 +1,1 @@
+https://www.rdocumentation.org/packages/rje/versions/1.10.10/topics/cubeHelix

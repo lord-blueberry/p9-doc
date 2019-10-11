@@ -89,7 +89,7 @@ do
 	
 	//housekeeping
 	x[pixelLocation] = optimalValue
-	residuals = (dirty - Convolve(x, psf))
+	residuals = residuals - PSF * (optimalValue - oldValue)
 	objectiveValue = 0.5 * SUM(residuals * residuals) + lambda * ElasticNet(x, alpha)
 } while (oldObjectiveValue - objectiveValue)  < epsilon
 \end{lstlisting}
@@ -241,9 +241,9 @@ Not sure if this is always true.
 
 
 \subsubsection{Pre-calculation of gradients}
-In each iteration, we need to know the gradient for all pixels. We need to calculate the inner product $\langle I_{res},PSF\rangle$ for each pixel. It is easy to see that this becomes expensive. When the $PSF$ and the image have the same number of pixels, we need a quadratic number of operations to calculate all gradients.
+In each iteration, we need to know the gradient for all pixels. We need to calculate the inner product $\langle I_{res},PSF\rangle$ for each pixel. Typically, the $PSF$ and the image have the same number of pixels, which leads to a quadratic number of operations to calculate all gradients.
 
-But this is not necessary. The inner product $\langle I_{res},PSF\rangle$ is equivalent to calculating the correlation of the residuals with the $PSF$. Remember that the convolution and correlation operators are related: The convolution is equal to a correlation with a flipped kernel. Since a convolution in image space is a multiplication in Fourier space, we can calculate the $PSF$ correlation efficiently in Fourier space.
+Luckily, we can use the Fourier transform to speed up the calculation. Notice that the inner product $\langle I_{res},PSF\rangle$ is equivalent to calculating the correlation of the residuals with the $PSF$ ($)I_{res} \star PSF$). The convolution and correlation operators are related: The convolution is equal to a correlation with a flipped kernel. Since a convolution in image space is a multiplication in Fourier space, we can calculate the $PSF$ correlation efficiently in Fourier space.
 
 \begin{figure}[h]
 	\centering
@@ -267,30 +267,25 @@ But this is not necessary. The inner product $\langle I_{res},PSF\rangle$ is equ
 	\label{cd:efficient:gradients:figure}
 \end{figure}
 
-To calculate all gradients, we first flip the $PSF$ then calculate the FFT. Then we can proceed the same way as calculating a convolution in Fourier space:
-\begin{lstlisting}
-var psfCorrelationFourier = FFT(FLIP((PSF))
-var residualFourier = FFT(residuals)
-var gradients = iFFT(MULTIPLY(residualFourier, psfCorrelationFourier))
-\end{lstlisting}
-
-The Figure \ref{cd:efficient:gradients:gradients} shows the resulting map of gradients. Now, at the start of each coordinate descent iteration, we can simply look up the gradient for each pixel instead of calculating  $\langle I_{res},PSF\rangle$ for each pixel. 
+The Figure \ref{cd:efficient:gradients:figure} shows the process for the first step of the coordinate descent deconvolution. We start with the dirty image. We calculate the correlation of the $PSF$ with the dirty image and arrive at the map of gradients. Figure \ref{cd:efficient:gradients:gradients} shows the gradient for each pixel.
 
 \subsubsection{Efficient update of gradients}
-For the first iteration, we can efficiently calculate the gradient for each pixel. 
-Map of gradients. How can we efficiently update this map after we calculated the deconvolution for a single pixel.
+The naive coordinate descent implementation minimizes a single pixel, and updates the residuals by subtracting the $PSF$ at the correct location (The first line of \eqref{cd:efficient:update:naive}). It then calculates the new gradient for each pixel(Second line of \eqref{cd:efficient:update:naive}) in each iteration. This is not necessary. We only need to calculate the correlation in the first iteration. All later iterations update the map gradients directly without the Fourier transform.
 
+\begin{equation}\label{cd:efficient:update:naive}
+\begin{split}
+residuals &= residuals - PSF * (optimalValue - oldValue) \\
+gradients &= residuals \star PSF
+\end{split}
+\end{equation}
 
+The trick is to combine both lines of the naive update \eqref{cd:efficient:update:naive}. We correlate each term of the first line with the $PSF$, and we arrive at the update rule \eqref{cd:efficient:update:new}.
 
+\begin{equation}\label{cd:efficient:update:new}
+gradients = gradients - (PSF \star PSF) * (optimalValue - oldValue)
+\end{equation}
 
-The naive solution is to first update the residuals, and then calculate the correlation with the PSF again.
-$residuals = residuals - PSF * optimalValue$
-$gradients = residuals \star PSF$
-
-
-But we can simplify this. We can directly update the map of gradients by calculating:
-
-$gradients = gradients - (PSF \star PSF) * optimalValue$
+The noteworthy part of \eqref{cd:efficient:update:new} is that we update the gradients directly, but instead of using the $PSF$, we take the product of $(PSF \star PSF)$, of the $PSF$ correlated with itself. Also note that we do not need to keep the residuals in memory. All we need is the map of gradients. 
 
 \begin{figure}[!h]
 	\centering
@@ -301,7 +296,7 @@ $gradients = gradients - (PSF \star PSF) * optimalValue$
 	\end{subfigure}
 	\begin{subfigure}[b]{0.3\linewidth}
 		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/psf2.png}
-		\caption{Gradient update.}
+		\caption{Gradient update: $(PSF \star PSF)$.}
 		\label{cd:efficient:update:psf}
 	\end{subfigure}
 	\caption{Example problem with two point sources.}
@@ -313,6 +308,9 @@ Calculate the PSF correlation with itself. Calculate the PSF correlation once, a
 Edges again. We have the problem that, when the PSF is cutoff by the edges of the image, we would need to calculate $(PSF \star PSF)$ again. This is too expensive. Does not change dramatically, unless the pixel we optimize is at the full edge.
 
 
+\subsection{Similarities to the CLEAN algorithm}
+
+Comparison to CLEAN. Similar algorithm, but we descend in the actual gradient direction.
 
 \subsection{Pseudo-code of the basic, optimized algorithm}
 
@@ -323,9 +321,7 @@ putting it all together
 
 GPU implementation
 
-\subsection{Similarities to the CLEAN algorithm}
 
-Comparison to CLEAN. Similar algorithm, but we descend in the actual gradient direction.
 
 
 \subsection{Distributed Deconvolution}

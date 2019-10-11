@@ -1,4 +1,43 @@
 \section{Introduction to radio interferometric imaging}\label{radio}
+
+T
+
+Radio interferometers consists of several antennas. Each antenna pair measures a Visibility in Fourier space. Each measurement consists of an amplitude and phase at a location at a $u$ and $v$  location. The distance between the antennas defines what point in the Fourier space gets sampled. 
+What is a baseline
+The Figure shows the antenna layout of the MeerKAT radio interferometer, while the Figure shows the sampling pattern in the Fourier space.
+
+
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}[b]{0.49\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/01.intro/aperture/snapshot.png}
+		\caption{Antenna layout.}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.49\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/01.intro/aperture/snapshot.png}
+		\caption{Visibility sampling pattern.}
+	\end{subfigure}
+	\\
+	\begin{subfigure}[b]{0.49\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/01.intro/aperture/frequencies.png}
+		\caption{Samples of multiple frequencies.}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.49\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/01.intro/aperture/timesteps.png}
+		\caption{Sampling at multiple timesteps.}
+	\end{subfigure}
+	
+	\caption{Effect of the L1 and L2 Norm separately.}
+	\label{intro:sampling}
+\end{figure}
+
+The MeerKAT has 64 antennas, and measures 2016 Visibilities. 
+ at each second, for every frequency band. MeerKAT has 20 thousand frequency channels.
+Adding the Visibilities from different frequencies, (adding scaled versions of the original sampling pattern)
+Adding frequencies from different timesteps results in eliptical sampling pattern in the Fourier space.
+Large amount of data.
+We want to reconstruct an image from the Visibilities over several timesteps and several frequencies. 
+
 \begin{figure}[htp]
 	% preliminary
 	\sbox\twosubbox{%
@@ -19,6 +58,33 @@
 	}
 	\caption{Example of an image reconstruction for Fourier measurements of the MeerKAT radio interferometer}\label{intro:inversefig}
 \end{figure}
+
+
+From the measurements alone, this is not possible.
+It is called an ill-posed inverse problem in the literature. A problem is considered ill-posed when:
+\begin{enumerate}
+	\item No solution exists.
+	\item There are solutions, but no unique solution exists.
+	\item The solution behaviour does not change continuously with the initial condition (For example: a small change in the measurements lead to a very different reconstructed image).
+\end{enumerate}
+
+The image reconstruction problem is ill-posed, because we have many images that fit the measurements. From the measurements alone, we cannot reconstruct the image.
+
+However, we can include prior information about the image.
+The image consists of stars and hydrogen clouds. This can be used to filter unlikely images.
+Question remains, how likely are we to reconstruct the truly observed image?
+We have the theory of compressed sensing, which tells us how likely it is in our sampling regime.
+Introduction to the theory of compressed sensing.
+
+We cannot do imaging without understanding the radio interferometer. Odds and ends of radio interferometery influence every part of the image reconstruction.
+Problems with radio interferometry, everything is a simplification:
+Visibility measurements are noisy.
+We do not have two dimensional Fourier measurements, but three.
+
+
+
+
+
 
 Radio interferometers sample an incomplete set of Fourier components of the sky. Each Fourier component consists of the noisy amplitude plus phase measurements and the $uv$ location on where it was measured in the Fourier space. Figure \ref{intro:inversefig:uvspace} shows the location of the measurement points in Fourier space of a real-world MeerKAT observation. We wish to reconstruct the observed image \ref{intro:inversefig:reconstruction} from the measurements.
 

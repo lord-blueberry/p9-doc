@@ -25,15 +25,15 @@
 \BOOKMARK [3][-]{subsubsection.4.3.3}{Efficient Greedy strategy}{subsection.4.3}% 25
 \BOOKMARK [3][-]{subsubsection.4.3.4}{Pre-calculation of gradients}{subsection.4.3}% 26
 \BOOKMARK [3][-]{subsubsection.4.3.5}{Efficient update of gradients}{subsection.4.3}% 27
-\BOOKMARK [2][-]{subsection.4.4}{Pseudo-code of the basic, optimized algorithm}{section.4}% 28
-\BOOKMARK [2][-]{subsection.4.5}{Similarities to the CLEAN algorithm}{section.4}% 29
+\BOOKMARK [2][-]{subsection.4.4}{Similarities to the CLEAN algorithm}{section.4}% 28
+\BOOKMARK [2][-]{subsection.4.5}{Pseudo-code of the basic, optimized algorithm}{section.4}% 29
 \BOOKMARK [2][-]{subsection.4.6}{Distributed Deconvolution}{section.4}% 30
 \BOOKMARK [1][-]{section.5}{Gradient/PSF approximation for distributed deconvolution}{}% 31
 \BOOKMARK [2][-]{subsection.5.1}{Difficulty in approximating the PSF}{section.5}% 32
 \BOOKMARK [2][-]{subsection.5.2}{Approximate gradient update}{section.5}% 33
 \BOOKMARK [2][-]{subsection.5.3}{Approximate deconvolution}{section.5}% 34
 \BOOKMARK [2][-]{subsection.5.4}{Major Cycle convergence}{section.5}% 35
-\BOOKMARK [1][-]{section.6}{Tests on the MeerKAT LMC observation}{}% 36
+\BOOKMARK [1][-]{section.6}{Tests on the MeerKAT observation}{}% 36
 \BOOKMARK [2][-]{subsection.6.1}{Comparison with CLEAN reconstruction}{section.6}% 37
 \BOOKMARK [2][-]{subsection.6.2}{GPU Acceleration}{section.6}% 38
 \BOOKMARK [2][-]{subsection.6.3}{Distributed coordinate descent}{section.6}% 39
