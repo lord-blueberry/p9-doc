@@ -62,8 +62,7 @@ The MeerKAT radio interferometer measures 2016 visibilities, for each channel, a
 	\caption{Example of an image reconstruction for Fourier measurements of the MeerKAT radio interferometer}\label{intro:inversefig}
 \end{figure}
 
-A lot of visibility measurements. The Figure \ref{intro:inversefig:uvspace} shows a fraction of the visibility samples. 
-The measurements from radio interferometers contain a large number of visibilities. The Figure  \ref{intro:inversefig:uvspace} shows the samples in Fourier space for a real world observation. The visibilities are combined from multiple channels and multiple timesteps. Although we have a large number of visibilities, we still have areas of the Fourier space without a sample. Although we have a large number of samples, the visibilities are still an incomplete. From the measurements alone, we cannot reconstruct the image shown in Figure \ref{intro:inversefig:uvspace}.
+It is easy to see that the visibility measurements from MeerKAT quickly fills up the hard disk and the Fourier space with samples. The Figure \ref{intro:inversefig:uvspace} shows a fraction of the visibility samples from a real-world observation. The visibilities are combined from multiple channels and multiple timesteps. Although we have a large number of visibilities, we still have areas of the Fourier space without a sample. Although we have a large number of samples, the visibilities are still an incomplete. From the measurements alone, we cannot reconstruct the image shown in Figure \ref{intro:inversefig:uvspace}.
 
 This is known as an ill-posed inverse problem in the literature. A problem is considered ill-posed when:
 \begin{enumerate}
@@ -81,15 +80,109 @@ However, this would reduce the effective resolution of the reconstruction. We ca
 
 
 
-\subsection{The theory of Compressed Sensing}\label{intro2:ill-posed}
+\subsection{The theory of Compressed Sensing}\label{radio:cs}
+
 
 T
 
-So far, we discussed how the interferometer measures in Fourier space, and we wish to find the observed image that matches the measurements. In other words, we wish to find a solution to a system of linear equation \eqref{intro2:ill-posed:linear}, where $V$ are the measurements, $x$ is the observed image and $F$ is the Fourier transform matrix. We also discussed that $F$ can be complicated in practice, but is still essentially a linear operator. Meaning we know how the inverse Fourier transform matrix $F^{-1}$, and the question arises: Why can't we solve the equations \eqref{intro2:ill-posed:linear} by calculating the inverse Fourier transform? Or, why does $x = F^{-1} V$ not lead to the observed image?
+We introduce the theory of Compressed Sensing for the problem of radio interferometric image reconstruction. We show how to formulate the image reconstruction as an optimization problem, how we can include prior information and what guarantees arise that we actually solve the ill-posed inverse problem. We will see that we can reconstruct the observed image from incomplete measurements, below the Nyquist-Shannon sampling rate.
 
-\begin{equation}\label{intro2:ill-posed:linear}
+\begin{equation}\label{radio:cs:linear}
 \underset{x}{solve}\quad V - Fx = 0
 \end{equation}
+
+System of linear equations.
+Show the ill-posed inverse problem at this.
+
+Nyquist-shannon rate. Twice as many Visibilities, at uniformly spaced $u$ and $v$ locations.
+In that case, we can simply calculate the inverse Fourier transform.
+We do not have that. 
+We do have a large number of visibilities, generally several times larger than the number of pixels. But as we saw in Figure \ref{radio:sampling:pattern}, the sampling pattern is not uniform. We are missing samples at important locations. 
+This also means we are measuring redundant information.
+
+Over-determined problem. We have more visibilities than pixels.
+But we also have noise.
+Amplitude and phase of the visibilities. More details in later section.
+
+
+\begin{equation}\label{radio:cs:l2}
+\underset{x}{minimize} \: \left \| V - Fx \right \|_2^2
+\end{equation}
+
+Now with \eqref{radio:cs:l2} we have "solved" the noise issue.
+Convex optimization problem.
+Has a global minimum.
+Convex optimization algorithms that give us the global minimum of \eqref{radio:cs:l2}.
+
+
+Is the observed image the the global minimum? Sadly, we do not have any guarantee to find it there.
+
+The crucial point for compressed sensing: We need to add prior information. We want to penalize unlikely images and find the optimum between being close to the data, and being consistent with prior information.
+In the case of radio astronomy, we can assume that the image will contain stars. Stars are emissions which are concentrated around a single pixel.
+We want to say that only a few pixels are likely to be non-zero. Most of the image will be zero, only at a few locations where the stars have to be. 
+
+\begin{equation}\label{radio:cs:lasso}
+\underset{x}{minimize} \: \left \| V - Fx \right \|_2^2 + \lambda \left \| x \right \|_1
+\end{equation}
+
+
+Data term $\| V - Fx \right \|_2^2$, and two names for the second term ($\left \| x \right \|_1$). We can call the second term a prior when we look at it from the bayesian statistics. 
+View from optimization, \eqref{radio:cs:lasso} is the LASSO objective and $\left \| x \right \|_1$ is the regularization. We reduce the possiblity space.
+
+This is the simplest prior, but it gets used in real-world applications. There are other, more complex regularizations which we will discuss later.
+
+How many samples do we need, untli we find the observed image at the optimum of \eqref{radio:cs:lasso}? 
+Nyquist-Shannon rate tells us it depends on the number of pixels in the image. The theory of compressed sensing gives us guarantees depending on the number of non-zero pixels.
+
+\subsubsection{Intuitive explanation of Compressed Sensing}
+Intuitive
+Theory of Compressed Sensing
+Pretty well, if the image only contains stars. Theory of compressed sensing 
+Incoherence. We gain maximum information about the non-zero locations with each visibility measurement.
+
+All we need for Compressive Sensing: A reconstruction space which our image is sparse.
+A measurement space which is incoherent to our reconstruction space.
+
+Then the number of samples we need does not depend on the resolution of the image, but on the number of non-zero components in our reconstruction space.
+
+\subsubsection{Formal Guarantees}
+RIP
+What is the RIP
+Meaning of $F$. How many random columns of F are uncorrelated? Remember that we have redundant information, the whole matrix $F$ does have columns which are correlated.
+
+At what point are we guaranteed? The matrix $A$ needs to fullfil the Restricted Isometry Porperty (RIP) \cite{candes2006robust,donoho2006compressed}.
+Approximately orthonormal on sparse signals. (If we randomly choose ten columns of $F$, how much do they correlate. We want as little correlation as possible.)
+Calculate the RIP is NP-hard\cite{tillmann2013computational}. Approximations are also difficult to compute\cite{natarajan2014computational}.
+So we can only talk about how likely a given matrix fullfils the RIP. Matrix where each element is sampled from a random Gaussian distributîon has the highest change.
+
+Random samples in the Fourier space also have a high chance to fulfill the RIP \cite{haviv2017restricted}.
+
+Not possible for Radio interferometers, because they sample in the Fourier space. Not random.
+
+There are also extended emissions, clouds etc. Resulting in a lot of non-zero pixels. There may be better sparse spaces for radio astronomy.
+
+But also RIP may be too strict. Exact reconstruction can also work under less strict conditions\cite{candes2011probabilistic} active field of research.
+
+We do not know if the image we reconstruct is the observed one. Calculating good bounds are hard. 
+Demonstrated super-resolution performance.
+
+
+\subsubsection{General Compressed Sensing reconstruction formulation}
+Use everything with the L1 norm. More general formulation
+
+$F$ is fixed, because we cannot change the interferometer.
+
+We do just need a sparse space.
+
+
+
+
+
+T 
+
+So far, we discussed how the interferometer measures in Fourier space, and we wish to find the observed image that matches the measurements. In other words, we wish to find a solution to a system of linear equation \eqref{intro2:ill-posed:linear}, where $V$ are the measurements, $x$ is the observed image and $F$ is the Fourier transform matrix. We also discussed that $F$ can be complicated in practice, but is still essentially a linear operator. Meaning we know how the inverse Fourier transform matrix $F^{-1}$, and the question arises: Why can't we solve the equations \eqref{intro2:ill-posed:linear} by calculating the inverse Fourier transform? Or, why does $x = F^{-1} V$ not lead to the observed image?
+
+
 
 The answer is, the equations \eqref{intro2:ill-posed:linear} do not have a unique solution, which makes the problem ill-posed. The problem is considered ill-posed when it has one of the following properties:
 \begin{enumerate}
