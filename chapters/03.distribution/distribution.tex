@@ -307,6 +307,8 @@ Calculate the PSF correlation with itself. Calculate the PSF correlation once, a
 
 Edges again. We have the problem that, when the PSF is cutoff by the edges of the image, we would need to calculate $(PSF \star PSF)$ again. This is too expensive. Does not change dramatically, unless the pixel we optimize is at the full edge.
 
+What happens in the worst case: we get stuck on a single pixel and do not move any further. Worst case we waste iterations.
+A major cycle then fixes this problem.
 
 \subsection{Similarities to the CLEAN algorithm}
 
@@ -324,7 +326,7 @@ GPU implementation
 
 
 
-\subsection{Distributed Deconvolution}
+\subsection{Distributed coordinate descent with MPI}
 How do we distribute the major cycle. We need to distribute every step, Gridding, FFT and Deconvolution.
 
 Gridding, Large number of input data. This needs to be distributed
@@ -352,3 +354,6 @@ Communicate the grid
 inverse FFT on one node.
 Communicate the patches of the image.
 Deconvolve each patch and communicate
+
+\subsection{GPU implementation of coordinate descent}
+

@@ -72,67 +72,58 @@ This is known as an ill-posed inverse problem in the literature. A problem is co
 \end{enumerate}
 Image reconstruction for radio interferometer is an inverse problem, because we want to find the image which the interferometer observed in Fourier space. It is ill-posed in general, because there are many different images fitting the measurements.
 
-Note that we can reduce the resolution of the reconstructed image until the problem becomes well-posed. The Nyquist-Shannon sampling theorem states the case of radio interferometers: The highest highest Fourier-frequency we measure should be more than twice the highest frequency in the image. The center of the Fourier space in Figure \ref{intro:inversefig:uvspace} is densely sampled. We can reconstruct a low-resolution image that only needs the information from the densely sampled center, and does not need the missing high-frequency Fourier components.
+Note that we can reduce the resolution of the reconstructed image until the problem becomes well-posed. The Nyquist-Shannon sampling theorem states the case of radio interferometers: The highest highest Fourier-frequency we measure should be more than twice the highest frequency in the image. The center of the Fourier space in Figure \ref{intro:inversefig:uvspace} is densely sampled. We can reconstruct a low-resolution image that only needs the information from the densely sampled center.
 
-However, this would reduce the effective resolution of the reconstruction. We can solve the ill-posed inverse problem and retrieve the observed image at a higher resolution than possible with the Nyquist-Shannon sampling theorem. We solve the ill-posed inverse problem by including prior information about the observed image. This is known as the Compressed Sensing sampling theorem. We use numerical optimization algorithms to find the most likely image, which is consistent with the measurements and consistent with our prior information. The Compressed Sensing sampling theorem gives us theoretical guarantees that, under the right conditions, the most likely image is equal to the observed image.
+However, this would reduce the effective resolution of the reconstruction. We can solve the ill-posed inverse problem and retrieve the observed image at a higher resolution than possible with the Nyquist-Shannon sampling theorem. We solve the ill-posed inverse problem by including prior information about the observed image. We use numerical optimization algorithms to find the most likely image, which is consistent with the measurements and consistent with our prior information. This is known in signal processing as compressed sensing \cite{candes2006robust,donoho2006compressed}. The theory of Compressed Sensing shows that, under the right prior information, we are guaranteed to reconstruct the observed image at a higher resolution than under the Nyquist-Shannon sampling theorem.
 
 %In Section \ref{intro2:ill-posed}, we introduce the Compressed Sensing sampling theorem and show how it works in the case of radio interferometric image reconstruction. The Section \ref{intro2:rec} shows how we can use the theory to create a reconstruction algorithm in practice. But first, we dive deeper into the odds and ends of radio interferometry. 
 
 
 
 \subsection{The theory of Compressed Sensing}\label{radio:cs}
-
+We introduce the theory of Compressed Sensing for the problem of radio interferometric image reconstruction. 
 
 T
 
-We introduce the theory of Compressed Sensing for the problem of radio interferometric image reconstruction. We show how to formulate the image reconstruction as an optimization problem, how we can include prior information and what guarantees arise that we actually solve the ill-posed inverse problem. We will see that we can reconstruct the observed image from incomplete measurements, below the Nyquist-Shannon sampling rate.
+We solve a numerical optimization problem. The theory of Compressed Sensing tells us how likely we are to reconstruct the observed image this way. As we will see later, the theory guarantees us exact reconstruction under certain assumptions. But the difficulty is that we cannot verify these assumptions in practice.
 
-\begin{equation}\label{radio:cs:linear}
-\underset{x}{solve}\quad V - Fx = 0
-\end{equation}
-
-System of linear equations.
-Show the ill-posed inverse problem at this.
-
-Nyquist-shannon rate. Twice as many Visibilities, at uniformly spaced $u$ and $v$ locations.
-In that case, we can simply calculate the inverse Fourier transform.
-We do not have that. 
-We do have a large number of visibilities, generally several times larger than the number of pixels. But as we saw in Figure \ref{radio:sampling:pattern}, the sampling pattern is not uniform. We are missing samples at important locations. 
-This also means we are measuring redundant information.
-
-Over-determined problem. We have more visibilities than pixels.
-But we also have noise.
-Amplitude and phase of the visibilities. More details in later section.
-
+Let us formulate the image reconstruction as an optimization problem.The image reconstruction wants to to find the image which is as close to the measurements as possible. Or more formally, we want to minimize the euclidean distance between the visibility measurements $V$ and the reconstructed image $x$. We write it as an objective function:
 
 \begin{equation}\label{radio:cs:l2}
 \underset{x}{minimize} \: \left \| V - Fx \right \|_2^2
 \end{equation}
 
-Now with \eqref{radio:cs:l2} we have "solved" the noise issue.
-Convex optimization problem.
-Has a global minimum.
-Convex optimization algorithms that give us the global minimum of \eqref{radio:cs:l2}.
+We reconstruct the image by finding the optimum of \eqref{radio:cs:l2}.
+It is convex, meaning only has one, global optimum.
+Convex optimization algorithms that find the optimum of the function.
+ But since the measurements are incomplete, the minimum of the function \eqref{radio:cs:l2} does not point to the observed image.
+Only when we fulfill the Nyquist-Shannon rate, only then does the function \eqref{radio:cs:l2} point to the observed image.
 
-
-Is the observed image the the global minimum? Sadly, we do not have any guarantee to find it there.
-
-The crucial point for compressed sensing: We need to add prior information. We want to penalize unlikely images and find the optimum between being close to the data, and being consistent with prior information.
-In the case of radio astronomy, we can assume that the image will contain stars. Stars are emissions which are concentrated around a single pixel.
-We want to say that only a few pixels are likely to be non-zero. Most of the image will be zero, only at a few locations where the stars have to be. 
+We know things about the image.
+For radio astronomy, we know the image will likely contain stars. Stars are emissions which are concentrated around a single pixel. Most pixels of the image will be zero, except for the locations where the interferometer has located stars. In other words, we know that the image is sparse. We can add a regularization to the objective function \eqref{radio:cs:l2} and force the reconstruction to be sparse. This results in the objective 
 
 \begin{equation}\label{radio:cs:lasso}
 \underset{x}{minimize} \: \left \| V - Fx \right \|_2^2 + \lambda \left \| x \right \|_1
 \end{equation}
 
+LASSO objective
+%Data term $\| V - Fx \right \|_2^2$, and two names for the second term ($\left \| x \right \|_1$). We can call the second term a prior when we look at it from the bayesian statistics. 
+%View from optimization, \eqref{radio:cs:lasso} is the LASSO objective and $\left \| x \right \|_1$ is the regularization. We reduce the possiblity space.
+Still convex
+Regularization as the view from optimization.
+Prior information from the view of Bayesian statistics.
 
-Data term $\| V - Fx \right \|_2^2$, and two names for the second term ($\left \| x \right \|_1$). We can call the second term a prior when we look at it from the bayesian statistics. 
-View from optimization, \eqref{radio:cs:lasso} is the LASSO objective and $\left \| x \right \|_1$ is the regularization. We reduce the possiblity space.
+Where does the LASSO objective point to? Does it point to the observed image? Empirically, this is often the case. Of course only when our prior is right. For example when we have extended emissions, when the interferometer picked up clouds of hydrogen, LASSO is a bad prior and it may point to a rubbish image.
 
-This is the simplest prior, but it gets used in real-world applications. There are other, more complex regularizations which we will discuss later.
+T
 
-How many samples do we need, untli we find the observed image at the optimum of \eqref{radio:cs:lasso}? 
-Nyquist-Shannon rate tells us it depends on the number of pixels in the image. The theory of compressed sensing gives us guarantees depending on the number of non-zero pixels.
+So when we have a good prior, the objective points to the observed image even though we do not have enough samples according to the Nyquist-Shannon theorem. What the theory of Compressed Sensing can tell us is how many samples we need until the objective points to the observed image.
+
+Depends on the image content and the prior we use. Also, the theory of Compressed Sensing difficult bounds in practice.
+
+That is why we give first an intuitive explanation on why compressed sensing works, and why it give sense to the fact that we do not need as many samples as Nyquist-Shannon describes.
+
+Then we show 
 
 \subsubsection{Intuitive explanation of Compressed Sensing}
 Intuitive

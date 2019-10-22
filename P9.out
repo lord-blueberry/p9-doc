@@ -1,61 +1,63 @@
 \BOOKMARK [1][-]{section.1}{The image reconstruction problem of radio interferometers}{}% 1
 \BOOKMARK [1][-]{section.2}{Introduction to radio interferometric imaging}{}% 2
 \BOOKMARK [2][-]{subsection.2.1}{The theory of Compressed Sensing}{section.2}% 3
-\BOOKMARK [3][-]{subsubsection.2.1.1}{Adding a regularization}{subsection.2.1}% 4
-\BOOKMARK [3][-]{subsubsection.2.1.2}{Compressive sampling of the sky}{subsection.2.1}% 5
-\BOOKMARK [3][-]{subsubsection.2.1.3}{Reconstruction guarantees in the real world}{subsection.2.1}% 6
-\BOOKMARK [2][-]{subsection.2.2}{Noise, approximations and other difficulties in radio interferometry}{section.2}% 7
-\BOOKMARK [3][-]{subsubsection.2.2.1}{The measurement equation}{subsection.2.2}% 8
-\BOOKMARK [2][-]{subsection.2.3}{Introduction into optimization/RI reconstruction algorithms}{section.2}% 9
-\BOOKMARK [3][-]{subsubsection.2.3.1}{The Major/Minor cycle}{subsection.2.3}% 10
-\BOOKMARK [3][-]{subsubsection.2.3.2}{Image reconstruction as deconvolution}{subsection.2.3}% 11
-\BOOKMARK [1][-]{section.3}{State of the Art image reconstruction}{}% 12
-\BOOKMARK [2][-]{subsection.3.1}{w-stacking Gridder}{section.3}% 13
-\BOOKMARK [2][-]{subsection.3.2}{Image Domain Gridding Algorithm}{section.3}% 14
-\BOOKMARK [2][-]{subsection.3.3}{Deconvolution}{section.3}% 15
-\BOOKMARK [3][-]{subsubsection.3.3.1}{CLEAN}{subsection.3.3}% 16
-\BOOKMARK [3][-]{subsubsection.3.3.2}{MORESANE}{subsection.3.3}% 17
-\BOOKMARK [2][-]{subsection.3.4}{Coordinate Descent}{section.3}% 18
-\BOOKMARK [1][-]{section.4}{Coordinate descent deconvolution}{}% 19
-\BOOKMARK [2][-]{subsection.4.1}{Elastic net regularization}{section.4}% 20
-\BOOKMARK [2][-]{subsection.4.2}{Deriving the basic coordinate descent deconvolution algorithm}{section.4}% 21
-\BOOKMARK [2][-]{subsection.4.3}{Efficient implementation of basic coordinate descent deconvolution}{section.4}% 22
-\BOOKMARK [3][-]{subsubsection.4.3.1}{Edge handling of the convolution}{subsection.4.3}% 23
-\BOOKMARK [3][-]{subsubsection.4.3.2}{Pre-calculation of the Lipschitz constants}{subsection.4.3}% 24
-\BOOKMARK [3][-]{subsubsection.4.3.3}{Efficient Greedy strategy}{subsection.4.3}% 25
-\BOOKMARK [3][-]{subsubsection.4.3.4}{Pre-calculation of gradients}{subsection.4.3}% 26
-\BOOKMARK [3][-]{subsubsection.4.3.5}{Efficient update of gradients}{subsection.4.3}% 27
-\BOOKMARK [2][-]{subsection.4.4}{Similarities to the CLEAN algorithm}{section.4}% 28
-\BOOKMARK [2][-]{subsection.4.5}{Pseudo-code of the basic, optimized algorithm}{section.4}% 29
-\BOOKMARK [2][-]{subsection.4.6}{Distributed Deconvolution}{section.4}% 30
-\BOOKMARK [1][-]{section.5}{Gradient/PSF approximation for distributed deconvolution}{}% 31
-\BOOKMARK [2][-]{subsection.5.1}{Difficulty in approximating the PSF}{section.5}% 32
-\BOOKMARK [2][-]{subsection.5.2}{Approximate gradient update}{section.5}% 33
-\BOOKMARK [2][-]{subsection.5.3}{Approximate deconvolution}{section.5}% 34
-\BOOKMARK [2][-]{subsection.5.4}{Major Cycle convergence}{section.5}% 35
-\BOOKMARK [1][-]{section.6}{Tests on the MeerKAT observation}{}% 36
-\BOOKMARK [2][-]{subsection.6.1}{Comparison with CLEAN reconstruction}{section.6}% 37
-\BOOKMARK [2][-]{subsection.6.2}{GPU Acceleration}{section.6}% 38
-\BOOKMARK [2][-]{subsection.6.3}{Distributed coordinate descent}{section.6}% 39
-\BOOKMARK [2][-]{subsection.6.4}{Wall clock time}{section.6}% 40
-\BOOKMARK [2][-]{subsection.6.5}{Validity of gradient approximation}{section.6}% 41
-\BOOKMARK [1][-]{section.7}{Towards parallel coordinate descent}{}% 42
-\BOOKMARK [2][-]{subsection.7.1}{Problems}{section.7}% 43
-\BOOKMARK [1][-]{section.8}{Conclusion}{}% 44
-\BOOKMARK [1][-]{section.9}{attachment}{}% 45
-\BOOKMARK [1][-]{section.10}{Larger runtime costs for Compressed Sensing Reconstructions}{}% 46
-\BOOKMARK [2][-]{subsection.10.1}{CLEAN: The Major Cycle Architecture}{section.10}% 47
-\BOOKMARK [2][-]{subsection.10.2}{Compressed Sensing Architecture}{section.10}% 48
-\BOOKMARK [2][-]{subsection.10.3}{Hypothesis for reducing costs of Compressed Sensing Algorithms}{section.10}% 49
-\BOOKMARK [2][-]{subsection.10.4}{State of the art: WSCLEAN Software Package}{section.10}% 50
-\BOOKMARK [3][-]{subsubsection.10.4.1}{W-Stacking Major Cycle}{subsection.10.4}% 51
-\BOOKMARK [3][-]{subsubsection.10.4.2}{Deconvolution Algorithms}{subsection.10.4}% 52
-\BOOKMARK [2][-]{subsection.10.5}{Distributing the Image Reconstruction}{section.10}% 53
-\BOOKMARK [3][-]{subsubsection.10.5.1}{Distributing the Non-uniform FFT}{subsection.10.5}% 54
-\BOOKMARK [3][-]{subsubsection.10.5.2}{Distributing the Deconvolution}{subsection.10.5}% 55
-\BOOKMARK [1][-]{section.11}{Handling the Data Volume}{}% 56
-\BOOKMARK [2][-]{subsection.11.1}{Fully distributed imaging algorithm}{section.11}% 57
-\BOOKMARK [1][-]{section.12}{Image Reconstruction for Radio Interferometers}{}% 58
-\BOOKMARK [2][-]{subsection.12.1}{Distributed Image Reconstruction}{section.12}% 59
-\BOOKMARK [2][-]{subsection.12.2}{First steps towards a distributed Algorithm}{section.12}% 60
-\BOOKMARK [1][-]{section.13}{Ehrlichkeitserkl\344rung}{}% 61
+\BOOKMARK [3][-]{subsubsection.2.1.1}{Intuitive explanation of Compressed Sensing}{subsection.2.1}% 4
+\BOOKMARK [3][-]{subsubsection.2.1.2}{Formal Guarantees}{subsection.2.1}% 5
+\BOOKMARK [3][-]{subsubsection.2.1.3}{General Compressed Sensing reconstruction formulation}{subsection.2.1}% 6
+\BOOKMARK [3][-]{subsubsection.2.1.4}{Adding a regularization}{subsection.2.1}% 7
+\BOOKMARK [3][-]{subsubsection.2.1.5}{Compressive sampling of the sky}{subsection.2.1}% 8
+\BOOKMARK [3][-]{subsubsection.2.1.6}{Reconstruction guarantees in the real world}{subsection.2.1}% 9
+\BOOKMARK [2][-]{subsection.2.2}{Noise, approximations and other difficulties in radio interferometry}{section.2}% 10
+\BOOKMARK [3][-]{subsubsection.2.2.1}{The measurement equation}{subsection.2.2}% 11
+\BOOKMARK [2][-]{subsection.2.3}{Introduction into optimization/RI reconstruction algorithms}{section.2}% 12
+\BOOKMARK [3][-]{subsubsection.2.3.1}{The Major/Minor cycle}{subsection.2.3}% 13
+\BOOKMARK [3][-]{subsubsection.2.3.2}{Image reconstruction as deconvolution}{subsection.2.3}% 14
+\BOOKMARK [1][-]{section.3}{State of the Art image reconstruction}{}% 15
+\BOOKMARK [2][-]{subsection.3.1}{w-stacking Gridder}{section.3}% 16
+\BOOKMARK [2][-]{subsection.3.2}{Image Domain Gridding Algorithm}{section.3}% 17
+\BOOKMARK [2][-]{subsection.3.3}{Deconvolution}{section.3}% 18
+\BOOKMARK [3][-]{subsubsection.3.3.1}{CLEAN}{subsection.3.3}% 19
+\BOOKMARK [3][-]{subsubsection.3.3.2}{MORESANE}{subsection.3.3}% 20
+\BOOKMARK [2][-]{subsection.3.4}{Coordinate Descent}{section.3}% 21
+\BOOKMARK [1][-]{section.4}{Coordinate descent deconvolution}{}% 22
+\BOOKMARK [2][-]{subsection.4.1}{Elastic net regularization}{section.4}% 23
+\BOOKMARK [2][-]{subsection.4.2}{Deriving the basic coordinate descent deconvolution algorithm}{section.4}% 24
+\BOOKMARK [2][-]{subsection.4.3}{Efficient implementation of basic coordinate descent deconvolution}{section.4}% 25
+\BOOKMARK [3][-]{subsubsection.4.3.1}{Edge handling of the convolution}{subsection.4.3}% 26
+\BOOKMARK [3][-]{subsubsection.4.3.2}{Pre-calculation of the Lipschitz constants}{subsection.4.3}% 27
+\BOOKMARK [3][-]{subsubsection.4.3.3}{Efficient Greedy strategy}{subsection.4.3}% 28
+\BOOKMARK [3][-]{subsubsection.4.3.4}{Pre-calculation of gradients}{subsection.4.3}% 29
+\BOOKMARK [3][-]{subsubsection.4.3.5}{Efficient update of gradients}{subsection.4.3}% 30
+\BOOKMARK [2][-]{subsection.4.4}{Similarities to the CLEAN algorithm}{section.4}% 31
+\BOOKMARK [2][-]{subsection.4.5}{Pseudo-code of the basic, optimized algorithm}{section.4}% 32
+\BOOKMARK [2][-]{subsection.4.6}{Distributed coordinate descent with MPI}{section.4}% 33
+\BOOKMARK [2][-]{subsection.4.7}{GPU implementation of coordinate descent}{section.4}% 34
+\BOOKMARK [1][-]{section.5}{Gradient/PSF approximation for distributed deconvolution}{}% 35
+\BOOKMARK [2][-]{subsection.5.1}{Difficulty in approximating the PSF}{section.5}% 36
+\BOOKMARK [2][-]{subsection.5.2}{Approximate gradient update}{section.5}% 37
+\BOOKMARK [2][-]{subsection.5.3}{Approximate deconvolution}{section.5}% 38
+\BOOKMARK [2][-]{subsection.5.4}{Major Cycle convergence}{section.5}% 39
+\BOOKMARK [1][-]{section.6}{Tests on MeerKAT LMC observation}{}% 40
+\BOOKMARK [2][-]{subsection.6.1}{Comparison with CLEAN reconstruction}{section.6}% 41
+\BOOKMARK [2][-]{subsection.6.2}{Coordinate descent acceleration with MPI or GPU}{section.6}% 42
+\BOOKMARK [2][-]{subsection.6.3}{Effect of approximating the PSF}{section.6}% 43
+\BOOKMARK [1][-]{section.7}{Towards parallel coordinate descent}{}% 44
+\BOOKMARK [2][-]{subsection.7.1}{Problems}{section.7}% 45
+\BOOKMARK [1][-]{section.8}{Conclusion}{}% 46
+\BOOKMARK [1][-]{section.9}{attachment}{}% 47
+\BOOKMARK [1][-]{section.10}{Larger runtime costs for Compressed Sensing Reconstructions}{}% 48
+\BOOKMARK [2][-]{subsection.10.1}{CLEAN: The Major Cycle Architecture}{section.10}% 49
+\BOOKMARK [2][-]{subsection.10.2}{Compressed Sensing Architecture}{section.10}% 50
+\BOOKMARK [2][-]{subsection.10.3}{Hypothesis for reducing costs of Compressed Sensing Algorithms}{section.10}% 51
+\BOOKMARK [2][-]{subsection.10.4}{State of the art: WSCLEAN Software Package}{section.10}% 52
+\BOOKMARK [3][-]{subsubsection.10.4.1}{W-Stacking Major Cycle}{subsection.10.4}% 53
+\BOOKMARK [3][-]{subsubsection.10.4.2}{Deconvolution Algorithms}{subsection.10.4}% 54
+\BOOKMARK [2][-]{subsection.10.5}{Distributing the Image Reconstruction}{section.10}% 55
+\BOOKMARK [3][-]{subsubsection.10.5.1}{Distributing the Non-uniform FFT}{subsection.10.5}% 56
+\BOOKMARK [3][-]{subsubsection.10.5.2}{Distributing the Deconvolution}{subsection.10.5}% 57
+\BOOKMARK [1][-]{section.11}{Handling the Data Volume}{}% 58
+\BOOKMARK [2][-]{subsection.11.1}{Fully distributed imaging algorithm}{section.11}% 59
+\BOOKMARK [1][-]{section.12}{Image Reconstruction for Radio Interferometers}{}% 60
+\BOOKMARK [2][-]{subsection.12.1}{Distributed Image Reconstruction}{section.12}% 61
+\BOOKMARK [2][-]{subsection.12.2}{First steps towards a distributed Algorithm}{section.12}% 62
+\BOOKMARK [1][-]{section.13}{Ehrlichkeitserkl\344rung}{}% 63
