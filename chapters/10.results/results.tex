@@ -185,18 +185,27 @@ We cannot use MPI combined with the GPU. The MPI implementation uses a communica
 \subsection{Effect of approximating the $PSF$} \label{results:gradients}
 can we reduce the $PSF$
 
+Approximate deconvolution
 \begin{figure}[h]
 	\centering
-	\begin{subfigure}[b]{0.6\linewidth}
+	\begin{subfigure}[b]{0.7\linewidth}
 		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/size.png}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.36\linewidth}
-		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/speedup.png}
+	\\
+	\begin{subfigure}[b]{0.35\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/speedup_iter.png}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.35\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/speedup_total.png}
 	\end{subfigure}
 	
 	\caption{Effect of the L1 and L2 Norm separately.}
 	\label{results:gradients:size}
 \end{figure}
+
+Speedup by iterations becoming cheaper.
+Path regularization and how much time we spent in the deconvolution.
+
 
 \begin{figure}[h]
 	\centering

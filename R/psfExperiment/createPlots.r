@@ -32,8 +32,8 @@ combined["psfFraction"] <- combined["psfSize"]
 combined[, "psfSize"] <- as.factor(combined[, "psfSize"])
 
 png("./psfExperiment/plots/size.png",
-    width = 8.0,
-    height = 4.0,
+    width = 5.0,
+    height = 3.0,
     units = "in",
     res = 200)
 ggplot(data = combined, mapping = aes(x = cycle, y = objective, color=psfSize)) + 
@@ -51,13 +51,13 @@ agg["timePerIter"] <- agg$time / as.numeric(agg$iter)
 agg["speedup"] <- agg$timePerIter[agg$psfFraction == 1] / agg$timePerIter
 
 png("./psfExperiment/plots/speedup.png",
-    width = 8.0,
-    height = 4.0,
+    width = 3.0,
+    height = 3.0,
     units = "in",
     res = 200)
 ggplot(data = agg, aes(x = psfFraction, y = speedup)) + 
   xlab("PSF Fraction") +
-  ylab("Speedup to full PSF") +
+  ylab("Per iteration Speedup") +
   geom_line() + geom_point() +
   scale_x_continuous(trans="log2")
 dev.off() 
