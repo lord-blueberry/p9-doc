@@ -32,7 +32,7 @@ combined["psfFraction"] <- combined["psfSize"]
 combined[, "psfSize"] <- as.factor(combined[, "psfSize"])
 
 png("./psfExperiment/plots/size.png",
-    width = 5.0,
+    width = 6.0,
     height = 3.0,
     units = "in",
     res = 200)
@@ -49,8 +49,9 @@ timeGroup <- group_by(combined, psfFraction)
 agg <- summarize(timeGroup, time=sum(ElapsedTime), iter= sum(iterCount))
 agg["timePerIter"] <- agg$time / as.numeric(agg$iter)
 agg["speedup"] <- agg$timePerIter[agg$psfFraction == 1] / agg$timePerIter
+agg["speedup_total"] <- agg$time[agg$psfFraction == 1] / agg$time
 
-png("./psfExperiment/plots/speedup.png",
+png("./psfExperiment/plots/speedup_iter.png",
     width = 3.0,
     height = 3.0,
     units = "in",
@@ -58,6 +59,18 @@ png("./psfExperiment/plots/speedup.png",
 ggplot(data = agg, aes(x = psfFraction, y = speedup)) + 
   xlab("PSF Fraction") +
   ylab("Per iteration Speedup") +
+  geom_line() + geom_point() +
+  scale_x_continuous(trans="log2")
+dev.off()
+
+png("./psfExperiment/plots/speedup_total.png",
+    width = 3.0,
+    height = 3.0,
+    units = "in",
+    res = 200)
+ggplot(data = agg, aes(x = psfFraction, y = speedup_total)) + 
+  xlab("PSF Fraction") +
+  ylab("Total Speedup") +
   geom_line() + geom_point() +
   scale_x_continuous(trans="log2")
 dev.off() 

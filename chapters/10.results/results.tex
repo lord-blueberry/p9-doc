@@ -1,8 +1,7 @@
 \section{Tests on MeerKAT LMC observation}\label{results}
-
-The Large Magellanic Cloud (LMC) is a galaxy is the second- or third closest galaxy to the Milky Way. Figure \ref{results:LMC} shows the LMC in both optical and radio wavelenghts. The radio wavelengths was observed by the VLA radio interferometer\cite{bock1999sumss} at 843MHz. In the optical wavelengths, the abundance of stars are clearly visible. The LMC is close enough to earth for individual stars are visible. But it also contains a large number of supernova remnants, gas clouds, and other extended emissions, which shine bright in the radio wavelengths.
+The Large Magellanic Cloud (LMC) is a galaxy is the second or third closest galaxy to the Milky Way. Figure \ref{results:LMC} shows the LMC in both optical and radio wavelenghts. The radio wavelengths was observed by the VLA radio interferometer\cite{bock1999sumss} at 843MHz. In the optical wavelengths, the abundance of stars are clearly visible. The LMC is close enough to earth for individual stars are visible. But it also contains a large number of supernova remnants, gas clouds, and other extended emissions, which shine bright in the radio wavelengths.
  
-The LMC is a region with a large number of sources at different brightness. It has a high-dynamic range of brightness. In the lower-right quadrant of the radio-image \ref{results:LMC:radio}, we see the bright emission of the supernova remnant N132D, the brightest radio source in the LMC. But around the N132D are faint emissions from gas-clouds. This means faint emissions may get lost next to N132D. We need a deconvolution algorithm to uncover these faint emissions.
+The LMC is a region with a large number of sources at different brightness. In the lower-right quadrant of the radio-image \ref{results:LMC:radio}, we see the bright emission of the supernova remnant N132D, the brightest radio source in the LMC. But around the N132D are faint emissions from gas-clouds. This means faint emissions may get lost next to N132D. We need a deconvolution algorithm to uncover these faint emissions.
  
 We received a MeerKAT observation of the LMC from SARAO for the purpose of algorithm testing. At the time of writing, the MeerKAT instrument is still being tested. The observation is only representative in the data volume. The observation is calibrated, and averaged down in both frequency and time. The averaging reduces both the disk space and the runtime costs of the gridding step. Nevertheless, the observation takes up over 80 GB of disk space (roughly $\frac{1}{30}$ of the original data). A CLEAN reconstruction of the calibrated observation is shown in Figure \ref{results:LMC:meerkat}.
  
@@ -22,15 +21,14 @@ We received a MeerKAT observation of the LMC from SARAO for the purpose of algor
 		\caption{Wide band radio image by MeerKAT.}
 		\label{results:LMC:meerkat}
 	\end{subfigure}
-	\caption{Large Magellanic Cloud (LMC)}
+	\caption{Section of the Large Magellanic Cloud (LMC)}
 	\label{results:LMC}
 \end{figure}
 
 The MeerKAT observation covers a wide band of radio frequencies. The lowest frequency in the MeerKAT observation is 894 MHz, and the highest frequency is
 Imaging the whole frequency band requires a wide band deconvolution algorithm. In wide band imaging, several images at different frequencies get deconvolved as an image cube. Wide band imaging again multiplies the amount of work that has to be done for reconstruction, as now we cannot deconvolve a single image, but have to deal with a whole image cube.
 
-Wide band imaging is not possible within the time frame of this project. We take a narrow band subset of 5 channels from the original data (ranging from 1084 to 1088 MHz, about 1 Gb in size). 
-Image section.
+Wide band imaging is not possible within the time frame of this project. We take a narrow band subset of 5 channels from the original data (ranging from 1084 to 1088 MHz, about 1 Gb in size) for reconstruction. We also reduce the field-of-view to a more manageable section. Figure \ref{results:cutout} shows the LMC image section we are using together with a CLEAN reconstruction of the narrow band data.
 
 \begin{figure}[h]
 	\centering
@@ -38,95 +36,49 @@ Image section.
 		\includegraphics[width=1.0\linewidth]{./chapters/10.results/LMC/meerkat_cutout.png}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.30\linewidth}
-		\includegraphics[width=1.0\linewidth]{./chapters/10.results/cleancomp/cd.png}
+		\includegraphics[width=1.0\linewidth]{./chapters/10.results/cleancomp/clean_briggs.png}
 	\end{subfigure}
 	\caption{Narrow band image section used.}
 	\label{results:cutout}
 \end{figure}
 
-Wide field of view, correction of the w-term.
+At the center of our image section \ref{results:cutout} we see the N132D supernova remnant. We partially see the faint extended emissions, although they are close to the noise level. This is known as a high-dynamic range reconstruction. We have strong radio sources mixed together with faint emissions, which are only marginally above the noise level of the image.
 
-We use the subset to validate our coordinate descent deconvolution algorithm against CLEAN in Section \ref{results:cleancomp}.
-We then test if we can do the proper parallel reconstruction.
+The total field-of-view of our image section is roughly 1.3 degrees(or 4600 arc seconds). Our reconstruction has $3072^2$ pixel with a resolution of 1.5 arc seconds per pixel. this is still a wide field-of-view reconstruction problem. We have to account for the effects of the $w$-term to achieve a high-dynamic range reconstruction.
 
+In our test reconstruction, we need to account for $w$-term correction and high-dynamic range. We have excluded wide-band imaging as not feasible within the time frame of this project. In Section \ref{results:cleancomp} we compare the reconstructions of CLEAN with our coordinate descent based algorithm on the LMC observation. The next Section \ref{results:speedup} presents the speedup we achieve with coordinate descent by using our distributed or GPU-accelerated implementations.
 
-
-The LMC is already a difficult field to reconstruct.
-
-
-Interpolation between the frequencies
-Wideband adds a lot more faint structures in the image.
-Huge amount of non-zero pixels, puts a strain on the deconvolution algorithm.
-The image was reconstructed with multi-frequency-synthesis CLEAN.
-Wide-band imaging Cube of data. 
-
-LMC is a difficult field to reconstruct. we require both wide band and wide-field-of-view imaging for an accurate reconstruction. 
+In Section \ref{results:gradients} we show the core result of this project. Namely what effect has an approximate $PSF$ on the deconvolution problem and whether we can use it to further distribute the problem. The answer to that question is affirmative: We can approximate the $PSF$, and we can exploit it to further distribute the deconvolution. But we need more sophisticated coordinate descent algorithms to fully benefit from it.
 
 
+\subsection{Comparison with CLEAN reconstructions} \label{results:cleancomp}
+We use the WSCLEAN \cite{offringa2014wsclean} implementation of multi-scale CLEAN. We compare our coordinate descent reconstruction with two CLEAN reconstructions, oe with naturally weighted visibilities and one with briggs weighted visibilities.
 
-
-
-
-
-
-
-We cannot do wide-band imaging with our proof-of-concept algorithm. We can correct for the $w$-term, but cannot image wide-band. imaging
-Wideband imaging would need this: several deconvolution steps at different frequencies, and interpolation between them.
-Data size, we need to image a cube of data.
-
-Out of scope for this project. We do not handle this.
-
-
-We use a 1 GB subset of the original observation. We image 5 channels over a bandwidth of ()
-use a smaller section of the image
-
-First, we compare the image we reconstruct
-See how much we can use with GPU-acceleration and a naive way to distribute things.
-
-
-\subsection{Comparison with CLEAN reconstruction} \label{results:cleancomp}
-
-Wide field, but
-
-Imaging parameters
-WSCLEAN was used for reconstruction. Multiscale.
-
-
-
+There are three main visibility weighting scheme for the gridder that lead to different $PSF$s from the same measurements: Natural, uniform, and Briggs\cite{briggsWeighting}. Natural weighting scheme leads to an image with a lower noise level, but a wider $PSF$. Uniform weighting leads to a higher noise level, but to a $PSF$ whgich is more concentrated around a single pixel. Briggs weighting is a scheme combines the best from both worlds, receiving an image with acceptable noise level while getting a more concentrated $PSF$. As such it is widely used in radio astronomy image reconstruction. Our gridder implements the natural weighting scheme only. Nevertheless our coordinate descent algorithm is able to retrieve structures similar to the briggs-weighted multi-scale CLEAN reconstruction, even though coordinate descent has to work with a wider $PSF$.
 
 \begin{figure}[h]
 	\centering
 	\begin{subfigure}[b]{0.4\linewidth}
-		\includegraphics[width=1.00\linewidth]{./chapters/10.results/cleancomp/cd.png}
-		\caption{Multiscale CLEAN reconstruction.}
+		\includegraphics[width=1.00\linewidth]{./chapters/10.results/cleancomp/clean_briggs.png}
+		\caption{Briggs weighted multi-scale CLEAN.}
 		\label{results:comp:clean}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.40\linewidth}
 		\includegraphics[width=1.00\linewidth]{./chapters/10.results/cleancomp/cd.png}
-		\caption{Coordinate descent reconstruction.}
+		\caption{Naturally weighted coordinate descent.}
 		\label{results:comp:cd}
 	\end{subfigure}
-	\caption{Speedup by using MPI or GPU acceleration}
+	\caption{Comparison of the whole image}
 	\label{results:cleancomp:figure}
 \end{figure}
 
-Numbers of Major cycles used by CLEAN.
-Number of iterations
+Figure \ref{results:cleancomp:figure} shows the reconstruction of both briggs-weighted multi-scale CLEAN and the naturally weighted coordinate descent reconstruction.
+%parameters for CLEAN and Coordinate descent. Lambda and alpha
+CLEAN used 6 major cycles and 14 thousand minor cycle iterations. Our coordinate descent implementation converged after 5 major cycles and needed 100 thousand iterations to converge.
 
-Number of Major cycles used by CD
-number of iterations
+Coordinate descent needs a large number of iterations to converge when compared to multi-scale CLEAN. Note that a coordinate descent iteration is cheaper to compute than one iteration of multi-scale CLEAN. Also note that because we are searching for structures close to the noise level of the image, coordinate descent often adds pixels belonging to the noise in one major cycle, just to remove them in the next one. Path regularization\cite{friedman2010regularization} can combat this problem, but was not further investigated in this project.
 
-Compare the N321D supernova remnant.
-
-CLEAN with natural weighting.
-
-CLEAN with briggs weighting. Narrower PSF than the CLEAN natural weighting reconstruction. As such, it finds more structures inside the supernova remnant.
-
-Briggs is a weighting scheme of the visibilities. Commonly used in radio astronomy.
- improves PSF.
- Not implemented in our pipeline.
-Coordinate descent deconvolution has to work with natural weighting.
-But it
+Both algorithms detect the three extended emissions at the right side of the image. They detect various point sources at the same location. Coordinate descent and multi-scale CLEAN arrive at a roughly similar result. Coordinate descent detects similar structures in the N132 supernova remnant, as the briggs-weighted CLEAN, but also includes calibration errors in its reconstruction of the faint extended emissions.
 
 \begin{figure}[h]
 	\centering
@@ -149,14 +101,32 @@ But it
 	\label{results:cleancomp::N132:figure}
 \end{figure}
 
-Approximation of the gradient update step works
+Figure \ref{results:cleancomp::N132:figure} compares the naturally-weighted CLEAN, briggs CLEAN and coordinate descent on the N132 supernova remnant. The naturally-weigted CLEAN and coordinate descent use the same $PSF$ for the deconvolution. But coordinate descent finds structures in N132 similar to the briggs-weighted CLEAN. Coordinate descent arrived at a plausible higher-resolved reconstruction of N132.
 
-Comparable to clean.
-It works.
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=1.00\linewidth]{./chapters/10.results/cleancomp/clean_calibration.png}
+		\caption{Briggs CLEAN}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=1.00\linewidth]{./chapters/10.results/cleancomp/cd_calibration.png}
+		\caption{Coordinate Descent}
+	\end{subfigure}
+	\caption{Influence of calibration errors}
+	\label{results:cleancomp::calib:figure}
+\end{figure}
+
+Calibration errors on the other hand negatively influence the coordinate descent reconstruction. Figure \ref{results:cleancomp::calib:figure} shows a cutout of the right hand section of the reconstruction, where a faint extended emission is next to a point source with calibration errors. Multi-scale CLEAN is able to differentiate between the "ripples" from the calibration error, and the signal from the extended emission. Coordinate descent with the elastic net regularization includes the ripples into the reconstructed image. 
+
+The only way to exclude the ripples from the reconstruction is to increase the regularization parameter $\lambda$., such as no pixel gets included which is not above the noise level + calibration error in the image. However, that would lead to other sources being "regularized away" in other regions of the image, which do not have a severe calibration error in the region. 
 
 
-\subsection{Coordinate descent acceleration with MPI or GPU}
+Case of super resolution.
+Our coordinate descent algorithm works. All the performance optimizations do not break anything vital.
 
+
+\subsection{Coordinate descent acceleration with MPI or GPU}\label{results:speedup}
 Describe hardware
 
 Distributed with MPI
@@ -174,7 +144,7 @@ Measurement of the speedup.
 		\includegraphics[width=1.00\linewidth]{./chapters/10.results/speedup/gpu.png}
 	\end{subfigure}
 	\caption{Speedup by using MPI or GPU acceleration}
-	\label{results:speedup}
+	\label{results:speedup:figure}
 \end{figure}
 
 
@@ -183,9 +153,18 @@ We cannot use MPI combined with the GPU. The MPI implementation uses a communica
 
 
 \subsection{Effect of approximating the $PSF$} \label{results:gradients}
+Why: The size of the $PSF$ defines how much we can distribute.
+
+If we can approximate the deconvolution with a small enough $PSF$, we can solve patches of the image independently of each other, without the need of communication.
+
+Reducing the size of the $PSF$ may lead to patches of the image which we can solve independently of each other.
+
+
+
+Two ways to
 can we reduce the $PSF$
 
-Approximate deconvolution
+\subsubsection{Reduced gradient update}
 \begin{figure}[h]
 	\centering
 	\begin{subfigure}[b]{0.7\linewidth}
@@ -200,13 +179,44 @@ Approximate deconvolution
 	\end{subfigure}
 	
 	\caption{Effect of the L1 and L2 Norm separately.}
-	\label{results:gradients:size}
+	\label{results:gradients:update}
 \end{figure}
 
-Speedup by iterations becoming cheaper.
+\subsubsection{Reduced Deconvolution}
+Approximate deconvolution
+
+$PSF$ is the size of the image, i.e. $3072^2$ pixels. We approximate the deconvolution by just using a fraction of the $PSF$. $\frac{1}{8}$ is the size of $384^2$
+We measured the objective value at the beginning of each major cycle.
+Figure \ref{results:gradients:aproxDeconv} shows the decrease in objective value
+and the speedup associated with cutting the $PSF$
+
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}[b]{0.7\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/size.png}
+	\end{subfigure}
+	\\
+	\begin{subfigure}[b]{0.35\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/speedup_iter.png}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.35\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/speedup_total.png}
+	\end{subfigure}
+	
+	\caption{Effect of the L1 and L2 Norm separately.}
+	\label{results:gradients:aproxDeconv}
+\end{figure}
+
+We have an obvious limit where cutting the $PSF$ will be useless, because it does not converge.
+But there is a less obvious failure mode. The $PSF$ of the size $\frac{1}{64}$ already does not properly converge, and the objective actually becomes after 3 major cycles.
+
+We have two speedup factors. Speedup by iterations becoming cheaper, and the total time spent doing deconvolution.
+Path regularization and potentially more
 Path regularization and how much time we spent in the deconvolution.
 
+One problem: we do not converge to the same optimum.
 
+\subsubsection{Comparison between the $PSF$ approximation methods}
 \begin{figure}[h]
 	\centering
 	\begin{subfigure}[b]{1.0\linewidth}
@@ -219,3 +229,5 @@ Path regularization and how much time we spent in the deconvolution.
 	\caption{Effect of the L1 and L2 Norm separately.}
 	\label{results:gradients:comparison}
 \end{figure}
+
+\subsubsection{Masking the $PSF$}
