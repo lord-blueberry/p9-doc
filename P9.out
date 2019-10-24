@@ -41,8 +41,8 @@
 \BOOKMARK [2][-]{subsection.6.1}{Comparison with CLEAN reconstructions}{section.6}% 41
 \BOOKMARK [2][-]{subsection.6.2}{Coordinate descent acceleration with MPI or GPU}{section.6}% 42
 \BOOKMARK [2][-]{subsection.6.3}{Effect of approximating the PSF}{section.6}% 43
-\BOOKMARK [3][-]{subsubsection.6.3.1}{Reduced gradient update}{subsection.6.3}% 44
-\BOOKMARK [3][-]{subsubsection.6.3.2}{Reduced Deconvolution}{subsection.6.3}% 45
+\BOOKMARK [3][-]{subsubsection.6.3.1}{Method 1: Approximate gradient update}{subsection.6.3}% 44
+\BOOKMARK [3][-]{subsubsection.6.3.2}{Method 2: Approximate deconvolution}{subsection.6.3}% 45
 \BOOKMARK [3][-]{subsubsection.6.3.3}{Comparison between the PSF approximation methods}{subsection.6.3}% 46
 \BOOKMARK [3][-]{subsubsection.6.3.4}{Masking the PSF}{subsection.6.3}% 47
 \BOOKMARK [1][-]{section.7}{Towards parallel coordinate descent}{}% 48

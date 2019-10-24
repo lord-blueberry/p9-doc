@@ -119,7 +119,7 @@ Figure \ref{results:cleancomp::N132:figure} compares the naturally-weighted CLEA
 
 Calibration errors on the other hand negatively influence the coordinate descent reconstruction. Figure \ref{results:cleancomp::calib:figure} shows a cutout of the right hand section of the reconstruction, where a faint extended emission is next to a point source with calibration errors. Multi-scale CLEAN is able to differentiate between the "ripples" from the calibration error, and the signal from the extended emission. Coordinate descent with the elastic net regularization includes the ripples into the reconstructed image. 
 
-The only way to exclude the ripples from the reconstruction is to increase the regularization parameter $\lambda$., such as no pixel gets included which is not above the noise level + calibration error in the image. However, that would lead to other sources being "regularized away" in other regions of the image, which do not have a severe calibration error in the region. 
+The only way to exclude the ripples from the reconstruction is to increase the regularization parameter $\lambda$., such as no pixel gets included which is not above the noise level + calibration error in the image. However, that would lead to other sources being "regularized away" in other regions of the image, which do not have a severe calibration error close by. 
 
 
 Case of super resolution.
@@ -153,59 +153,61 @@ We cannot use MPI combined with the GPU. The MPI implementation uses a communica
 
 
 \subsection{Effect of approximating the $PSF$} \label{results:gradients}
-Why: The size of the $PSF$ defines how much we can distribute.
+As we described in Section \ref{gradients}, the $PSF$ for deconvolution is as big as the image. For wide field-of-view observations of MeerKAT, the $PSF$ is approximately a gaussian with decreasing pixel values the further we move from the center. Most of the values in the $PSF$ are close to zero. The question is, can we approximate the deconvolution with a smaller $PSF$? If we can approximate the deconvolution with a small enough $PSF$, we can solve patches of the image independently of each other.
 
-If we can approximate the deconvolution with a small enough $PSF$, we can solve patches of the image independently of each other, without the need of communication.
+Effect is not clear, since we already know that the $PSF$ changes slightly over the image with the $w$-term. 
 
-Reducing the size of the $PSF$ may lead to patches of the image which we can solve independently of each other.
+We presented two methods to approximating the $PSF$ for the deconvolution in Section \ref{gradients}. Method 1 updates only a fraction of the gradients, and Method 2 uses a fraction of the $PSF$ for deconvolution. We test both methods on the LMC data and explore what effects the approximations have on the reconstruction.
 
+\subsubsection{Method 1: Approximate gradient update}
 
-
-Two ways to
-can we reduce the $PSF$
-
-\subsubsection{Reduced gradient update}
 \begin{figure}[h]
 	\centering
 	\begin{subfigure}[b]{0.7\linewidth}
-		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/size.png}
+		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/ApproxUpdate/size.png}
 	\end{subfigure}
 	\\
 	\begin{subfigure}[b]{0.35\linewidth}
-		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/speedup_iter.png}
+		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/ApproxUpdate/speedup_iter.png}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.35\linewidth}
-		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/speedup_total.png}
+		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/ApproxUpdate/speedup_total.png}
 	\end{subfigure}
 	
 	\caption{Effect of the L1 and L2 Norm separately.}
 	\label{results:gradients:update}
 \end{figure}
 
-\subsubsection{Reduced Deconvolution}
+\subsubsection{Method 2: Approximate deconvolution}
+In this method, we use a fraction of the total $PSF$ for deconvolution. This method solves a different deconvolution problem, where the $PSF$ is for example only $\frac{1}{8}$ the size. The downside is that method 2 is not guaranteed to converge to the same optimum. Nevertheless, we solve the approximate deconvolution problem with several different fractions of the $PSF$ and compare how close the approximate solution is to the original.
+
+We measure the true objective value for the approximate solution at the beginning of each major cycle iteration. The Figure \ref{results:gradients:aproxDeconv} compares the approximate deconvolutions to the deconvolution with the full $PSF$
+
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}[b]{0.7\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/ApproxDeconv/size.png}
+	\end{subfigure}
+	\\
+	\begin{subfigure}[b]{0.35\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/ApproxDeconv/speedup_iter.png}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.35\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/ApproxDeconv/speedup_total.png}
+	\end{subfigure}
+	
+	\caption{Effect of the L1 and L2 Norm separately.}
+	\label{results:gradients:aproxDeconv}
+\end{figure}
+
+Obviously, fraction 128 does not converge. The $PSF$ is a mere $24^2$ pixels. But with 
+
 Approximate deconvolution
 
 $PSF$ is the size of the image, i.e. $3072^2$ pixels. We approximate the deconvolution by just using a fraction of the $PSF$. $\frac{1}{8}$ is the size of $384^2$
 We measured the objective value at the beginning of each major cycle.
 Figure \ref{results:gradients:aproxDeconv} shows the decrease in objective value
 and the speedup associated with cutting the $PSF$
-
-\begin{figure}[h]
-	\centering
-	\begin{subfigure}[b]{0.7\linewidth}
-		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/size.png}
-	\end{subfigure}
-	\\
-	\begin{subfigure}[b]{0.35\linewidth}
-		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/speedup_iter.png}
-	\end{subfigure}
-	\begin{subfigure}[b]{0.35\linewidth}
-		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/speedup_total.png}
-	\end{subfigure}
-	
-	\caption{Effect of the L1 and L2 Norm separately.}
-	\label{results:gradients:aproxDeconv}
-\end{figure}
 
 We have an obvious limit where cutting the $PSF$ will be useless, because it does not converge.
 But there is a less obvious failure mode. The $PSF$ of the size $\frac{1}{64}$ already does not properly converge, and the objective actually becomes after 3 major cycles.
@@ -216,7 +218,7 @@ Path regularization and how much time we spent in the deconvolution.
 
 One problem: we do not converge to the same optimum.
 
-\subsubsection{Comparison between the $PSF$ approximation methods}
+\subsubsection{Comparison Method 1 and 2}
 \begin{figure}[h]
 	\centering
 	\begin{subfigure}[b]{1.0\linewidth}
