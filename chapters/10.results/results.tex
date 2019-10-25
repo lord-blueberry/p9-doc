@@ -76,7 +76,7 @@ Figure \ref{results:cleancomp:figure} shows the reconstruction of both briggs-we
 %parameters for CLEAN and Coordinate descent. Lambda and alpha
 CLEAN used 6 major cycles and 14 thousand minor cycle iterations. Our coordinate descent implementation converged after 5 major cycles and needed 100 thousand iterations to converge.
 
-Coordinate descent needs a large number of iterations to converge when compared to multi-scale CLEAN. Note that a coordinate descent iteration is cheaper to compute than one iteration of multi-scale CLEAN. Also note that because we are searching for structures close to the noise level of the image, coordinate descent often adds pixels belonging to the noise in one major cycle, just to remove them in the next one. Path regularization\cite{friedman2010regularization} can combat this problem, but was not further investigated in this project.
+Coordinate descent needs a large number of iterations to converge when compared to multi-scale CLEAN. Note that a coordinate descent iteration is cheaper to compute than one iteration of multi-scale CLEAN. Also note that because we are searching for structures close to the noise level of the image, coordinate descent often adds pixels belonging to the noise in one major cycle, just to remove them in the next one. Path regularization\cite{friedman2010regularization} can combat this problem, and gets further investigated in the following Section \ref{results:gradients}.
 
 Both algorithms detect the three extended emissions at the right side of the image. They detect various point sources at the same location. Coordinate descent and multi-scale CLEAN arrive at a roughly similar result. Coordinate descent detects similar structures in the N132 supernova remnant, as the briggs-weighted CLEAN, but also includes calibration errors in its reconstruction of the faint extended emissions.
 
@@ -153,13 +153,20 @@ We cannot use MPI combined with the GPU. The MPI implementation uses a communica
 
 
 \subsection{Effect of approximating the $PSF$} \label{results:gradients}
-As we described in Section \ref{gradients}, the $PSF$ for deconvolution is as big as the image. For wide field-of-view observations of MeerKAT, the $PSF$ is approximately a gaussian with decreasing pixel values the further we move from the center. Most of the values in the $PSF$ are close to zero. The question is, can we approximate the deconvolution with a smaller $PSF$? If we can approximate the deconvolution with a small enough $PSF$, we can solve patches of the image independently of each other.
+As we described in Section \ref{gradients}, the $PSF$ for deconvolution is as big as the image. For wide field-of-view observations of MeerKAT, the $PSF$ is approximately a gaussian with decreasing pixel values the further we move from the center. Most of the values in the $PSF$ are close to zero. The question is, what effect has an approximate deconvolution with a smaller $PSF$? If we can approximate the deconvolution with a small enough $PSF$, we can solve patches of the image independently of each other. However, the $PSF$ approximation may need more major cycles to converge.
 
-Effect is not clear, since we already know that the $PSF$ changes slightly over the image with the $w$-term. 
+The effect of approximating the $PSF$ are not clear. We know that thanks to the $w$-term in the visibilities, the $PSF$ is not constant over the image. We already need several major cycles to converge. With a good approximation of the $PSF$, we may speed up the individual iterations of coordinate descent without needing more major cycle.
 
 We presented two methods to approximating the $PSF$ for the deconvolution in Section \ref{gradients}. Method 1 updates only a fraction of the gradients, and Method 2 uses a fraction of the $PSF$ for deconvolution. We test both methods on the LMC data and explore what effects the approximations have on the reconstruction.
 
 \subsubsection{Method 1: Approximate gradient update}
+Our coordinate descent method updates the map of gradients after each iteration. This method only updates the most significant fraction of the gradients.
+Method 1 starts with the same map of gradients as the original, but then only updates a fraction of the gradients in each iteration. It updates a rectangle of the most significant gradients.
+With each iteration, the map of gradients gets less accurate. With enough major cycles, this method converges to the same optimum as the original coordinate descent method.
+
+At the beginning of each major cycle, we calculate the objective value of the current solution. We compare the objective value and the wall-clock time of the original and the approximate gradient update. 
+Target: get the lowest possible objective value.
+Figure \ref{results:gradients:update} shows the results.
 
 \begin{figure}[h]
 	\centering
@@ -174,9 +181,21 @@ We presented two methods to approximating the $PSF$ for the deconvolution in Sec
 		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/ApproxUpdate/speedup_total.png}
 	\end{subfigure}
 	
-	\caption{Effect of the L1 and L2 Norm separately.}
+	\caption{Effect of only updating a fraction of the gradients.}
 	\label{results:gradients:update}
 \end{figure}
+
+The smallest possible fraction in which our solution still converges is $\frac{1}{64}$. This updates only the $48^2$ most siginificant gradients.
+
+We seem to converge. Objective value of the approximations is within 0.03\% of the original (the objective value of the approximations are higher by a factor of 0.0003).
+We cannot report an error that correlates with the fraction of the update. The objective value of $\frac{1}{2}$ is above the value of $\frac{1}{32}$.
+
+The speedup is harder to quantify. For one, each iteration gets cheaper. For another, the number of iterations also change. We measured both, the speedup for one coordinate descent iteration, and the total speedup.
+
+Implicit path regularization. Coordinate descent profits from an ever decreasing $\lambda$. This is done implicitly for the approximation of gradient updates. 
+
+Major cycles.
+Overall, no. We can 
 
 \subsubsection{Method 2: Approximate deconvolution}
 In this method, we use a fraction of the total $PSF$ for deconvolution. This method solves a different deconvolution problem, where the $PSF$ is for example only $\frac{1}{8}$ the size. The downside is that method 2 is not guaranteed to converge to the same optimum. Nevertheless, we solve the approximate deconvolution problem with several different fractions of the $PSF$ and compare how close the approximate solution is to the original.
@@ -200,7 +219,14 @@ We measure the true objective value for the approximate solution at the beginnin
 	\label{results:gradients:aproxDeconv}
 \end{figure}
 
-Obviously, fraction 128 does not converge. The $PSF$ is a mere $24^2$ pixels. But with 
+With $48^2$ pixels, the approximate deconvolution converges. But it is not the same optimum. The difference becomes less extreme as soon as we increase the $PSF$ size. With a factor of 32, we converge within
+of the true solution. But we need a major cycle more to converge.
+
+
+
+
+Just by cutting the $PSF$ coordinate descent gets a speedup. 
+
 
 Approximate deconvolution
 

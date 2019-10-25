@@ -42,7 +42,7 @@ png("./psfExperiment/plots/ApproxDeconv/size.png",
 ggplot(data = combined, mapping = aes(x = cycle, y = objective, color=psfSize)) + 
   xlab("Major cycle index") +
   ylab("Objective value") +
-  scale_color_discrete(name = "PSF fraction", labels = paste("1 /" ,levels(combined$psfSize))) +
+  scale_color_discrete(name = "PSF Fraction", labels = paste("1 /" ,levels(combined$psfSize))) +
   geom_line() + 
   geom_point() + 
   scale_y_continuous(trans= "log10")
@@ -98,7 +98,7 @@ png("./psfExperiment/plots/ApproxUpdate/size.png",
 ggplot(data = combined, mapping = aes(x = cycle, y = objective, color=psfSize)) + 
   xlab("Major cycle index") +
   ylab("Objective value") +
-  scale_color_discrete(name = "PSF fraction", labels = paste("1 /" ,levels(combined$psfSize))) +
+  scale_color_discrete(name = "Update Fraction", labels = paste("1 /" ,levels(combined$psfSize))) +
   geom_line() + 
   geom_point() + 
   scale_y_continuous(trans= "log10")
@@ -116,7 +116,7 @@ png("./psfExperiment/plots/ApproxUpdate/speedup_iter.png",
     units = "in",
     res = 200)
 ggplot(data = agg, aes(x = psfFraction, y = speedup)) + 
-  xlab("PSF Fraction") +
+  xlab("Update Fraction") +
   ylab("Per iteration Speedup") +
   geom_line() + geom_point() +
   scale_x_continuous(trans="log2")
@@ -128,12 +128,11 @@ png("./psfExperiment/plots/ApproxUpdate/speedup_total.png",
     units = "in",
     res = 200)
 ggplot(data = agg, aes(x = psfFraction, y = speedup_total)) + 
-  xlab("PSF Fraction") +
+  xlab("Update Fraction") +
   ylab("Total Speedup") +
   geom_line() + geom_point() +
   scale_x_continuous(trans="log2")
 dev.off() 
-
 
 
 
