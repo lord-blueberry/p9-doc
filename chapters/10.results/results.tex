@@ -192,9 +192,10 @@ We cannot report an error that correlates with the fraction of the update. The o
 
 The speedup is harder to quantify. For one, each iteration gets cheaper. For another, the number of iterations also change. We measured both, the speedup for one coordinate descent iteration, and the total speedup.
 
-Implicit path regularization. Coordinate descent profits from an ever decreasing $\lambda$. This is done implicitly for the approximation of gradient updates. 
+Implicit path regularization. Coordinate descent profits from an ever decreasing $\lambda$. This is done implicitly for the approximation of gradient updates. We have to stop before we include bad things.
 
 Major cycles.
+
 Overall, no. We can 
 
 \subsubsection{Method 2: Approximate deconvolution}
