@@ -160,13 +160,9 @@ The effect of approximating the $PSF$ are not clear. We know that thanks to the 
 We presented two methods to approximating the $PSF$ for the deconvolution in Section \ref{gradients}. Method 1 updates only a fraction of the gradients, and Method 2 uses a fraction of the $PSF$ for deconvolution. We test both methods on the LMC data and explore what effects the approximations have on the reconstruction.
 
 \subsubsection{Method 1: Approximate gradient update}
-Our coordinate descent method updates the map of gradients after each iteration. This method only updates the most significant fraction of the gradients.
-Method 1 starts with the same map of gradients as the original, but then only updates a fraction of the gradients in each iteration. It updates a rectangle of the most significant gradients.
-With each iteration, the map of gradients gets less accurate. With enough major cycles, this method converges to the same optimum as the original coordinate descent method.
+Our coordinate descent method updates the map of gradients after each iteration.  Method 1 starts with the same map of gradients as the original, but then only updates a fraction of the gradients in each iteration. It updates a rectangle of the most significant gradients.With each coordinate descent iteration, the map of gradients gets less accurate. Because we do an approximate update of gradients, this method should converge to the same result as the original with enough major cycles.
 
-At the beginning of each major cycle, we calculate the objective value of the current solution. We compare the objective value and the wall-clock time of the original and the approximate gradient update. 
-Target: get the lowest possible objective value.
-Figure \ref{results:gradients:update} shows the results.
+At the beginning of each major cycle, we calculate the objective value of the current solution. We compare the objective value and the wall-clock time of the original and the approximate gradient update. This is a minimization problem, meaning the lowest objective is the most accurate reconstruction (according to the elastic net regularization).
 
 \begin{figure}[h]
 	\centering
@@ -185,23 +181,20 @@ Figure \ref{results:gradients:update} shows the results.
 	\label{results:gradients:update}
 \end{figure}
 
-The smallest possible fraction in which our solution still converges is $\frac{1}{64}$. This updates only the $48^2$ most siginificant gradients.
+The smallest fraction of gradient updater, for which coordinate still converges is $\frac{1}{64}$ of the total update. Meaning, we can update only a rectangle of $48^2$ pixels, or an image patch of 72 arc-seconds in size. However, it is obvious from the Figure \ref{results:gradients:update} that coordinate descent needs more major cycles to converge with such an extreme approximation.
 
-We seem to converge. Objective value of the approximations is within 0.03\% of the original (the objective value of the approximations are higher by a factor of 0.0003).
-We cannot report an error that correlates with the fraction of the update. The objective value of $\frac{1}{2}$ is above the value of $\frac{1}{32}$.
+With less extreme approximations, we also reduce the number of necessary major cycles. The approximation of $\frac{1}{32}$ needs two more major cycle, while all other need the one more as the original method\footnote{6 cycles to converge, and one extra cycle which is here to measure the final objective}. The objective values of the approximations end within 0.03\% of the original(the objective value of the approximations are higher by a factor of 0.0003).
 
-The speedup is harder to quantify. For one, each iteration gets cheaper. For another, the number of iterations also change. We measured both, the speedup for one coordinate descent iteration, and the total speedup.
+Figure \ref{results:gradients:update} also shows two speedup comparisons. The speedup from the approximation is harder to quantify. For one, each iteration of coordinate descent becomes cheaper, because we only update a small part of the gradient map. This is the per iteration speedup. The second speedup Figure compares the overall time spent in deconvolution. Although each iteration becomes cheaper with the approximation, we may need more iterations to converge. Also, we have an implicit path regularization in the approximation. Therefore, a speedup per coordinate descent iteration does not necessarily lead to an overall speedup.
 
-Implicit path regularization. Coordinate descent profits from an ever decreasing $\lambda$. This is done implicitly for the approximation of gradient updates. We have to stop before we include bad things.
+As we discussed in section In Section \ref{gradients:pathreg}, we have a limit in each major cycle to how far we can trust our deconvolution approximation. That is why in the first major cycle coordinate descent gets started with a higher $\lambda$ regularization than specified. In each successive major cycle, we reduce the $\lambda$ parameter until we reach the specified value. This is an implicit form of path regularization, and may help speeding up the convergence rate of coordinate descent in general \cite{friedman2010regularization}. In our case, we need path regularization to ensure convergence over several major cycles (Aggressive approximations like $\frac{1}{64}$ start to oscillate over several major cycle). Notice that the overall speedup in Figure \ref{results:gradients:update} is lower than the speedup we get per iteration. This suggests path regularization as implemented here does not speed up convergence rate.
 
-Major cycles.
-
-Overall, no. We can 
+Overall with gradient update approximations give us a speedup factor of around 1.5. Depending on how aggressive we approximate, We need one or two more major cycles than the original coordinate descent deconvolutions. This puts gradient update approximations on par with multi-scale CLEAN in terms of major cycles. 
 
 \subsubsection{Method 2: Approximate deconvolution}
 In this method, we use a fraction of the total $PSF$ for deconvolution. This method solves a different deconvolution problem, where the $PSF$ is for example only $\frac{1}{8}$ the size. The downside is that method 2 is not guaranteed to converge to the same optimum. Nevertheless, we solve the approximate deconvolution problem with several different fractions of the $PSF$ and compare how close the approximate solution is to the original.
 
-We measure the true objective value for the approximate solution at the beginning of each major cycle iteration. The Figure \ref{results:gradients:aproxDeconv} compares the approximate deconvolutions to the deconvolution with the full $PSF$
+We measure the true objective value for the approximate solution at the beginning of each major cycle iteration. The Figure \ref{results:gradients:aproxDeconv} compares the approximate deconvolution to the original.
 
 \begin{figure}[h]
 	\centering
@@ -219,7 +212,7 @@ We measure the true objective value for the approximate solution at the beginnin
 	\caption{Effect of the L1 and L2 Norm separately.}
 	\label{results:gradients:aproxDeconv}
 \end{figure}
-
+0.0007
 With $48^2$ pixels, the approximate deconvolution converges. But it is not the same optimum. The difference becomes less extreme as soon as we increase the $PSF$ size. With a factor of 32, we converge within
 of the true solution. But we need a major cycle more to converge.
 
@@ -245,13 +238,14 @@ Path regularization and how much time we spent in the deconvolution.
 
 One problem: we do not converge to the same optimum.
 
-\subsubsection{Comparison Method 1 and 2}
+\subsubsection{Combination of Method 1 and 2}
+
 \begin{figure}[h]
 	\centering
-	\begin{subfigure}[b]{1.0\linewidth}
+	\begin{subfigure}[b]{0.33\linewidth}
 		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/comparison.png}
 	\end{subfigure}
-	\begin{subfigure}[b]{1.0\linewidth}
+	\begin{subfigure}[b]{0.66\linewidth}
 		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/comparison_zoom.png}
 	\end{subfigure}
 	

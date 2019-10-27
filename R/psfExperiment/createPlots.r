@@ -152,30 +152,31 @@ subset <- subset(combined, psfSize %in% c(1,16))
 t = read.table(file.path("psfExperiment/psfApprox","16Psf.txt"), header=TRUE, dec=",", sep=";")
 
 png("./psfExperiment/plots/comparison.png",
-    width = 9.0,
+    width = 3.0,
     height = 3.0,
     units = "in",
     res = 200)
-ggplot(subset, mapping = aes(x = cycle, y = objective, color=experimentName)) + 
+ggplot(combined, mapping = aes(x = cycle, y = objective, color=experimentName)) + 
   xlab("Major cycle index") +
   ylab("Objective value") +
   labs(color="Method") +
   geom_line() + 
   geom_point() + 
+  theme(legend.position = "none")+
   scale_y_continuous(trans="log10")
 dev.off() 
 
 png("./psfExperiment/plots/comparison_zoom.png",
-    width = 9.0,
+    width = 6.0,
     height = 3.0,
     units = "in",
     res = 200)
-ggplot(subset, mapping = aes(x = cycle, y = objective, color=experimentName)) + 
+ggplot(combined, mapping = aes(x = cycle, y = objective, color=experimentName)) + 
   xlab("Major cycle index") +
   ylab("Objective value") +
   labs(color="Method") +
   geom_line() + 
   geom_point() + 
   scale_y_continuous() +
-  coord_cartesian(xlim= c(0, 5), ylim=c(93.75, 94.25))
+  coord_cartesian(xlim= c(1, 4), ylim=c(31.3, 33.0))
 dev.off()
