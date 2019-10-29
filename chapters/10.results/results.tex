@@ -213,47 +213,18 @@ The performance is similar to the first method at first glance. Both methods con
 
 The approximate deconvolution converges faster than the first method. At the start of the same major cycle, this method always has a lower objective. However, it is not guaranteed to converge to the same result. This can be seen in the fact that it never reaches the same objective value as the original. The objective value of the approximation is within 0.07\% (Factor of 0.0007, roughly twice the factor of the first method). The difference gets more significant, the more extreme we chose the deconvolution approximation.
 
-Nevertheless, the approximate deconvolution converges surprisingly close to the original solution. The question is, is this difference of 0.07\% in the objective value significant? The answer to this question depends on what kind of error the approximation introduces in the image. The obvious error is that the approximation chronically under-estimates the pixel values: The maximum pixel value in N132 of the original is 0.0024, while the maximum of the $\frac{1}{16}$ approximation is 0.00235. The pixel magnitude is important in the self-calibration regime \cite{offringa2017optimized}(When we take the result of the reconstruction and try to improve the calibration).
+Nevertheless, the approximate deconvolution converges surprisingly close to the original solution. The question is, is this difference of 0.07\% in the objective value significant? The answer to this question depends on what kind of error the approximation introduces in the image. The obvious error is that the approximation chronically under-estimates the pixel values: The maximum pixel value in N132 of the original is 0.0024 Jansky/beam, while the maximum of the $\frac{1}{16}$ approximation is 0.00235 Jansky/beam. The pixel magnitude is important in the self-calibration regime \cite{offringa2017optimized} (When we take the result of the reconstruction and try to improve the calibration).
 
-The deconvolution approximation may introduce other errors that are harder to quantify.
+The under-approximation of pixel values is an error we cannot ignore. One naive remedy is to start with the deconvolution approximation, but switch to the original $PSF$ after a certain number of major cycle. This would give us the guarantee to converge to the same result, but let us use an approximation at the start. We propose another solution: Combining the two approximation methods.
 
-
-
-
-
-
-Withing 0.0007 of original. Wider range, and correlates with the psf fraction. Close to the original.
-Convergence rate. We converge faster, but not to the same optimum
-
-Speedup
-
-Major cycles needed. one more
-
-Similar to the other method. we start out converging faster. But we do not end in the same optimum. Natural question: what happens when we combine these two methods, can we achieve the best from both worlds?
-
-
-
-
-With $48^2$ pixels, the approximate deconvolution converges. But it is not the same optimum. The difference becomes less extreme as soon as we increase the $PSF$ size. With a factor of 32, we converge within
-of the true solution. But we need a major cycle more to converge.
-
-
-
-
-Just by cutting the $PSF$ coordinate descent gets a speedup. 
-
-
-
-One problem: we do not converge to the same optimum.
 
 \subsubsection{Combination of Method 1 and 2}
+The two approximation methods have two different shortcomings: Method 1 converges more slowly, and converges to the same result as the original. Method 2 converges faster than method 1, but does not converge to the same result. Here, we combine the two methods to remedy the shortcomings: For the first couple of major cycles, we use method 2, and then switch to method 1.
 
-Two different approximations. The errors may not be correlated, meaning we can remove the error introduced from one method with the other method.
-
-Combine the method. Start out with an approximate deconvolution (method 2) and then switch to an approximate gradient update (method 1). This way we want to combine the faster convergence rate of method 2 with converging to the same optimum of method 1.
+When to do the switch.
+Path regularization, when we have finished a major cycle with the $\lambda$.
 
 How is the distribution affected?  $\frac{1}{16}$.
-
 Figure \ref{results:gradients:comparison} shows the result.
 
 \begin{figure}[h]
@@ -265,7 +236,7 @@ Figure \ref{results:gradients:comparison} shows the result.
 		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/comparison_zoom.png}
 	\end{subfigure}
 	
-	\caption{Comparison of the two methods using $\frac{1}{16}$.}
+	\caption{Comparison of the two methods using the fraction $\frac{1}{16}$ of the $PSF$.}
 	\label{results:gradients:comparison}
 \end{figure}
 
@@ -273,5 +244,7 @@ Convergence. With the combination, we move actually below the original solution.
 Approximation errors are not correlated.
 
 What about the speedup?
+
+Show images
 
 \subsubsection{Masking the $PSF$}

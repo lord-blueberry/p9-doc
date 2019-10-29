@@ -1,3 +1,6 @@
 \section{Conclusion}
 
+Problem of calibration.
+Why does CLEAN work so well with calibration errors? Is there some sort of implicit regulariztion in the way it choses its pixels. (not in the actual regularization)
+
 Figure \ref{results:gradients:update} shows that at major cycle index 4 (the fifth major cycle), all approximations except for $frac{1}{64}$ are within 0.09\% of the original solution. The current implementation stops when coordinate descent converges within 1000 iterations in the current major cycle. This rule may be too strict, and our coordinate descent algorithm may be stopped earlier. 
