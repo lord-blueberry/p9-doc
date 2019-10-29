@@ -1,7 +1,11 @@
 \section{Coordinate descent deconvolution}\label{cd}
-Coordinate descent methods are a family of algorithms. Various variants exist\cite{richtarik2016distributed, richtarik2016parallel}, but they share one common idea: Most of our problems become simple when we reduce the number of dimensions. Deconvolving a whole image is difficult. But deconvolving a single pixel is easy. As we will show in section \ref{cd:deriving}, we can derive a closed form solution\footnote{Deriving a formula which we can implement in a few lines of code.} for deconvolving a single pixel. We then iterate over all pixels, possibly several times, until we converge to a deconvolved image. 
+In this section we describe the basic idea behind coordinate descent methods in general, and derive our coordinate descent deconvolution algorithm. In essence, we create our own deconvolution algorithm which can be used instead CLEAN in the Major/Minor cycle architecture using coordinate descent methods. We call the coordinate descent algorithm "basic", because it can be seen as a special case of more complicated coordinate descent methods\cite{richtarik2016distributed, richtarik2016parallel}, which we will discuss later in Section \ref{pcdm}. Here, we derive efficient CPU- and GPU- implementation and show how we can use MPI for a naive distributed deconvolution algorithm.
 
-This is the idea behind coordinate descent methods. By reducing the dimensions of the problem, we can often find an optimization algorithm where each iteration is "cheap" to compute. In these cases, coordinate descent methods produce competitive results\cite{nesterov2012efficiency, nesterov2013gradient}.
+Coordinate descent methods are a family of numerical optimization algorithms, that are used for convex objective functions. They share one common idea: Most of our problems become simple when we reduce the number of dimensions. Deconvolving a whole image in our case is difficult, but deconvolving a single pixel is easy. As we will show in this Section, we can derive a closed form solution\footnote{Deriving a formula which we can implement in a few lines of code.} for deconvolving a single pixel. The basic coordinate descent algorithm then iterates overall pixels, possibly several times, until we converge to a deconvolved result. 
+
+This is the idea behind coordinate descent methods. By reducing the dimensions of the problem, we can often find an optimization algorithm where each iteration is "cheap" to compute. In these cases, coordinate descent methods produce competitive results when compared to other widely used methods like gradient descent\cite{nesterov2012efficiency, nesterov2013gradient}.
+
+%Algorithm alone is not enough. We need a regularization.
 
 For a deconvolution algorithm in radio astronomy, we need three parts: An optimization algorithm, a regularization, and an optimization objective. We use coordinate Descent as the optimization algorithm, take Elastic Net as the regularization and use the following objective function:
 
@@ -9,7 +13,7 @@ For a deconvolution algorithm in radio astronomy, we need three parts: An optimi
 \underset{x}{minimize} \: \frac{1}{2} \left \| I_{dirty} - x * PSF \right \|_2^2 + \lambda ElasticNet(x)
 \end{equation}
 
-As we have shown before, the objective function consists of two parts. The data term $\left \| I_{dirty} - x * PSF \right \|_2^2$ and the regularization term $ElasticNet(x)$. The data term forces the image to be as close to the measurements as possible which forces the image to be as close to the measurements as possible, the regularization term forces the image to be as consistent as possible with our prior knowledge. The parameter $\lambda$ is a weight that either forces more or less regularization. It is left to the user to define for each image. We will derive the coordinate descent algorithm that optimizes the objective \eqref{cd:deconv} in section \ref{cd:deriving}. First, let us explain what the elastic net regularization does.
+As we have shown before, the objective function consists of two parts. The data term $\left \| I_{dirty} - x * PSF \right \|_2^2$ and the regularization term $ElasticNet(x)$. The data term forces the image to be as close to the measurements as possible which forces the image to be as close to the measurements as possible, the regularization term forces the image to be as consistent as possible with our prior knowledge. The parameter $\lambda$ is a weight that either forces more or less regularization. It is left to the user to define $\lambda$ for each image. We will derive the "basic" coordinate descent algorithm that optimizes the objective \eqref{cd:deconv} in Section \ref{cd:deriving}. First, let us explain what the elastic net regularization does.
 
 \subsection{Elastic net regularization} \label{cd:reg}
 \begin{figure}[h]
@@ -28,7 +32,6 @@ As we have shown before, the objective function consists of two parts. The data 
 	\caption{Effect of the L1 and L2 Norm separately.}
 	\label{cd:elastic}
 \end{figure}
-
 
 This regularization is a mixture between the L1 and L2 regularization. The Figure \ref{cd:elastic} shows the effect of the L1 and L2 norm on a single star. The L1 regularization forces the image to contain few non-zero pixels as possible. It encodes our prior knowledge that the image will contain stars. The L2 regularization on the other hand "spreads" the single star across multiple pixels. This forces the image to represent extended emissions, like hydrogen cloud, with a large number of non-zero pixels (the L1 norm tends to break extended emissions apart, only using a handful of non-zero pixels). The L2 norm was already used in other image reconstruction algorithms in radio astronomy\cite{ferrari2014distributed}, with the downside that the resulting image will not be sparse.
 

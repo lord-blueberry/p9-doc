@@ -218,14 +218,10 @@ Nevertheless, the approximate deconvolution converges surprisingly close to the 
 The under-approximation of pixel values is an error we cannot ignore. One naive remedy is to start with the deconvolution approximation, but switch to the original $PSF$ after a certain number of major cycle. This would give us the guarantee to converge to the same result, but let us use an approximation at the start. We propose another solution: Combining the two approximation methods.
 
 
-\subsubsection{Combination of Method 1 and 2}
-The two approximation methods have two different shortcomings: Method 1 converges more slowly, and converges to the same result as the original. Method 2 converges faster than method 1, but does not converge to the same result. Here, we combine the two methods to remedy the shortcomings: For the first couple of major cycles, we use method 2, and then switch to method 1.
+\subsubsection{Combination of Method 1 and 2}\label{results:gradients:comparison}
+The two approximation methods have two different shortcomings: Approximate gradient update (method 1) converges more slowly, and converges to the same result as the original. Approximate deconvolution (method 2) converges faster than method 1, but does not converge to the same result. Here, we combine the two methods to remedy the shortcomings: For the first couple of major cycles, we use approximate deconvolution, and then switch to approximate gradient update.
 
-When to do the switch.
-Path regularization, when we have finished a major cycle with the $\lambda$.
-
-How is the distribution affected?  $\frac{1}{16}$.
-Figure \ref{results:gradients:comparison} shows the result.
+We compare the original, approximate gradient update, approximate deconvolution and our combination in. We use the factor $\frac{1}{16}$ for approximations, meaning we update $\frac{1}{16}$ of the gradients, and do the approximate deconvolution with $\frac{1}{16}$ of the $PSF$.
 
 \begin{figure}[h]
 	\centering
@@ -237,12 +233,30 @@ Figure \ref{results:gradients:comparison} shows the result.
 	\end{subfigure}
 	
 	\caption{Comparison of the two methods using the fraction $\frac{1}{16}$ of the $PSF$.}
-	\label{results:gradients:comparison}
+	\label{results:gradients:comparison:figure}
 \end{figure}
+
+ Figure \ref{results:gradients:comparison:figure}
+
+We switch from approximate deconvolution to gradient update after the path regularization has reached the target $\lambda$ for the first time. In the case of the LMC data, the implementation uses approximate deconvolution for major cycle index 0 and 1, and then switches to approximate gradient update.
+
+
 
 Convergence. With the combination, we move actually below the original solution. 
 Approximation errors are not correlated.
 
+\begin{center}
+	\begin{tabular}{ c||c|c } 
+		\hline
+		Method & Iteration Speedup & Total Speedup \\ \hline \hline
+		Original & 1.00 & 1.00 \\ 
+		(Method 1) Approx. gradient update & 1.66 & 1.55 \\ 
+		(Method 2) Approx. deconvolution & 1.67 & 1.68 \\ \hline
+		Combination & 1.69 & 1.68 \\ 
+		\hline
+	\end{tabular}
+\label{results:gradients:comparison:speedup}
+\end{center}
 What about the speedup?
 
 Show images

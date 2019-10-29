@@ -1,12 +1,52 @@
-\section{Towards parallel coordinate descent}
+\section{Parallel coordinate descent methods}\label{pcdm}
 
+Approximation of $PSF$, we have non-zero components.
+
+This fact can be exploited by parallel coordinate descent methods. 
+
+The coordinate descent deconvolution algorithm described in Section \ref{cd} is a serial method. It is serial in the sense that the algorithm takes a descent step and immediately updatse the gradient map. Even the GPU implementation, even though it uses a large number of threads simultaneously, it is a serial coordinate descent method. Parallel coordinate descent methods take several steps at different coordinates, before they update the gradients.
+
+\subsection{From serial to parallel coordinate descent}
+
+Serial coordinate descent update step:
+
+Fact for parallel. Problem of updating two coordinates at a time: the $PSF$s do overlap. We overshoot the updates. If this is too extreme, the algorithm starts to diverge.
+
+Shotgun: \cite{bradley2011parallel}
+
+If we know by how much the $PSF$s overlap, we can estimate a correction factor so we do not overshoot. With a smaller $PSF$ we can take larger steps without the fear of overshooting. This is what parallel coordinate descent methods do, they estimate the correlation.
+
+Remember the small $PSF$ is only an approximation. We do not yet know if this translates well to parallel coordinate descent methods.
+
+\subsection{Parallel Block Coordinate Descent Method (PCDM)}
+Here we introduce a parallel coordinate descent method, PCDM \cite{richtarik2016parallel}. Our coordinate descent method from Section \ref{cd} can be thought of as special case of the PCDM algorithm. Our coordinate descent method descends a single pixel at a time, and updates the gradients after each iteration. The first generalization is that we can update a block of pixels at each iteration, called block coordinate descent. We still update the gradient in each iteration. The next generalization is we update severeal blocks in parallel, and before we update the gradients.
+
+Two extra variables, how many pixels we update together in a block, and how many blocks we update in parallel before we update the gradients.
+
+
+(Accelerated) \cite{fercoq2015accelerated}
+\begin{itemize}
+	\item Parallel (can descent several pixels in parallel)
+	\item Block (can descent a group of pixels at one iteration)
+	
+	\item Random
+	\item 
+\end{itemize}
+PCDM is a generalization of our coordinate descent method from Section \ref{cd}. It i
+We can look at parallel coordinate descent methods as a generalization from the serial.
+Serial always takes a single step
+Parallel takes several step.
+
+Block coordinate descent is another generalization. We descent several pixels at a time.
+
+They are parallel, because they take several descent steps with different coordinates, before
 Bells and whistles
 
 \begin{itemize}
 	\item Random
 	\item Block
 	\item Parallel
-	\item Accelerated
+	\item ()Accelerated)
 \end{itemize}
 
 PCDM algorithm, and later APPROX.

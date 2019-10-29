@@ -146,8 +146,12 @@ table["psfSize"] = 1
 combined <- readExperimet("psfExperiment/psfApprox", "Approx. gradient update", table)
 combined <- readExperimet("psfExperiment/convolutionApprox", "Approx. deconvolution", combined)
 combined <- readExperimet("psfExperiment/combined", "Combination", combined)
-subset <- subset(combined, psfSize %in% c(1,16))
-
+#subset <- subset(combined, psfSize %in% c(1,16))
+experimentGroup <- group_by(combined, experimentName)
+agg <- summarize(experimentGroup, time=sum(ElapsedTime), iter= sum(iterCount),)
+agg["timePerIter"] <- agg$time / as.numeric(agg$iter)
+agg["speedup"] <- agg$timePerIter[agg$experimentName == "Standard"] / agg$timePerIter
+agg["speedup_total"] <- agg$time[agg$experimentName == "Standard"] / agg$time
 
 t = read.table(file.path("psfExperiment/psfApprox","16Psf.txt"), header=TRUE, dec=",", sep=";")
 
@@ -180,3 +184,4 @@ ggplot(combined, mapping = aes(x = cycle, y = objective, color=experimentName)) 
   scale_y_continuous() +
   coord_cartesian(xlim= c(1, 4), ylim=c(31.3, 33.0))
 dev.off()
+

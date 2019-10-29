@@ -1,40 +1,27 @@
 \section{Gradient/PSF approximation for distributed deconvolution} \label{gradients}
+For a distributed deconvolution, we would like to deconvolve the image with as little communication as possible. This largely depends on the size of the $PSF$ when compared to the overall image. If the $PSF$ is for example $\frac{1}{16}$ of the total image size, we have patches of the image which are completely independent of each other. Sadly, this is not true for radio interferometers. The $PSF$ is generally the same size as the image. We cannot deconvolve any part of the image independently of each other.
 
-Distributed deconvolution, we would like to deconvovle patches of the final image independently from each other. 
-Concept of seperability. Number of non-zero components.
+However, we have two effects of modern radio interferometers, that produce an "approximately" smaller $PSF$: First, we have an increasing number of visibilities. They create a $PSF$ that increasingly resembles a Gaussian function in the center, and the rest approaches zero. And secondly, we reconstruct images with a wide field-of-view. Although the $PSF$ is not zero the further away we move from the center, its values approach zero.
 
-The size of the $PSF$ tells us how far the patches have to be apart from each other to be independent.
-Limiting factor for distribution is the size of the $PSF$. We would like to deconvolve pixels, or patches of the image independently from each other. But the $PSF$ does not let us do that. As soon as the $PSF$ overlap, they are not independent anymore.
-Generally the $PSF$ spans over the whole image. 
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}[b]{0.4\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/psf.png}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.4\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/06.gradient/psf_cut.png}
+	\end{subfigure}
+	
+	\caption{$PSF$ arising from an increasing number of visibilities.}
+\end{figure} 
 
-But the $PSF$ for MeerKAT is peculiar.
-In the center, the $PSF$ approximates a Gaussian function, which spans only over a fraction of the image. Indeed, with increasing number of visibility measurements, the $PSF$ becomes more and more like a Gaussian function.
-Also, the values of the $PSF$ become smaller the further we walk away from the center. Although the $PSF$ spans over the whole image, its values become insiginificant.
+In short, with an ever increasing number of visibilities and field-of-view, the influence of far-away image sections become negligible. We can approximate the deconvolution with a fraction of the true $PSF$. To our knowledge, we are the first to propose such approximation methods. In this Section, we present our approximation methods. In Section \ref{results:gradients}, we empirically demonstrate the validity of our approximations on a real-world MeerKAT observation. In Section \ref{pcdm}, we show more sophisticated coordinate descent methods that can exploit the smaller $PSF$. 
 
-MeerKAT has wide field of view observations with an increasingly Gaussian-like $PSF$. Can we use the significant fraction of the $PSF$ instead? Is this enough?
-We have two operations, calculating the gradients of the image, and updating the gradients.
-View of stochastic gradient descent. So if we calculate the gradient of a pixel with $-2 \langle residuals, PSF \rangle$, then we should be able to approximate the gradient with only a fraction fo the $SF$. But the pre-calculation of gradients is actually cheap, the thing. But what about updating the gradients?
-We
-
-
-Also,
-Plus the major cycle framework: It already corrects for the fact that the $PSF$ we use is only an approximation of the true $PSF$. $w$-term changes the $PSF$ over the image. 
-
-
-
-The answer to this is yes, we can. In Section \ref{results:gradients} we demonstrate the speedup of the deconvolution with only a fraction of the $PSF$ on a real world MeerKAT dataset. In this Section, we show how this can be done. 
-
-
-
-The problem is arriving at the same optimum. Not trivial.
-
-
-
-\subsection{Difficulty in approximating the $PSF$}
+\subsection{Intuition behind approximating the $PSF$}
 
 In our coordinate descent deconvolution, we use the $PSF$ in two steps. Before we run coordinate descent, we pre-calculate the gradient for each pixel with a correlation operation. During coordinate descent deconvolutions, we update the gradient-map directly. Two opposing solutions: We use the full $PSF$ to pre-calculate the gradients, but only update the gradients with a fraction of the $PSF$. That way we always start from the correct gradients, but get less accurate over coordinate descent deconvolutions.
 
-\subsection{Approximate gradient update}
+\subsection{Method 1: Approximate gradient update}
 
 So we use the full $PSF$
 
@@ -44,7 +31,7 @@ $PSF$ squared update. Scaling.
 So we become less and less accurate
 
 
-\subsection{Approximate deconvolution}
+\subsection{Method 2:Approximate deconvolution}
 
 We never use the full PSF
 
