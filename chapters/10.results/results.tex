@@ -122,10 +122,6 @@ Calibration errors on the other hand negatively influence the coordinate descent
 The only way to exclude the ripples from the reconstruction is to increase the regularization parameter $\lambda$., such as no pixel gets included which is not above the noise level + calibration error in the image. However, that would lead to other sources being "regularized away" in other regions of the image, which do not have a severe calibration error close by. 
 
 
-Case of super resolution.
-Our coordinate descent algorithm works. All the performance optimizations do not break anything vital.
-
-
 \subsection{Coordinate descent acceleration with MPI or GPU}\label{results:speedup}
 Describe hardware
 
@@ -187,14 +183,14 @@ With less extreme approximations, we also reduce the number of necessary major c
 
 Figure \ref{results:gradients:update} also shows two speedup comparisons. The speedup from the approximation is harder to quantify. For one, each iteration of coordinate descent becomes cheaper, because we only update a small part of the gradient map. This is the per iteration speedup. The second speedup Figure compares the overall time spent in deconvolution. Although each iteration becomes cheaper with the approximation, we may need more iterations to converge. Also, we have an implicit path regularization in the approximation. Therefore, a speedup per coordinate descent iteration does not necessarily lead to an overall speedup.
 
-As we discussed in section In Section \ref{gradients:pathreg}, we have a limit in each major cycle to how far we can trust our deconvolution approximation. That is why in the first major cycle coordinate descent gets started with a higher $\lambda$ regularization than specified. In each successive major cycle, we reduce the $\lambda$ parameter until we reach the specified value. This is an implicit form of path regularization, and may help speeding up the convergence rate of coordinate descent in general \cite{friedman2010regularization}. In our case, we need path regularization to ensure convergence over several major cycles (Aggressive approximations like $\frac{1}{64}$ start to oscillate over several major cycle). Notice that the overall speedup in Figure \ref{results:gradients:update} is lower than the speedup we get per iteration. This suggests path regularization as implemented here does not speed up convergence rate.
+As we discussed in section In Section \ref{gradients:pathreg}, we have a limit in each major cycle to how far we can trust our approximation. That is why in the first major cycle coordinate descent gets started with a higher $\lambda$ regularization than specified. In each successive major cycle, we reduce the $\lambda$ parameter until we reach the specified value. This is an implicit form of path regularization, and may help speeding up the convergence rate of coordinate descent in general \cite{friedman2010regularization}. In our case, we need path regularization to ensure convergence over several major cycles (Aggressive approximations like $\frac{1}{64}$ start to oscillate over several major cycle). Notice that the overall speedup in Figure \ref{results:gradients:update} is lower than the speedup we get per iteration. This suggests path regularization as implemented here does not speed up convergence rate.
 
 Overall with gradient update approximations give us a speedup factor of around 1.5. Depending on how aggressive we approximate, We need one or two more major cycles than the original coordinate descent deconvolutions. This puts gradient update approximations on par with multi-scale CLEAN in terms of major cycles. 
 
 \subsubsection{Method 2: Approximate deconvolution}
 In this method, we use a fraction of the total $PSF$ for deconvolution. This method solves a different deconvolution problem, where the $PSF$ is for example only $\frac{1}{8}$ the size. The downside is that method 2 is not guaranteed to converge to the same optimum. Nevertheless, we solve the approximate deconvolution problem with several different fractions of the $PSF$ and compare how close the approximate solution is to the original.
 
-We measure the true objective value for the approximate solution at the beginning of each major cycle iteration. The Figure \ref{results:gradients:aproxDeconv} compares the approximate deconvolution to the original.
+As before, we measure the true objective value for the approximate solution at the beginning of each major cycle iteration. The Figure \ref{results:gradients:aproxDeconv} compares the approximate deconvolution to the original.
 
 \begin{figure}[h]
 	\centering
@@ -212,7 +208,32 @@ We measure the true objective value for the approximate solution at the beginnin
 	\caption{Effect of the L1 and L2 Norm separately.}
 	\label{results:gradients:aproxDeconv}
 \end{figure}
-0.0007
+
+The performance is similar to the first method at first glance. Both methods converge in a similar manner, with a similar factor of speedup. For the $PSF$ fraction $\frac{1}{64}$ this is largely due to the same path regularization used in this method. For larger $PSF$'s, starting from $\frac{1}{16}$, the path regularization becomes less important with this method, as it only effects the regularization parameter $\lambda$ of major cycle index 0. Indeed, this method is less likely to oscillate and seems to have a more stable convergence.
+
+The approximate deconvolution converges faster than the first method. At the start of the same major cycle, this method always has a lower objective. However, it is not guaranteed to converge to the same result. This can be seen in the fact that it never reaches the same objective value as the original. The objective value of the approximation is within 0.07\% (Factor of 0.0007, roughly twice the factor of the first method). The difference gets more significant, the more extreme we chose the deconvolution approximation.
+
+Nevertheless, the approximate deconvolution converges surprisingly close to the original solution. The question is, is this difference of 0.07\% in the objective value significant? The answer to this question depends on what kind of error the approximation introduces in the image. The obvious error is that the approximation chronically under-estimates the pixel values: The maximum pixel value in N132 of the original is 0.0024, while the maximum of the $\frac{1}{16}$ approximation is 0.00235. The pixel magnitude is important in the self-calibration regime \cite{offringa2017optimized}(When we take the result of the reconstruction and try to improve the calibration).
+
+The deconvolution approximation may introduce other errors that are harder to quantify.
+
+
+
+
+
+
+Withing 0.0007 of original. Wider range, and correlates with the psf fraction. Close to the original.
+Convergence rate. We converge faster, but not to the same optimum
+
+Speedup
+
+Major cycles needed. one more
+
+Similar to the other method. we start out converging faster. But we do not end in the same optimum. Natural question: what happens when we combine these two methods, can we achieve the best from both worlds?
+
+
+
+
 With $48^2$ pixels, the approximate deconvolution converges. But it is not the same optimum. The difference becomes less extreme as soon as we increase the $PSF$ size. With a factor of 32, we converge within
 of the true solution. But we need a major cycle more to converge.
 
@@ -222,23 +243,18 @@ of the true solution. But we need a major cycle more to converge.
 Just by cutting the $PSF$ coordinate descent gets a speedup. 
 
 
-Approximate deconvolution
-
-$PSF$ is the size of the image, i.e. $3072^2$ pixels. We approximate the deconvolution by just using a fraction of the $PSF$. $\frac{1}{8}$ is the size of $384^2$
-We measured the objective value at the beginning of each major cycle.
-Figure \ref{results:gradients:aproxDeconv} shows the decrease in objective value
-and the speedup associated with cutting the $PSF$
-
-We have an obvious limit where cutting the $PSF$ will be useless, because it does not converge.
-But there is a less obvious failure mode. The $PSF$ of the size $\frac{1}{64}$ already does not properly converge, and the objective actually becomes after 3 major cycles.
-
-We have two speedup factors. Speedup by iterations becoming cheaper, and the total time spent doing deconvolution.
-Path regularization and potentially more
-Path regularization and how much time we spent in the deconvolution.
 
 One problem: we do not converge to the same optimum.
 
 \subsubsection{Combination of Method 1 and 2}
+
+Two different approximations. The errors may not be correlated, meaning we can remove the error introduced from one method with the other method.
+
+Combine the method. Start out with an approximate deconvolution (method 2) and then switch to an approximate gradient update (method 1). This way we want to combine the faster convergence rate of method 2 with converging to the same optimum of method 1.
+
+How is the distribution affected?  $\frac{1}{16}$.
+
+Figure \ref{results:gradients:comparison} shows the result.
 
 \begin{figure}[h]
 	\centering
@@ -249,8 +265,13 @@ One problem: we do not converge to the same optimum.
 		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/comparison_zoom.png}
 	\end{subfigure}
 	
-	\caption{Effect of the L1 and L2 Norm separately.}
+	\caption{Comparison of the two methods using $\frac{1}{16}$.}
 	\label{results:gradients:comparison}
 \end{figure}
+
+Convergence. With the combination, we move actually below the original solution. 
+Approximation errors are not correlated.
+
+What about the speedup?
 
 \subsubsection{Masking the $PSF$}
