@@ -69,15 +69,42 @@ Nevertheless, this approximation method introduces an error in the final reconst
 
 To combat the under-estimation of pixel values, we reduce the regularization parameter $\lambda$ for the approximate deconvolution problem. Since we cut off parts of the $PSF$, we also reduce the Lipschitz constant (sum of the squared $PSF$ values) used in the approximate deconvolution. We reduce the $\lambda$ parameter by the same factor that the Lipschitz constant gets reduced. This ensures that the approximate deconvolution and the original deconvolution arrive at the same pixel value for a point source. But it does not completely remove the issue for extended emissions.
 
-\subsection{Major Cycle convergence}\label{gradients:pathreg}
+\subsection{Major Cycle convergence and implicit path regularization}\label{gradients:pathreg}
 
-Sidelobe.
+Problem of using a reduced $PSF$. We have sidelobes.
+
+Danger of adding them in the deconvolution, just to remove them in the next major cycle (when it is clear that they were bogus). With more extreme approximations, this leads to oscillations (add bogus pixels in one Major cycle, remove them in the next, just to add them again in the cycle after). And in most extreme cases, it can even lead to divergence.
+
+Sidelobe equals to largest absolute $PSF$ value we cut off
+
+We know what the biggest sidelobe is we cut off. That way we can estimate what magnitude of pixel we can be sure that it is bogus. 
+
+\begin{equation}
+\begin{split}
+psfSidelobe &= MAX(PSF - cut(PSF)) \\
+gradients &= residuals \star PSF \\
+gradientLimit &= MAX(gradients) * psfSidelobe
+\end{split}
+\end{equation}
+
+Lower bound estimate. At which point we are sure it is bogus.
+This is only true for point sources. 
+problem of correlation, extended emissions. With extended emissions in the image, we still take up bogus pixels. 
+
+Estimate a correlation factor. 
+
+
+Coordinate Descent Path regularization optimization \cite{friedman2010regularization}
+
+
+
+
 
 \cite{clark1980efficient} and the question on how many iterations per major cycle
 Putting it all together
 
 We have the Minor Cycle, which is easy to converge.
 
-Coordinate Descent Path optimization \cite{friedman2010regularization}
+
 Danger that CD takes too many pixel into a Major Cycle. Lower bound per iteration, PSF sidelobe
 can still be too low, danger when many psf sidelobes overlap

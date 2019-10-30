@@ -37,7 +37,7 @@
 \BOOKMARK [2][-]{subsection.5.1}{Intuition for approximating the PSF}{section.5}% 37
 \BOOKMARK [2][-]{subsection.5.2}{Method 1: Approximate gradient update}{section.5}% 38
 \BOOKMARK [2][-]{subsection.5.3}{Method 2:Approximate deconvolution}{section.5}% 39
-\BOOKMARK [2][-]{subsection.5.4}{Major Cycle convergence}{section.5}% 40
+\BOOKMARK [2][-]{subsection.5.4}{Major Cycle convergence and implicit path regularization}{section.5}% 40
 \BOOKMARK [1][-]{section.6}{Tests on MeerKAT LMC observation}{}% 41
 \BOOKMARK [2][-]{subsection.6.1}{Comparison with CLEAN reconstructions}{section.6}% 42
 \BOOKMARK [2][-]{subsection.6.2}{Coordinate descent acceleration with MPI or GPU}{section.6}% 43
