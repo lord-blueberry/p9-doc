@@ -33,7 +33,7 @@
 \BOOKMARK [2][-]{subsection.4.5}{Pseudo-code of the basic, optimized algorithm}{section.4}% 33
 \BOOKMARK [2][-]{subsection.4.6}{Distributed coordinate descent with MPI}{section.4}% 34
 \BOOKMARK [2][-]{subsection.4.7}{GPU implementation of coordinate descent}{section.4}% 35
-\BOOKMARK [1][-]{section.5}{PSF approximation for distributed deconvolution}{}% 36
+\BOOKMARK [1][-]{section.5}{PSF approximation for parallel and distributed deconvolution}{}% 36
 \BOOKMARK [2][-]{subsection.5.1}{Intuition for approximating the PSF}{section.5}% 37
 \BOOKMARK [2][-]{subsection.5.2}{Method 1: Approximate gradient update}{section.5}% 38
 \BOOKMARK [2][-]{subsection.5.3}{Method 2:Approximate deconvolution}{section.5}% 39
