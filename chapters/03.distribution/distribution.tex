@@ -272,7 +272,7 @@ Luckily, we can use the Fourier transform to speed up the calculation. Notice th
 
 The Figure \ref{cd:efficient:gradients:figure} shows the process for the first step of the coordinate descent deconvolution. We start with the dirty image. We calculate the correlation of the $PSF$ with the dirty image and arrive at the map of gradients. Figure \ref{cd:efficient:gradients:gradients} shows the gradient for each pixel.
 
-\subsubsection{Efficient update of gradients}
+\subsubsection{Efficient update of gradients}\label{cd:efficient:update}
 The naive coordinate descent implementation minimizes a single pixel, and updates the residuals by subtracting the $PSF$ at the correct location (The first line of \eqref{cd:efficient:update:naive}). It then calculates the new gradient for each pixel(Second line of \eqref{cd:efficient:update:naive}) in each iteration. This is not necessary. We only need to calculate the correlation in the first iteration. All later iterations update the map gradients directly without the Fourier transform.
 
 \begin{equation}\label{cd:efficient:update:naive}
