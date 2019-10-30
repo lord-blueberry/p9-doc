@@ -1,14 +1,14 @@
-\section{Gradient/PSF approximation for distributed deconvolution} \label{gradients}
+\section{$PSF$ approximation for distributed deconvolution} \label{gradients}
 For a distributed deconvolution, we would like to deconvolve the image with as little communication as possible. This largely depends on the size of the $PSF$ when compared to the overall image. If the $PSF$ is for example $\frac{1}{16}$ of the total image size, we have patches of the image which are completely independent of each other. Sadly, this is not true for radio interferometers. The $PSF$ is generally the same size as the image. We cannot deconvolve any part of the image independently of each other.
 
 However, we have two effects of modern radio interferometers, that produce an "approximately" smaller $PSF$: First, we have an increasing number of visibilities. They create a $PSF$ that increasingly resembles a Gaussian function in the center, and the rest approaches zero. And secondly, we reconstruct images with a wide field-of-view. Although the $PSF$ is not zero the further away we move from the center, its values approach zero.
 
 \begin{figure}[h]
 	\centering
-	\begin{subfigure}[b]{0.4\linewidth}
+	\begin{subfigure}[b]{0.3\linewidth}
 		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/psf.png}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.4\linewidth}
+	\begin{subfigure}[b]{0.3\linewidth}
 		\includegraphics[width=\linewidth]{./chapters/06.gradient/psf_cut.png}
 	\end{subfigure}
 	
@@ -18,8 +18,24 @@ However, we have two effects of modern radio interferometers, that produce an "a
 In short, with an ever increasing number of visibilities and field-of-view, the influence of far-away image sections become negligible. We can approximate the deconvolution with a fraction of the true $PSF$. To our knowledge, we are the first to propose such approximation methods. In this Section, we present our approximation methods. In Section \ref{results:gradients}, we empirically demonstrate the validity of our approximations on a real-world MeerKAT observation. In Section \ref{pcdm}, we show more sophisticated coordinate descent methods that can exploit the smaller $PSF$. 
 
 \subsection{Intuition behind approximating the $PSF$}
+Our basic coordinate descent algorithm chooses a pixel to minimize, calculates its gradient and descends in that direction. The gradient calculation reduces itself to a correlation of the residuals with the $PSF$ at the pixel location. In other words, we need the $PSF$ to calculate a gradient. If we only use parts of the $PSF$ for the calculation, we essentially approximate the gradient for the pixel. Because the $PSF$ only has significant non-zero values in the center, we should be able to ignore most of the values and still have an adequate gradient approximation.
 
-In our coordinate descent deconvolution, we use the $PSF$ in two steps. Before we run coordinate descent, we pre-calculate the gradient for each pixel with a correlation operation. During coordinate descent deconvolutions, we update the gradient-map directly. Two opposing solutions: We use the full $PSF$ to pre-calculate the gradients, but only update the gradients with a fraction of the $PSF$. That way we always start from the correct gradients, but get less accurate over coordinate descent deconvolutions.
+Furthermore, our basic coordinate descent algorithm reconstructs inside the Major/Minor cycle framework. The framework is designed to handle only an approximate $PSF$ in the deconvolution (Remember: the $w$-term changes the $PSF$ depending on the position in the image). The framework may be able to deal with further $PSF$ approximations, namely with a $PSF$ that is reduced in size, which makes the distributed deconvolution simpler.
+
+Indeed, this is the case, as we will demonstrate empirically in Section \ref{results:gradients}. But an approximation of the $PSF$ may lead to other problems in the reconstruction:
+\begin{itemize}
+	\item Needs additional Major cycles to converge.
+	\item Slow down convergence speed of coordinate descent.
+	\item Not guaranteed to converge to the same image.
+\end{itemize}
+
+The Major cycle corrects the errors the approximate $PSF$ introduces. The more inaccurate the $PSF$ is, the more Major cycles we may need to converge. As we already discussed, a Major cycle is an expensive operation. Our $PSF$ approximation should lead to as few (if any) additional Major cycles.
+
+For the basic coordinate descent algorithm, an approximate $PSF$ may slow down the convergence speed. In each iteration, the basic algorithm finds the optimal value for the current pixel. With an approximate $PSF$, we may need several iterations on the same pixel (over several major cycles) until we arrive at the same value. In short, an approximate $PSF$ can slow down the convergence speed of coordinate descent.
+
+Depending on how we approximate the $PSF$, we may not have any guarantee that we arrive at the same result. We developed two approximation methods: Method 1 uses an approximation in the gradient update step of coordinate descent. Method 2 solves an approximate deconvolution problem with only a fraction of the $PSF$. Only method 1 is guaranteed to converge to the same solution (with enough major cycles), but is slower to converge than method 2.
+
+Depending on the method we use, we can remedy some of the problems that approximating the $PSF$ introduces. But there seems to be a trade-off to be made. We have not found a method that works best in every aspect.
 
 \subsection{Method 1: Approximate gradient update}
 
@@ -41,6 +57,9 @@ Change lambda. We do an approximate deconvolution.
 
 
 \subsection{Major Cycle convergence}\label{gradients:pathreg}
+
+Sidelobe.
+
 \cite{clark1980efficient} and the question on how many iterations per major cycle
 Putting it all together
 

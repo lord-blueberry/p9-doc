@@ -33,10 +33,10 @@
 \BOOKMARK [2][-]{subsection.4.5}{Pseudo-code of the basic, optimized algorithm}{section.4}% 33
 \BOOKMARK [2][-]{subsection.4.6}{Distributed coordinate descent with MPI}{section.4}% 34
 \BOOKMARK [2][-]{subsection.4.7}{GPU implementation of coordinate descent}{section.4}% 35
-\BOOKMARK [1][-]{section.5}{Gradient/PSF approximation for distributed deconvolution}{}% 36
-\BOOKMARK [2][-]{subsection.5.1}{Difficulty in approximating the PSF}{section.5}% 37
-\BOOKMARK [2][-]{subsection.5.2}{Approximate gradient update}{section.5}% 38
-\BOOKMARK [2][-]{subsection.5.3}{Approximate deconvolution}{section.5}% 39
+\BOOKMARK [1][-]{section.5}{PSF approximation for distributed deconvolution}{}% 36
+\BOOKMARK [2][-]{subsection.5.1}{Intuition behind approximating the PSF}{section.5}% 37
+\BOOKMARK [2][-]{subsection.5.2}{Method 1: Approximate gradient update}{section.5}% 38
+\BOOKMARK [2][-]{subsection.5.3}{Method 2:Approximate deconvolution}{section.5}% 39
 \BOOKMARK [2][-]{subsection.5.4}{Major Cycle convergence}{section.5}% 40
 \BOOKMARK [1][-]{section.6}{Tests on MeerKAT LMC observation}{}% 41
 \BOOKMARK [2][-]{subsection.6.1}{Comparison with CLEAN reconstructions}{section.6}% 42
