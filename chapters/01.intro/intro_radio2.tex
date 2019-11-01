@@ -68,7 +68,7 @@ This is known as an ill-posed inverse problem in the literature. A problem is co
 \begin{enumerate}
 	\item No solution exists.
 	\item There are solutions, but no unique solution exists.
-	\item The solution behaviour does not change continuously with the initial condition (For example: a small change in the measurements lead to a very different reconstructed image).
+	\item The solution behavior does not change continuously with the initial condition (For example: a small change in the measurements lead to a very different reconstructed image).
 \end{enumerate}
 Image reconstruction for radio interferometer is an inverse problem, because we want to find the image which the interferometer observed in Fourier space. It is ill-posed in general, because there are many different images fitting the measurements.
 
@@ -99,7 +99,32 @@ However, the objective \eqref{radio:cs:l2} only includes information about the m
 
 Note the two terms in the objective \eqref{radio:cs:lasso}: We have the same term from our measurements, which we call the "data term". But we also have an additional "regularization term", which is the L1 norm\footnote{Sum of absolute values of the pixels} and forces our reconstruction to be sparse. The parameter $\lambda$ represents how much emphasis we put on the regularization. The new objective function is still convex, it still has a global minimum. The regularization term simply shifted the global minimum to a different location when compared to the first objective \eqref{radio:cs:l2}. Now the question is: How likely is our modified objective \eqref{radio:cs:lasso} to point at the observed image? The theory of Compressed Sensing tells us that it depends on the image content of the observed image. If it only consists of stars, we are practically guaranteed to find the observed image at the minimum of \eqref{radio:cs:lasso}, even though we are dealing with incomplete measurements.
 
-Here we have the first assumption for Compressed Sensing: We know what the observed image looks like, and can model it as a regularization term.
+We use the words 'practically guaranteed' because the theory of Compressed Sensing does give us guarantees to find the observed image at the minimum of \eqref{radio:cs:lasso} under certain assumptions. The issue is these assumptions are hard to verify for any given reconstruction problem. In reality, it is often easier to empirically show that the regularization works. For example, by creating a super-resolved\footnote{The radio interferometer also has a resolution limit. Super-resolved reconstructions were able to find structures which are smaller than the limit of the instrument.} reconstruction from visibility measurements \cite{dabbech2018cygnus}. The assumptions do have important implications for instrument design. This project however is focused on the numerical optimization algorithm. We do not have an influence on the visibility measurements, for our intends and purposes, the measurements are fixed. That is why we first give an intuitive explanation to when the observed image is at the minimum of the objective \eqref{radio:cs:lasso}, and what this means for the ill-posed image reconstruction in Section \ref{radio:cd:intuitive}. Then we give an overview of the formal guarantees in Section \ref{radio:cd:formal} and the implications for the visibility measurements.
+
+
+\subsubsection{Intuitive explanation of Compressed Sensing}\label{radio:cd:intuitive}
+We go back to 
+
+Intuitive
+
+Why it works
+
+Here we see the core assumption for the theory of Compressed Sensing to apply: We know what the observed image looks like, and can model it adequately as a regularization term. This is not always true. We do only know what the observed image looks like to a certain degree, and the regularization term does not model the observed image perfectly. In our example, we assume the image is sparse, because it only contains point sources. This is not always true in reality, as radio interferometers also measure extended emission like hydrogen clouds, which span over several pixels. The observed image will not be as sparse as before. In that case we can still try to find the observed image with an L1 regularization, but we may need more visibility measurements for the reconstruction.
+
+To guarantee the observed image is at the There are more assumptions involved about the properties of the visibility measurements. 
+
+There are other regularization methods that model both point sources and extended emissions \cite{starck2003astronomical, starck2015starlet}. With these regularizations, we can reconstruct the observed image from fewer measurements, or find a super-resolved image from the same measurements. This means that the number of samples which are necessary for reconstruction depend on the regularization we use.
+
+The theory of Compressed Sensing can a
+To solve the ill-posed inverse problem, we have an implicit data modeling task involved. We need less visibility measurements the better we can model the observed image.
+
+The theory of Compressed Sensing gives us a formula to how many samples we need for the reconstruction. Sadly, these are based on hard-to-verify assumptions. 
+
+Where is the limit
+Ther is one, but we cannot calculate the limit in practice. It is based on assumptions hard-to-verify assumptions. In reality, it is often easier just to find the reconstruction and do an empirical proof. Our regularization works, because it produces good results.
+
+
+
 First assumption: we know what the observed image looks like. Not always true, radio interferometers also measure hydrogen clouds, which span an area over several pixels.
 We can retrieve an image below the Nyquist-Shannon sampling rate. Where is the limit? how many samples do we need to retrieve the image? In short: There is a limit, but it is based on even harder to prove assumptions. We quickly introduce them for completion's sake.
 
@@ -110,15 +135,6 @@ This project does not dive deeper into the prior, and how good it models the obs
 
 
 
-
-
-
-LASSO objective
-%Data term $\| V - Fx \right \|_2^2$, and two names for the second term ($\left \| x \right \|_1$). We can call the second term a prior when we look at it from the bayesian statistics. 
-%View from optimization, \eqref{radio:cs:lasso} is the LASSO objective and $\left \| x \right \|_1$ is the regularization. We reduce the possiblity space.
-
-T
-
 So when we have a good prior, the objective points to the observed image even though we do not have enough samples according to the Nyquist-Shannon theorem. What the theory of Compressed Sensing can tell us is how many samples we need until the objective points to the observed image.
 
 Sadly, we cannot verify that the assumptions hold in practice. is that we cannot verify these assumptions in practice.
@@ -126,12 +142,9 @@ Sadly, we cannot verify that the assumptions hold in practice. is that we cannot
 
 Depends on the image content and the prior we use. Also, the theory of Compressed Sensing difficult bounds in practice.
 
-That is why we give first an intuitive explanation on why compressed sensing works, and why it give sense to the fact that we do not need as many samples as Nyquist-Shannon describes.
 
-Then we show 
 
-\subsubsection{Intuitive explanation of Compressed Sensing}
-Intuitive
+
 Theory of Compressed Sensing
 Pretty well, if the image only contains stars. Theory of compressed sensing 
 Incoherence. We gain maximum information about the non-zero locations with each visibility measurement.
@@ -141,7 +154,11 @@ A measurement space which is incoherent to our reconstruction space.
 
 Then the number of samples we need does not depend on the resolution of the image, but on the number of non-zero components in our reconstruction space.
 
-\subsubsection{Formal Guarantees}
+
+
+
+
+\subsubsection{Formal Guarantees}\label{radio:cd:formal}
 RIP
 What is the RIP
 Meaning of $F$. How many random columns of F are uncorrelated? Remember that we have redundant information, the whole matrix $F$ does have columns which are correlated.

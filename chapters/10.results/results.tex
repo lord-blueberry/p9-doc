@@ -221,7 +221,7 @@ The under-approximation of pixel values is an error we cannot ignore. One naive 
 \subsubsection{Combination of Method 1 and 2}\label{results:gradients:comparison}
 The two approximation methods have two different shortcomings: Approximate gradient update (method 1) converges more slowly, and converges to the same result as the original. Approximate deconvolution (method 2) converges faster than method 1, but does not converge to the same result. Here, we combine the two methods to remedy the shortcomings: For the first couple of major cycles, we use approximate deconvolution, and then switch to approximate gradient update.
 
-We compare the original, approximate gradient update, approximate deconvolution and our combination in. We use the factor $\frac{1}{16}$ for approximations, meaning we update $\frac{1}{16}$ of the gradients, and do the approximate deconvolution with $\frac{1}{16}$ of the $PSF$. 
+We compare the original, approximate gradient update, approximate deconvolution and our combination in. We use the factor $\frac{1}{16}$ for approximations, meaning we update $\frac{1}{16}$ of the gradients, and do the approximate deconvolution with $\frac{1}{16}$ of the $PSF$.
 
 \begin{figure}[h]
 	\centering
@@ -236,14 +236,10 @@ We compare the original, approximate gradient update, approximate deconvolution 
 	\label{results:gradients:comparison:figure}
 \end{figure}
 
- Figure \ref{results:gradients:comparison:figure}
+Figure \ref{results:gradients:comparison:figure}
 
 We switch from approximate deconvolution to gradient update after the path regularization has reached the target $\lambda$ for the first time. In the case of the LMC data, the implementation uses approximate deconvolution for major cycle index 0 and 1, and then switches to approximate gradient update.
 
-
-
-Convergence. With the combination, we move actually below the original solution. 
-Approximation errors are not correlated.
 
 \begin{center}
 	\begin{tabular}{ c||c|c } 
@@ -255,9 +251,19 @@ Approximation errors are not correlated.
 		Combination & 1.69 & 1.68 \\ 
 		\hline
 	\end{tabular}
-\label{results:gradients:comparison:speedup}
+	\label{results:gradients:comparison:speedup}
 \end{center}
-What about the speedup?
+Speedup. Combination is the fastest overall and leads to the lowest objective function. Actually beats the original by a small margin.
+
+
+
+
+Negligible.
+
+Convergence. With the combination, we move actually below the original solution. 
+Approximation errors are not correlated. We can use Method 1 to remove the approximation errors of Method 2.
+
+
 
 Show images
 
