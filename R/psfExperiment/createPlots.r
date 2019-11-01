@@ -53,9 +53,10 @@ agg <- summarize(timeGroup, time=sum(ElapsedTime), iter= sum(iterCount))
 agg["timePerIter"] <- agg$time / as.numeric(agg$iter)
 agg["speedup"] <- agg$timePerIter[agg$psfFraction == 1] / agg$timePerIter
 agg["speedup_total"] <- agg$time[agg$psfFraction == 1] / agg$time
+maxSpeedup = max(agg$speedup, agg$speedup_total)
 
 png("./psfExperiment/plots/ApproxDeconv/speedup_iter.png",
-    width = 3.0,
+    width = 2.0,
     height = 3.0,
     units = "in",
     res = 200)
@@ -63,11 +64,12 @@ ggplot(data = agg, aes(x = psfFraction, y = speedup)) +
   xlab("PSF Fraction") +
   ylab("Per iteration Speedup") +
   geom_line() + geom_point() +
+  ylim(1, maxSpeedup) +
   scale_x_continuous(trans="log2")
 dev.off()
 
 png("./psfExperiment/plots/ApproxDeconv/speedup_total.png",
-    width = 3.0,
+    width = 2.0,
     height = 3.0,
     units = "in",
     res = 200)
@@ -75,6 +77,7 @@ ggplot(data = agg, aes(x = psfFraction, y = speedup_total)) +
   xlab("PSF Fraction") +
   ylab("Total Speedup") +
   geom_line() + geom_point() +
+  ylim(1, maxSpeedup) +
   scale_x_continuous(trans="log2")
 dev.off() 
 
@@ -109,9 +112,10 @@ agg <- summarize(timeGroup, time=sum(ElapsedTime), iter= sum(iterCount))
 agg["timePerIter"] <- agg$time / as.numeric(agg$iter)
 agg["speedup"] <- agg$timePerIter[agg$psfFraction == 1] / agg$timePerIter
 agg["speedup_total"] <- agg$time[agg$psfFraction == 1] / agg$time
+maxSpeedup = max(agg$speedup, agg$speedup_total)
 
 png("./psfExperiment/plots/ApproxUpdate/speedup_iter.png",
-    width = 3.0,
+    width = 2.0,
     height = 3.0,
     units = "in",
     res = 200)
@@ -119,11 +123,12 @@ ggplot(data = agg, aes(x = psfFraction, y = speedup)) +
   xlab("Update Fraction") +
   ylab("Per iteration Speedup") +
   geom_line() + geom_point() +
+  ylim(1, maxSpeedup) +
   scale_x_continuous(trans="log2")
 dev.off()
 
 png("./psfExperiment/plots/ApproxUpdate/speedup_total.png",
-    width = 3.0,
+    width = 2.0,
     height = 3.0,
     units = "in",
     res = 200)
@@ -131,6 +136,7 @@ ggplot(data = agg, aes(x = psfFraction, y = speedup_total)) +
   xlab("Update Fraction") +
   ylab("Total Speedup") +
   geom_line() + geom_point() +
+  ylim(1, maxSpeedup) +
   scale_x_continuous(trans="log2")
 dev.off() 
 

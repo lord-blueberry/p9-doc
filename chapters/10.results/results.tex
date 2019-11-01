@@ -162,14 +162,13 @@ At the beginning of each major cycle, we calculate the objective value of the cu
 
 \begin{figure}[h]
 	\centering
-	\begin{subfigure}[b]{0.7\linewidth}
+	\begin{subfigure}[b]{0.58\linewidth}
 		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/ApproxUpdate/size.png}
 	\end{subfigure}
-	\\
-	\begin{subfigure}[b]{0.35\linewidth}
+	\begin{subfigure}[b]{0.195\linewidth}
 		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/ApproxUpdate/speedup_iter.png}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.35\linewidth}
+	\begin{subfigure}[b]{0.195\linewidth}
 		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/ApproxUpdate/speedup_total.png}
 	\end{subfigure}
 	
@@ -194,14 +193,13 @@ As before, we measure the true objective value for the approximate solution at t
 
 \begin{figure}[h]
 	\centering
-	\begin{subfigure}[b]{0.7\linewidth}
+	\begin{subfigure}[b]{0.58\linewidth}
 		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/ApproxDeconv/size.png}
 	\end{subfigure}
-	\\
-	\begin{subfigure}[b]{0.35\linewidth}
+	\begin{subfigure}[b]{0.195\linewidth}
 		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/ApproxDeconv/speedup_iter.png}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.35\linewidth}
+	\begin{subfigure}[b]{0.195\linewidth}
 		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/ApproxDeconv/speedup_total.png}
 	\end{subfigure}
 	
@@ -256,8 +254,29 @@ We switch from approximate deconvolution to gradient update after the path regul
 Speedup. Combination is the fastest overall and leads to the lowest objective function. Actually beats the original by a small margin.
 
 
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=1.00\linewidth]{./chapters/10.results/cleancomp/n132_cd.png}
+		\\
+		\includegraphics[width=1.00\linewidth]{./chapters/10.results/cleancomp/cd_calibration.png}
+		\caption{Original CD}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=1.00\linewidth]{./chapters/10.results/gradient/combined/combined_n132d.png}
+		\\
+		\includegraphics[width=1.00\linewidth]{./chapters/10.results/gradient/combined/combined_calibration.png}
+		\caption{Combined approximation}
+	\end{subfigure}
+
+	\caption{Image comparison to approximation}
+	\label{results:gradients:comparison:image}
+\end{figure}
+
+Figure \ref{results:gradients:comparison:image} compares the original result with the result of the combined approximation. Virtually identical. Same problem with calibration. Only visual difference in the extended emission with calibration errors. 
 
 
+Difference is negligible.
 Negligible.
 
 Convergence. With the combination, we move actually below the original solution. 
