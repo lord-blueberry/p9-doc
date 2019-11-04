@@ -151,9 +151,23 @@ We cannot use MPI combined with the GPU. The MPI implementation uses a communica
 \subsection{Effect of approximating the $PSF$} \label{results:gradients}
 As we described in Section \ref{gradients}, the $PSF$ for deconvolution is as big as the image. For wide field-of-view observations of MeerKAT, the $PSF$ is approximately a gaussian with decreasing pixel values the further we move from the center. Most of the values in the $PSF$ are close to zero. The question is, what effect has an approximate deconvolution with a smaller $PSF$? If we can approximate the deconvolution with a small enough $PSF$, we can solve patches of the image independently of each other. However, the $PSF$ approximation may need more major cycles to converge.
 
+
+
+%We compare the objective value and see if it converges. Measure speedup
+
+%PSF is responsible for calculating the gradient of coordinate descent.
+
+%Remember CD:
+
+%The two approximation methods
+
 The effect of approximating the $PSF$ are not clear. We know that thanks to the $w$-term in the visibilities, the $PSF$ is not constant over the image. We already need several major cycles to converge. With a good approximation of the $PSF$, we may speed up the individual iterations of coordinate descent without needing more major cycle.
 
 We presented two methods to approximating the $PSF$ for the deconvolution in Section \ref{gradients}. Method 1 updates only a fraction of the gradients, and Method 2 uses a fraction of the $PSF$ for deconvolution. We test both methods on the LMC data and explore what effects the approximations have on the reconstruction.
+
+
+
+
 
 \subsubsection{Method 1: Approximate gradient update}
 Our coordinate descent method updates the map of gradients after each iteration.  Method 1 starts with the same map of gradients as the original, but then only updates a fraction of the gradients in each iteration. It updates a rectangle of the most significant gradients.With each coordinate descent iteration, the map of gradients gets less accurate. Because we do an approximate update of gradients, this method should converge to the same result as the original with enough major cycles.

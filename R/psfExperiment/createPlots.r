@@ -45,6 +45,7 @@ ggplot(data = combined, mapping = aes(x = cycle, y = objective, color=psfSize)) 
   scale_color_discrete(name = "PSF Fraction", labels = paste("1 /" ,levels(combined$psfSize))) +
   geom_line() + 
   geom_point() + 
+  coord_cartesian(ylim=c(30, 300.0)) +
   scale_y_continuous(trans= "log10")
 dev.off()
 
@@ -104,6 +105,7 @@ ggplot(data = combined, mapping = aes(x = cycle, y = objective, color=psfSize)) 
   scale_color_discrete(name = "Update Fraction", labels = paste("1 /" ,levels(combined$psfSize))) +
   geom_line() + 
   geom_point() + 
+  coord_cartesian(ylim=c(30, 300.0)) +
   scale_y_continuous(trans= "log10")
 dev.off()
 
