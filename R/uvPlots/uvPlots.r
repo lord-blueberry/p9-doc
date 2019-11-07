@@ -38,7 +38,7 @@ maxVal <- max(frequencies[,"u"], timesteps[,"u"],frequencies[,"v"], timesteps[,"
 
 
 png("./uvPlots/plots/snapshot.png",
-    width = 6.0,
+    width = 7.0,
     height = 6.0,
     units = "in",
     res = 200)
@@ -73,12 +73,11 @@ dev.off()
 
 
 ants <- read.table("uvPlots/ants_hand.csv", sep=";", dec=".", header=TRUE)
-minVal <- min(ants$x, ants$y)
-maxVal <- max(ants$x, ants$y)
+maxVal <- max(abs(ants$x), abs(ants$y))
 png("./uvPlots/plots/ants.png",
     width = 7.0,
     height = 6.0,
     units = "in",
     res = 200)
-ggplot(data = ants, mapping = aes(x = x, y = y)) + geom_point(alpha = 0.4) + xlim(minVal, maxVal) + ylim(minVal, maxVal) + xlab("X") + ylab("Y")
+ggplot(data = ants, mapping = aes(x = x, y = y)) + geom_point(alpha = 0.4) + xlim(-maxVal, maxVal) + ylim(-maxVal, maxVal) + xlab("X") + ylab("Y")
 dev.off()

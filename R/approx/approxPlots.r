@@ -20,7 +20,15 @@ file <- "cpuTest8block1.txt"
 table = read.table(file.path(folder,file), header=TRUE, dec=",", sep=";")
 table[,"cycle"] = as.factor(table$cycle)
 table["experimentName"] = "block1"
-combined = readExperimet(folder, "cpuTest8block16.txt", "block16", table)
+
+folder2 <- "approx/searchTest"
+file2 <- "Grid_cpu8block1search0.05.txt"
+t = read.table(file.path(folder2,file2), header=TRUE, dec=",", sep=";")
+t[,"cycle"] = as.factor(t$cycle)
+t["experimentName"] = "searchFraction"
+combined <- rbind(table, t)
+
+combined = readExperimet(folder, file2, "searchFraction", table)
 
 ggplot(data = combined, mapping = aes(x = seconds, y = objectiveNormal, linetype=cycle, color= experimentName)) + 
   xlab("time") +

@@ -1,19 +1,28 @@
 \section{Coordinate descent methods}
-In this section we describe the basic idea behind coordinate descent methods in general, and derive a serial coordinate descent deconvolution algorithm. This algorithm replaces CLEAN in the Major/Minor cycle architecture. The algorithm we describe here is serial in the sense that each step of the algorithm has to finish before the next step can be started. Each individual step can use multiple processors, as we show with a GPU-accelerated implementation. Later in Section \ref{pcdm} we will introduce more sophisticated parallel coordinate descent methods.
+In this section we describe the basic idea behind coordinate descent methods in general, and derive a serial coordinate descent deconvolution algorithm. This algorithm replaces CLEAN in the Major/Minor cycle architecture. The algorithm we describe here is serial in the sense that each step of the algorithm has to finish before the next step can be started. Each individual step can use multiple processors, as we will show with a GPU-accelerated implementation. Later in this work, in Section \ref{pcdm}, we will introduce more sophisticated parallel coordinate descent methods.
 
-We call the coordinate descent algorithm "basic", because it can be seen as a special case of more complicated coordinate descent methods\cite{richtarik2016distributed, richtarik2016parallel}, which we will discuss later in Section. Here, we derive efficient CPU- and GPU- implementation and show how we can use MPI for a naive distributed deconvolution algorithm.
+Remember that a deconvolution algorithm in radio astronomy has three components: A numerical optimization algorithm, an objective function and a regularization. We use a serial coordinate descent method for the optimization algorithm. The objective function is:
 
+\begin{equation}\label{cd:deconv}
+\underset{x}{minimize} \: \frac{1}{2} \left \| I_{dirty} - x * PSF \right \|_2^2 + \lambda ElasticNet(x)
+\end{equation}
+
+The objective consists of two parts: The data term $\left \| I_{dirty} - x * PSF \right \|_2^2$ and the regularization term $ElasticNet(x)$. The data term forces the image to be as close to the measurements as possible which forces the image to be as close to the measurements as possible, the regularization term forces the image to be as consistent as possible with our prior knowledge. The parameter $\lambda$ is a weight that either forces more or less regularization. It is left to the user to define $\lambda$ for each image. 
+
+And finally, the regularization we use is elastic net. We first go into more detail what the elastic net regularization is and how it influences the image. We then derive the serial coordinate descent method that minimizes the objective \eqref{cd:deconv} in Section \ref{cd:serial}, and continue with its efficient implementation.
 
 
 \subsection{Elastic net regularization} \label{cd:reg}
+This regularization is a mixture between the L1 and L2 regularization.  The L1 regularization is simply the absolute value of all pixels, and the L2 norm is the squared sum of all pixels. he Figure \ref{cd:elastic} shows the effect of the L1 and L2 norm on a single star. The L1 regularization forces the image to contain few non-zero pixels as possible. It encodes our prior knowledge that the image will contain stars. The L2 regularization on the other hand "spreads" the single star across multiple pixels. 
+
 \begin{figure}[h]
 	\centering
-	\begin{subfigure}[b]{0.3\linewidth}
+	\begin{subfigure}[b]{0.25\linewidth}
 		\includegraphics[width=\linewidth]{./chapters/03.distribution/L1.png}
 		\caption{Effect of the pure L1 norm ($\lambda$ = 1.0) on a single point source.}
 		\label{cd:elastic:L1}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.3\linewidth}
+	\begin{subfigure}[b]{0.25\linewidth}
 		\includegraphics[width=\linewidth]{./chapters/03.distribution/L2.png}
 		\caption{Effect of the pure L2 norm ($\lambda$ = 1.0) on a single point source.}
 		\label{cd:elastic:L2}
@@ -23,27 +32,153 @@ We call the coordinate descent algorithm "basic", because it can be seen as a sp
 	\label{cd:elastic}
 \end{figure}
 
-This regularization is a mixture between the L1 and L2 regularization. The Figure \ref{cd:elastic} shows the effect of the L1 and L2 norm on a single star. The L1 regularization forces the image to contain few non-zero pixels as possible. It encodes our prior knowledge that the image will contain stars. The L2 regularization on the other hand "spreads" the single star across multiple pixels. This forces the image to represent extended emissions, like hydrogen cloud, with a large number of non-zero pixels (the L1 norm tends to break extended emissions apart, only using a handful of non-zero pixels). The L2 norm was already used in other image reconstruction algorithms in radio astronomy\cite{ferrari2014distributed}, with the downside that the resulting image will not be sparse.
+The L1 regularization alone models an image that consists of points sources. For extended emissions like hydrogen clouds, the L1 regularization often leads the reconstructed image to become a cluster of point sources, instead of a real extended emission.
 
-Elastic net mixes these two norms together, becoming "sparsifying L2 norm". It retains the sparsifying property of the L1 norm, while also keeping extended emissions in the image. Formally, elastic net regularization is defined as the following:
+The L2 norm alone was already used in other image reconstruction algorithms in radio astronomy\cite{ferrari2014distributed}, with the downside that the resulting image will not be sparse. I.e. all pixels in the reconstruction will be non-zero, even though all they contain is noise. 
+
+Elastic net mixes the L1 and L2 norm together, becoming "sparsifying L2 norm". It retains the sparsifying property of the L1 norm, while also keeping extended emissions in the image. Formally, elastic net regularization is defined as the following regularization function:
 
 \begin{equation}\label{cd:elastic:formula}
 ElasticNet(x, \alpha) = \: \alpha \left \|x \right \|_1 + \frac{1-\alpha}{2}  \left \|x \right \|_2
 \end{equation}
 
-Elastic net has three properties which make it an interesting regularization for coordinate descent: It was shown to speed up convergence rates compared to the pure L1 or L2 norm\cite{friedman2010regularization}, is a separable function, and has a closed form solution. The first property was not further investigated in this work. The second property, separability, means that we can calculate the regularization for each pixel independently of each other, and we still arrive at the same result. Lastly, we can find a simple formula for each pixel that applies the elastic net regularization:
+The parameter $\alpha$ is between 0 and 1, and mixes the two norms together. A value of 1 leads to L1 regularization only, and a value of 0 leads to L2 only. The elastic net regularization has two properties, which are relevant later for the serial coordinate descent deconvolution: It is separable, and has a proximal operator.
 
-\begin{equation}\label{cd:elastic:closed}
-ElasticNetClosedForm(x, \lambda ,\alpha) = \: \frac{max(x - \lambda * \alpha, 0)}{1+\lambda(1 - \alpha)}
+Separability means that we can calculate the elastic net regularization penalty independently for each pixel. We arrive at the same result if we evaluate \eqref{cd:elastic:formula} for each pixel and sum up the results, or if we evaluate \eqref{cd:elastic:formula} for the whole image. This is an important property when one tries to minimize the the elastic net penalty (as we will with the serial coordinate descent deconvolution algorithm). We can also calculate how much any pixel change reduces the elastic net penalty independently its neighbors.
+
+The proximal operator of elastic net allows us to minimize the regularization penalty. Notice that the elastic net regularization \eqref{cd:elastic:formula} is not differentiable (the L1 norm is not continuous). We cannot calculate a gradient, and cannot use methods like gradient descent to minimize the regularization penalty. However, it has a proximal operator defined:
+
+\begin{equation}\label{cd:elastic:proximal}
+ElasticNetProximal(x, \lambda ,\alpha) = \: \frac{max(x - \lambda \alpha, 0)}{1+\lambda(1 - \alpha)}
 \end{equation}
 
-The closed form solution \eqref{cd:elastic:closed} of the elastic net regularization is also a mixture of the closed form solutions of the L1 and L2 norm. The closed form solution of the L1 norm is shrinkage: $max(x - \lambda, 0)$, we reduce the pixel value by $\lambda$ and clamp negative values. For the L2 norm, we divide the pixel value: $\frac{x}{1+\lambda}$.
+In our deconvolution problem, we can apply the proximal operator \eqref{cd:elastic:proximal} on each pixel, and we minimize the elastic net penalty. Again, the proximal operator can be applied on each pixel independently, as neighboring pixels do not influence its result.
 
-%Proximal operator But the second property leads to an optimization algorithm 
+The elastic net regularization is separable. We can calculate its penalty for each pixel independently of its neighbors. As such, its proximal operator is also independent of the neighbors. It is the only regularization we use in this project. We now derive a coordinate descent based deconvolution algorithm that uses the proximal operator to efficiently reconstruct an image.
 
-Note that the shrink operation in this project always clamps negative pixels to zero. We constrain the image to only contain zero or positive pixel values. This has become a widely used constraint in radio interferometric image reconstruction and may lead to improved image quality\cite{mcewen2011compressed}.
+A side note on the proximal operator used in this project \eqref{cd:elastic:proximal}: The numerator always clamps negative pixels to zero. This is a conscious design decision. In radio astronomy, it is usual to constrain the reconstruction to be non-negative (because we cannot receive negative radio emissions from any direction). It is widely used in radio astronomy image reconstruction and may lead to improved reconstruction quality \cite{mcewen2011compressed}.
 
-Elastic net is the regularization we use throughout this work. It is separable (we can calculate it for each pixel independently) and has an easy to compute closed form solution.
 
-\subsection{Serial coordinate descent}
-Why it is serial.
+\subsection{Serial coordinate descent deconvolution}\label{cd:serial}
+Our serial coordinate descent deconvolution algorithm minimizes the deconvolution objective \eqref{cd:deconv}. It is a convex optimization algorithm that optimizes a single pixel (coordinate) at each iteration. Each iteration consists of two steps. Step 1: Find the best pixel to optimize. Step 2: Calculate the gradient for this pixel, take a descent step and apply the elastic net proximal operator. We repeat these steps in each iteration until coordinate descent converges to a solution.
+
+We demonstrate the serial deconvolution algorithm with the help of a simulated MeerKAT reconstruction problem of two point sources. Figure \ref{cd:serial:aid:dirty} shows the dirty image of two point sources, and Figure \ref{cd:serial:aid:psf} the $PSF$. The deconvolved image with elastic net regularization is shown in Figure \ref{cd:serial:aid:elastic}. I.e. Figure \ref{cd:serial:aid:elastic} is the optimum $x$ of the objective function \eqref{cd:deconv}.
+
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/dirty.png}
+		\caption{Dirty Image.}
+		\label{cd:serial:aid:dirty}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/psf.png}
+		\caption{Point Spread Function.}
+		\label{cd:serial:aid:psf}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/elastic.png}
+		\caption{Elastic net reconstruction}
+		\label{cd:serial:aid:elastic}
+	\end{subfigure}
+	
+	\caption{Example problem with two point sources.}
+	\label{cd:serial:aid:figure}
+\end{figure}
+
+The serial coordinate descent method finds the optimum over several iterations. Note that we termed the algorithm "serial", because step 1 (finding a pixel) first has to finish before we can continue with step 2 (optimizing the current pixel). There is always only one pixel which gets optimized at any given time.
+
+Also note that our implementation calculates the gradient for the current pixel. This may raise the question: What exactly is the difference between gradient- and coordinate descent is that gradient descent optimizes all pixels in each iteration, while coordinate descent optimizes (generally) a single pixel at a time\footnote{There are block coordinate descent methods that optimize a block of coordinates at each iteration. They are also discussed together with parallel coordinate descent methods in Section \ref{pcdm}}. Also, Coordinate descent methods are not bound to use the gradient. It could use a line search approach, where we try different values and decide on the one leading to the lowest objective value.
+
+Because coordinate descent methods only optimize a single pixel at a time, they generally need a large number of iterations to converge compared to other methods. But when each iteration is cheap to compute, coordinate descent methods can converge to a result in less time than competing methods\cite{nesterov2012efficiency, nesterov2013gradient}. We discuss the efficient implementation in Section \ref{cd:efficient}. First, we explain each step in the serial coordinate descent algorithm in more detail.
+
+\subsubsection{Step 1: Choosing single a pixel}
+Our serial coordinate descent algorithm uses a greedy strategy. From all possible pixels, it searches the pixel whose gradient has the largest magnitude. In each iteration, it chooses the pixel which reduces the objective function the most. There are two other strategies that are used in coordinate descent: Random and Cyclic.
+
+A random strategy chooses, as the name implies, each pixel at random. Usually, the pixels are chosen from a uniform distribution. The greedy strategy leads to cheaper iteration compared to the greedy strategy, because we do not check the gradient of each pixel.
+
+A cyclic strategy iterates over a subset of pixels until the subset converges. It then chooses another subset. Each iteration of the cyclic strategy is also cheaper than the greedy strategy. 
+
+For our image deconvolution problem, we choose the greedy strategy. Even though it is more expensive, it tends to be faster to converge. Our reconstructed image is sparse, meaning most pixels in the image will be zero. The greedy strategy tends to iterate on pixels which will be non-zero in the final reconstructed image. While the random or cyclic strategy add pixels in the intermediate image that will eventually have to be removed. For the deconvolution problem, removing pixels from an intermediate solution seems to slow down convergence significantly. We explore the different strategies systematically for the parallel coordinate descent methods.
+
+
+\subsubsection{Step 2: Optimizing a single pixel}
+At this point, the greedy strategy has selected a pixel at a location to optimize. Now, our deconvolution objective \eqref{cd:deconv} is reduced to a one dimensional problem:  
+
+\begin{equation}\label{cd:serial:step2:onedim}
+\underset{x}{minimize} \: \frac{1}{2} \left \| I_{dirty} - x_{location} * PSF \right \|_2^2 + \lambda ElasticNet(x_{location})
+\end{equation}
+
+Side note: The reason why this reduces nicely to one dimension is the elastic net regularization is separable. I.e. the regularization can be calculated independently of the surrounding pixels.
+
+Optimizing the one dimensional problem \eqref{cd:serial:step2:onedim} is a lot simpler. In essence, we calculate the gradient for the pixel at the selected location, and apply the proximal operator of elastic net. First, let us look at how the gradient is calculated.
+
+At the moment, we ignor the regularization and just optimize the data term. The gradient arises from the data term of the one dimensional objective \eqref{cd:serial:step2:onedim} ($\left \| I_{dirty} - x_{location} * PSF \right \|_2^2$). After simplifying the partial derivative, we arrive at the calculation:
+
+\begin{equation}
+\begin{split}
+residuals &= I_{dirty} - x * PSF \\
+gradient_{location} &= \langle residuals, PSF_{location} \rangle \\
+Lipschitz_{location} &= \langle PSF_{location}, PSF_{location} \rangle \\
+pixel_{opt} &= \frac{gradient_{location}}{Lipschitz_{location}}
+\end{split}
+\end{equation}
+
+First, we calculate the residuals by convolving the current solution $x$ with the $PSF$. Then, the gradient for the selected pixel location is the inner product(element-wise multiplication followed by a sum over all elements) of the residuals and the $PSF$, shifted at the current location. calculate the gradient for the selected location. The next step is to calculate the Lipschitz constant at the current location. Finally, we arrive at the optimal pixel value by dividing the gradient by the Lipschitz constant. Note, that we currently ignore the elastic net regularization.
+
+The Lipschitz constant describes how fast a function $f(x)$ changes with $x$. If $f(x)$ changes slowly, we can descend larger distances along the gradient without the fear for divergence. The Lipschitz constant can be looked at as a data-defined step size.
+
+An interesting point is that the update rule $pixel_{opt} = \frac{gradient_{location}}{Lipschitz_{location}}$ finds the optimal pixel value, if the pixel is independent. Remember that our objective function is convex. The data term of our one dimensional objective \eqref{cd:serial:step2:onedim} actually forms a parabola, with the parameters: $x^2 PSF^2 - 2x \langle resdiuals, PSF_{location}\rangle + C$. Dividing the gradient of the pixel location with the Lipschitz constant is identical to calculating the optimum of the parabola $\frac{-b}{2a}$, where $b = -2 gradient_{location}$ and $a = Lipschitz_{location}$.
+
+This means if our reconstruction problem has point sources which are far away, such that their $PSF$s do not overlap, then the update rule finds the optimal value for each point source with one iteration. But when the $PSF$s overlap as in our example problem, shown in Figure \ref{cd:serial:aid:figure}, then we need several iterations over the same pixel until coordinate descent converges.
+
+So far, we ignored the regularization. We can calculate the optimal pixel value by $pixel_{opt} = \frac{gradient_{location}}{Lipschitz_{location}}$ without elastic net regularization. The last step is to combine the proximal operator of the elastic net regularization \eqref{cd:elastic:proximal} with the gradient calculation, and we arrive at the following update step:
+
+\begin{equation} \label{cd:serial:step2:update}
+pixel_{opt} = \frac{max(gradient_{location} - \lambda\alpha, 0)}{Lipschitz_{location} + (1 - \alpha)\lambda}
+\end{equation}
+
+This update rule now finds the optimal pixel value with elastic net regularization. If the $PSF$s do not overlap, we still only need one iteration per non-zero pixel. In each iteration of the serial coordinate descent, we calculate the gradient and the Lipschitz of the location, and perform the update step \eqref{cd:serial:step2:update}. It is easy to see that the update step itself is cheap to compute. All variables involved in the update step are one-dimensional. The expensive parts are calculating the gradient and the Lipschitz constant. Both need an inner product to be evaluated.
+
+%Good for sparsity
+
+
+
+
+\subsubsection{Putting it together: Pseudo-code}
+
+\begin{lstlisting}
+dirty = IFFT(Gridding(visibilities))
+residuals = dirty
+
+x = new Array
+objectiveValue = 0.5* Sum(residuals * residuals) + ElasticNet(x)
+
+do 
+{
+	oldObjectiveValue = objectiveValue
+	
+	//Step 1: Search pixel
+	pixelLocation = GreedyStrategy(residuals, PSF)
+	oldValue = x[pixelLocation]
+	shiftedPSF = Shift(PSF, pixelLocation)
+	
+	//Step 2: Optimize pixel
+	gradient = Sum(residuals * shiftedPSF)
+	lipschitz = Sum(shiftedPSF * shiftedPSF)
+	tmp = gradient + oldValue * lipschitz 
+	optimalValue = Max(tmp - lambda*alpha) / (lipschitz + (1 - alpha)*lambda)
+
+	//housekeeping
+	x[pixelLocation] = optimalValue
+	residuals = residuals - shiftedPSF * (optimalValue - oldValue)
+	objectiveValue = 0.5 * Sum(residuals * residuals) + lambda * ElasticNet(x, alpha)
+} while (oldObjectiveValue - objectiveValue)  < epsilon
+\end{lstlisting}
+
+
+\subsection{Efficient implementation}\label{cd:efficient}
+Coordinate descent is useful when each iteration is cheap to compute.
+
+
+
