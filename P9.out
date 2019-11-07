@@ -20,74 +20,65 @@
 \BOOKMARK [3][-]{subsubsection.3.3.1}{CLEAN}{subsection.3.3}% 20
 \BOOKMARK [3][-]{subsubsection.3.3.2}{MORESANE}{subsection.3.3}% 21
 \BOOKMARK [2][-]{subsection.3.4}{Coordinate Descent}{section.3}% 22
-\BOOKMARK [1][-]{section.4}{Coordinate descent deconvolution}{}% 23
+\BOOKMARK [1][-]{section.4}{Coordinate descent methods}{}% 23
 \BOOKMARK [2][-]{subsection.4.1}{Elastic net regularization}{section.4}% 24
-\BOOKMARK [2][-]{subsection.4.2}{Deriving the basic coordinate descent deconvolution algorithm}{section.4}% 25
-\BOOKMARK [2][-]{subsection.4.3}{Efficient implementation of basic coordinate descent deconvolution}{section.4}% 26
-\BOOKMARK [3][-]{subsubsection.4.3.1}{Edge handling of the convolution}{subsection.4.3}% 27
-\BOOKMARK [3][-]{subsubsection.4.3.2}{Pre-calculation of the Lipschitz constants}{subsection.4.3}% 28
-\BOOKMARK [3][-]{subsubsection.4.3.3}{Efficient Greedy strategy}{subsection.4.3}% 29
-\BOOKMARK [3][-]{subsubsection.4.3.4}{Pre-calculation of gradients}{subsection.4.3}% 30
-\BOOKMARK [3][-]{subsubsection.4.3.5}{Efficient update of gradients}{subsection.4.3}% 31
-\BOOKMARK [2][-]{subsection.4.4}{Similarities to the CLEAN algorithm}{section.4}% 32
-\BOOKMARK [2][-]{subsection.4.5}{Pseudo-code of the basic, optimized algorithm}{section.4}% 33
-\BOOKMARK [2][-]{subsection.4.6}{Distributed coordinate descent with MPI}{section.4}% 34
-\BOOKMARK [2][-]{subsection.4.7}{GPU implementation of coordinate descent}{section.4}% 35
-\BOOKMARK [1][-]{section.5}{Coordinate descent methods}{}% 36
-\BOOKMARK [2][-]{subsection.5.1}{Elastic net regularization}{section.5}% 37
-\BOOKMARK [2][-]{subsection.5.2}{Serial coordinate descent deconvolution}{section.5}% 38
-\BOOKMARK [3][-]{subsubsection.5.2.1}{Step 1: Choosing single a pixel}{subsection.5.2}% 39
-\BOOKMARK [3][-]{subsubsection.5.2.2}{Step 2: Optimizing a single pixel}{subsection.5.2}% 40
-\BOOKMARK [3][-]{subsubsection.5.2.3}{Inefficient implementation pseudo-code}{subsection.5.2}% 41
-\BOOKMARK [2][-]{subsection.5.3}{Efficient implementation}{section.5}% 42
-\BOOKMARK [3][-]{subsubsection.5.3.1}{Edge handling of the convolution}{subsection.5.3}% 43
-\BOOKMARK [3][-]{subsubsection.5.3.2}{Efficient calculation of the Lipschitz constants}{subsection.5.3}% 44
-\BOOKMARK [3][-]{subsubsection.5.3.3}{Using a map of gradients}{subsection.5.3}% 45
-\BOOKMARK [1][-]{section.6}{PSF approximation for parallel and distributed deconvolution}{}% 46
-\BOOKMARK [2][-]{subsection.6.1}{Intuition for approximating the PSF}{section.6}% 47
-\BOOKMARK [2][-]{subsection.6.2}{Method 1: Approximate gradient update}{section.6}% 48
-\BOOKMARK [2][-]{subsection.6.3}{Method 2:Approximate deconvolution}{section.6}% 49
-\BOOKMARK [2][-]{subsection.6.4}{Major Cycle convergence and implicit path regularization}{section.6}% 50
-\BOOKMARK [1][-]{section.7}{Tests on MeerKAT LMC observation}{}% 51
-\BOOKMARK [2][-]{subsection.7.1}{Comparison with CLEAN reconstructions}{section.7}% 52
-\BOOKMARK [2][-]{subsection.7.2}{Coordinate descent acceleration with MPI or GPU}{section.7}% 53
-\BOOKMARK [2][-]{subsection.7.3}{Effect of approximating the PSF}{section.7}% 54
-\BOOKMARK [3][-]{subsubsection.7.3.1}{Method 1: Approximate gradient update}{subsection.7.3}% 55
-\BOOKMARK [3][-]{subsubsection.7.3.2}{Method 2: Approximate deconvolution}{subsection.7.3}% 56
-\BOOKMARK [3][-]{subsubsection.7.3.3}{Combination of Method 1 and 2}{subsection.7.3}% 57
-\BOOKMARK [3][-]{subsubsection.7.3.4}{Masking the PSF}{subsection.7.3}% 58
-\BOOKMARK [1][-]{section.8}{Parallel coordinate descent methods}{}% 59
-\BOOKMARK [2][-]{subsection.8.1}{From serial to parallel}{section.8}% 60
-\BOOKMARK [2][-]{subsection.8.2}{Parallel \(Block\) Coordinate Descent Method \(PCDM\)}{section.8}% 61
-\BOOKMARK [3][-]{subsubsection.8.2.1}{Parallel updates and degree of seperability}{subsection.8.2}% 62
-\BOOKMARK [3][-]{subsubsection.8.2.2}{From single pixel to blocks}{subsection.8.2}% 63
-\BOOKMARK [3][-]{subsubsection.8.2.3}{PCDM in pseudo-code}{subsection.8.2}% 64
-\BOOKMARK [2][-]{subsection.8.3}{Adapting random selection strategies for deconvolution}{section.8}% 65
-\BOOKMARK [3][-]{subsubsection.8.3.1}{Cold start}{subsection.8.3}% 66
-\BOOKMARK [3][-]{subsubsection.8.3.2}{Active Set heuristic}{subsection.8.3}% 67
-\BOOKMARK [3][-]{subsubsection.8.3.3}{APPROX pseudo code}{subsection.8.3}% 68
-\BOOKMARK [2][-]{subsection.8.4}{APPROX implementation}{section.8}% 69
-\BOOKMARK [1][-]{section.9}{Discussion}{}% 70
-\BOOKMARK [2][-]{subsection.9.1}{Approximation of the PSF}{section.9}% 71
-\BOOKMARK [2][-]{subsection.9.2}{Calibration errors}{section.9}% 72
-\BOOKMARK [2][-]{subsection.9.3}{CLEAN heuristics for coordinate descent}{section.9}% 73
-\BOOKMARK [2][-]{subsection.9.4}{Hydra}{section.9}% 74
-\BOOKMARK [2][-]{subsection.9.5}{Multi frequency extension}{section.9}% 75
-\BOOKMARK [1][-]{section.10}{Conclusion}{}% 76
-\BOOKMARK [1][-]{section.11}{attachment}{}% 77
-\BOOKMARK [1][-]{section.12}{Larger runtime costs for Compressed Sensing Reconstructions}{}% 78
-\BOOKMARK [2][-]{subsection.12.1}{CLEAN: The Major Cycle Architecture}{section.12}% 79
-\BOOKMARK [2][-]{subsection.12.2}{Compressed Sensing Architecture}{section.12}% 80
-\BOOKMARK [2][-]{subsection.12.3}{Hypothesis for reducing costs of Compressed Sensing Algorithms}{section.12}% 81
-\BOOKMARK [2][-]{subsection.12.4}{State of the art: WSCLEAN Software Package}{section.12}% 82
-\BOOKMARK [3][-]{subsubsection.12.4.1}{W-Stacking Major Cycle}{subsection.12.4}% 83
-\BOOKMARK [3][-]{subsubsection.12.4.2}{Deconvolution Algorithms}{subsection.12.4}% 84
-\BOOKMARK [2][-]{subsection.12.5}{Distributing the Image Reconstruction}{section.12}% 85
-\BOOKMARK [3][-]{subsubsection.12.5.1}{Distributing the Non-uniform FFT}{subsection.12.5}% 86
-\BOOKMARK [3][-]{subsubsection.12.5.2}{Distributing the Deconvolution}{subsection.12.5}% 87
-\BOOKMARK [1][-]{section.13}{Handling the Data Volume}{}% 88
-\BOOKMARK [2][-]{subsection.13.1}{Fully distributed imaging algorithm}{section.13}% 89
-\BOOKMARK [1][-]{section.14}{Image Reconstruction for Radio Interferometers}{}% 90
-\BOOKMARK [2][-]{subsection.14.1}{Distributed Image Reconstruction}{section.14}% 91
-\BOOKMARK [2][-]{subsection.14.2}{First steps towards a distributed Algorithm}{section.14}% 92
-\BOOKMARK [1][-]{section.15}{Ehrlichkeitserkl\344rung}{}% 93
+\BOOKMARK [2][-]{subsection.4.2}{Serial coordinate descent deconvolution}{section.4}% 25
+\BOOKMARK [3][-]{subsubsection.4.2.1}{Step 1: Choosing single a pixel}{subsection.4.2}% 26
+\BOOKMARK [3][-]{subsubsection.4.2.2}{Step 2: Optimizing a single pixel}{subsection.4.2}% 27
+\BOOKMARK [3][-]{subsubsection.4.2.3}{Inefficient implementation pseudo-code}{subsection.4.2}% 28
+\BOOKMARK [2][-]{subsection.4.3}{Efficient implementation}{section.4}% 29
+\BOOKMARK [3][-]{subsubsection.4.3.1}{Edge handling of the convolution}{subsection.4.3}% 30
+\BOOKMARK [3][-]{subsubsection.4.3.2}{Efficient calculation of the Lipschitz constants}{subsection.4.3}% 31
+\BOOKMARK [3][-]{subsubsection.4.3.3}{Using a map of gradients}{subsection.4.3}% 32
+\BOOKMARK [2][-]{subsection.4.4}{Efficient implementation pseudo-code}{section.4}% 33
+\BOOKMARK [2][-]{subsection.4.5}{GPU implementation}{section.4}% 34
+\BOOKMARK [2][-]{subsection.4.6}{Distributed implementaion MPI}{section.4}% 35
+\BOOKMARK [2][-]{subsection.4.7}{Serial coordinate descent and similarities to the CLEAN algorithm}{section.4}% 36
+\BOOKMARK [1][-]{section.5}{PSF approximation for parallel and distributed deconvolution}{}% 37
+\BOOKMARK [2][-]{subsection.5.1}{Intuition for approximating the PSF}{section.5}% 38
+\BOOKMARK [2][-]{subsection.5.2}{Method 1: Approximate gradient update}{section.5}% 39
+\BOOKMARK [2][-]{subsection.5.3}{Method 2:Approximate deconvolution}{section.5}% 40
+\BOOKMARK [2][-]{subsection.5.4}{Major Cycle convergence and implicit path regularization}{section.5}% 41
+\BOOKMARK [1][-]{section.6}{Tests on MeerKAT LMC observation}{}% 42
+\BOOKMARK [2][-]{subsection.6.1}{Comparison with CLEAN reconstructions}{section.6}% 43
+\BOOKMARK [2][-]{subsection.6.2}{Coordinate descent acceleration with MPI or GPU}{section.6}% 44
+\BOOKMARK [2][-]{subsection.6.3}{Effect of approximating the PSF}{section.6}% 45
+\BOOKMARK [3][-]{subsubsection.6.3.1}{Method 1: Approximate gradient update}{subsection.6.3}% 46
+\BOOKMARK [3][-]{subsubsection.6.3.2}{Method 2: Approximate deconvolution}{subsection.6.3}% 47
+\BOOKMARK [3][-]{subsubsection.6.3.3}{Combination of Method 1 and 2}{subsection.6.3}% 48
+\BOOKMARK [3][-]{subsubsection.6.3.4}{Masking the PSF}{subsection.6.3}% 49
+\BOOKMARK [1][-]{section.7}{Parallel coordinate descent methods}{}% 50
+\BOOKMARK [2][-]{subsection.7.1}{From serial to parallel}{section.7}% 51
+\BOOKMARK [2][-]{subsection.7.2}{Parallel \(Block\) Coordinate Descent Method \(PCDM\)}{section.7}% 52
+\BOOKMARK [3][-]{subsubsection.7.2.1}{Parallel updates and degree of seperability}{subsection.7.2}% 53
+\BOOKMARK [3][-]{subsubsection.7.2.2}{From single pixel to blocks}{subsection.7.2}% 54
+\BOOKMARK [3][-]{subsubsection.7.2.3}{PCDM in pseudo-code}{subsection.7.2}% 55
+\BOOKMARK [2][-]{subsection.7.3}{Adapting random selection strategies for deconvolution}{section.7}% 56
+\BOOKMARK [3][-]{subsubsection.7.3.1}{Cold start}{subsection.7.3}% 57
+\BOOKMARK [3][-]{subsubsection.7.3.2}{Active Set heuristic}{subsection.7.3}% 58
+\BOOKMARK [3][-]{subsubsection.7.3.3}{APPROX pseudo code}{subsection.7.3}% 59
+\BOOKMARK [2][-]{subsection.7.4}{APPROX implementation}{section.7}% 60
+\BOOKMARK [1][-]{section.8}{Discussion}{}% 61
+\BOOKMARK [2][-]{subsection.8.1}{Approximation of the PSF}{section.8}% 62
+\BOOKMARK [2][-]{subsection.8.2}{Calibration errors}{section.8}% 63
+\BOOKMARK [2][-]{subsection.8.3}{CLEAN heuristics for coordinate descent}{section.8}% 64
+\BOOKMARK [2][-]{subsection.8.4}{Hydra}{section.8}% 65
+\BOOKMARK [2][-]{subsection.8.5}{Multi frequency extension}{section.8}% 66
+\BOOKMARK [1][-]{section.9}{Conclusion}{}% 67
+\BOOKMARK [1][-]{section.10}{attachment}{}% 68
+\BOOKMARK [1][-]{section.11}{Larger runtime costs for Compressed Sensing Reconstructions}{}% 69
+\BOOKMARK [2][-]{subsection.11.1}{CLEAN: The Major Cycle Architecture}{section.11}% 70
+\BOOKMARK [2][-]{subsection.11.2}{Compressed Sensing Architecture}{section.11}% 71
+\BOOKMARK [2][-]{subsection.11.3}{Hypothesis for reducing costs of Compressed Sensing Algorithms}{section.11}% 72
+\BOOKMARK [2][-]{subsection.11.4}{State of the art: WSCLEAN Software Package}{section.11}% 73
+\BOOKMARK [3][-]{subsubsection.11.4.1}{W-Stacking Major Cycle}{subsection.11.4}% 74
+\BOOKMARK [3][-]{subsubsection.11.4.2}{Deconvolution Algorithms}{subsection.11.4}% 75
+\BOOKMARK [2][-]{subsection.11.5}{Distributing the Image Reconstruction}{section.11}% 76
+\BOOKMARK [3][-]{subsubsection.11.5.1}{Distributing the Non-uniform FFT}{subsection.11.5}% 77
+\BOOKMARK [3][-]{subsubsection.11.5.2}{Distributing the Deconvolution}{subsection.11.5}% 78
+\BOOKMARK [1][-]{section.12}{Handling the Data Volume}{}% 79
+\BOOKMARK [2][-]{subsection.12.1}{Fully distributed imaging algorithm}{section.12}% 80
+\BOOKMARK [1][-]{section.13}{Image Reconstruction for Radio Interferometers}{}% 81
+\BOOKMARK [2][-]{subsection.13.1}{Distributed Image Reconstruction}{section.13}% 82
+\BOOKMARK [2][-]{subsection.13.2}{First steps towards a distributed Algorithm}{section.13}% 83
+\BOOKMARK [1][-]{section.14}{Ehrlichkeitserkl\344rung}{}% 84

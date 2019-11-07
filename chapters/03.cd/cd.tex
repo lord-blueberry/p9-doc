@@ -113,7 +113,7 @@ Side note: The reason why this reduces nicely to one dimension is the elastic ne
 
 Optimizing the one dimensional problem \eqref{cd:serial:step2:onedim} is a lot simpler. In essence, we calculate the gradient for the pixel at the selected location, and apply the proximal operator of elastic net. First, let us look at how the gradient is calculated and ignore the regularization. The gradient arises from the data term of the one dimensional objective \eqref{cd:serial:step2:onedim} ($\left \| I_{dirty} - x_{location} * PSF \right \|_2^2$). After simplifying the partial derivative, we arrive at the calculation:
 
-\begin{equation}
+\begin{equation}\label{cd:serial:step2:gradient}
 \begin{split}
 residuals &= I_{dirty} - x * PSF \\
 gradient_{location} &= \langle residuals, PSF_{location} \rangle \\
@@ -126,7 +126,7 @@ First, we calculate the residuals by convolving the current solution $x$ with th
 
 The Lipschitz constant describes how fast a function $f(x)$ changes with $x$. If $f(x)$ changes slowly, we can descend larger distances along the gradient without the fear for divergence. The Lipschitz constant can be looked at as a data-defined step size.
 
-An interesting point is that the update rule $pixel_{opt} = \frac{gradient_{location}}{Lipschitz_{location}}$ finds the optimal pixel value, if the pixel is independent. Remember that our objective function is convex. The data term of our one dimensional objective \eqref{cd:serial:step2:onedim} actually forms a parabola, with the parameters: $x^2 \langle PSF, PSF \rangle - 2x \langle resdiuals, PSF_{location}\rangle + c$. Dividing the gradient of the pixel location with the Lipschitz constant is identical to calculating the optimum of the parabola $\frac{-b}{2a}$, where $b = -2 gradient_{location}$ and $a = Lipschitz_{location}$.
+An interesting point is that the update rule $pixel_{opt} = \frac{gradient_{location}}{Lipschitz_{location}}$ finds the optimal pixel value, if the pixel is independent. Remember that our objective function is convex. The data term of our one dimensional objective \eqref{cd:serial:step2:onedim} actually forms a parabola, with the parameters: $x^2 \langle PSF, PSF \rangle - 2x \langle resdiuals, PSF_{location}\rangle + c$. Calculating the optimum of the parabola $\frac{-b}{2a}$, is identical to calculating the gradient update \eqref{cd:serial:step2:gradient}. Note that $b = -2 gradient_{location}$ and $a = Lipschitz_{location}$, and both the minimum of the parabola $\frac{-b}{2a}$ and the update rule based on partial derivatives \eqref{cd:serial:step2:gradient} are identical.
 
 This means if our reconstruction problem has point sources which are far away, such that their $PSF$s do not overlap, then the update rule finds the optimal value for each point source with one iteration. But when the $PSF$s overlap as in our example problem, shown in Figure \ref{cd:serial:aid:figure}, then we need several iterations over the same pixel until coordinate descent converges.
 
@@ -210,9 +210,9 @@ In designing a deconvolution algorithm, we have the choice between the circular 
 
 
 \subsubsection{Efficient calculation of the Lipschitz constants}
-Quadratic runtime.
+In each iteration, we need the Lipschitz constant of the current pixel. I.e. we need the inner product $\langle PSF_{location}, PSF_{location}$ for every pixel. We can pre-calculate the Lipschitz constant before we run the serial coordinate descent algorithm. The naive way to calculate the Lipschitz constant for every pixel results in quadratic runtime(each inner product costs us $O(n)$ operations, and we do it for all $n$ pixels). But this is not necessary. We can pre-calculate the Lipschitz constant for every pixel in linear time.
 
-We can do better We can be linear.
+Figure \ref{cd:efficient:lipschitz:padded} shows the $PSF$ shifted to a pixel location. The Lipschitz constant is by squaring all values of Figure \ref{cd:efficient:lipschitz:padded} and summing up the values. Or in another way: We sum up all the squared values of the $PSF$ inside a specific rectangle. All that changes for a Lipschitz calculation between different pixels is the specific rectangle.
 
 \begin{figure}[h]
 	\centering
@@ -224,42 +224,46 @@ We can do better We can be linear.
 	\begin{subfigure}[b]{0.3\linewidth}
 		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/psf.png}
 		\caption{Sum of squared values.}
-		\label{cd:efficient:lipschitz:circular}
+		\label{cd:efficient:lipschitz:rectangle}
 	\end{subfigure}
 	\caption{Comparison of the two convolution schemes.}
 	\label{cd:efficient:lipschitz:figure}
 \end{figure}
 
-Sum of squared $PSF$ values that lie inside a rectangle.
-
-Scan algorithm
-
-We save the result of rectangle from the origin up to a pixel. 
+This can be exploited with a scan algorithm: We first calculate the result of every rectangle we can draw from the origin, up to some pixel value. We end up with an array we call $scan[,]$. It is the same size as the $PSF$, but contains the sum of squares inside a specific rectangle.
 
 \begin{lstlisting}
 var scan = new double[,];
 for (i in (0, PSF.Length(0))
-{
 for (j in (0, PSF.Length(1))
-{
 var iBefore = scan[i - 1, j];
 var jBefore = scan[i, j - 1];
 var ijBefore = scan[i - 1, j - 1];
 var current = PSF[i, j] * PSF[i, j];
 scan[i, j] = current + iBefore + jBefore - ijBefore;
-}
-}
 \end{lstlisting}
 
-Each location of scan as the sum of squares of a rectangle spanning from the origin up to the pixel loction $i$ and $j$.
+Every Lipschitz constant can be now calculated by combining the sums of different rectangles. Our example is shown in Figure \ref{cd:efficient:lipschitz:rectangle}. We start with the total sum of all values, and subtract two rectangles. Because the subtractions overlap, we need to add the third rectangle again. we take the total value. In short, we can calculate each Lipschitz constant by at most 4 lookups in the $scan[,]$ array.
 
-Full value, minus rectangle 1, minus rectangle 2, plus rectangle 3. At most read four locations of $scan[]$
 
 \subsubsection{Using a map of gradients}
+For an efficient greedy strategy, we need to know the gradient for each pixel.  We show how to calculate the initial map of gradients in linearithmic time($O(n log n)$ and how to update it directly after a change in the reconstructed image $x$. As we will see, we can use a map of gradients and drop the residual calculation from the algorithm. The gradient map implicitly contains the information of the residuals.
 
-replace the residuals
 
 \textbf{Efficient calculation}\\
+Calculating the gradient for each pixel results again in a quadratic runtime. We need to calculate $\langle residuals, PSF_{location} \rangle$ for every pixel (Similarly to the Lipschitz constants, each inner product costs us $O(n)$ operations, and we do it for all $n$ pixels). But we can use the FFT to calculate the map of gradients in linearithmic time.
+
+Note that the inner product is actually a correlation: We correlate the $PSF$ with the residuals. The correlation and the convolution are related. The convolution is simply a correlation with a flipped kernel. This means we can use the $FFT$ to efficiently calculate the correlation of the residuals and the $PSF$:
+
+\begin{equation}\label{cd:efficient:gradients:correlation}
+\begin{split}
+psfFlipped &= FlipUD(FlipLR(PSF)) \\
+gradients &= iFFT(FFT(residuals) * FFT(psfFlipped))
+\end{split}
+\end{equation}
+
+A convolution in image space is a multiplication in Fourier space. This fact can also be exploited for the correlation by flipping the $PSF$. Since the FFT takes linearithmic time $O(n log n)$ to compute, the overall operation also takes us linearithmic time. The operation is shown in Figure \ref{cd:efficient:gradients:figure}.
+
 \begin{figure}[h]
 	\centering
 	\begin{subfigure}[b]{0.3\linewidth}
@@ -274,7 +278,7 @@ replace the residuals
 	\end{subfigure}
 	\begin{subfigure}[b]{0.3\linewidth}
 		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/gradients.png}
-		\caption{Gradient for each pixel.}
+		\caption{Gradient map.}
 		\label{cd:efficient:gradients:gradients}
 	\end{subfigure}
 	
@@ -282,7 +286,11 @@ replace the residuals
 	\label{cd:efficient:gradients:figure}
 \end{figure}
 
-\textbf{Efficient update}\\
+
+\textbf{Direct update of gradient map}\\
+Thanks to the FFT, we can efficiently calculate the map of gradients at the start of the serial coordinate descent algorithm. After we update a pixel in the reconstruction $x$, the map changes. We could repeat the correlation in the Fourier space from equation \eqref{cd:efficient:gradients:correlation} at each iteration. But this is wasteful. We can update the map of gradients directly.
+
+Note that if we add pixel in the reconstruction $x$, we subtract the $PSF$ (multiplied with the pixel value) from the specific location in the residuals. The gradient map is then calculated by again correlating the $PSF$ with the residuals. We update the residuals by subtracting the $PSF$ at the correct location. And we update the gradient map by subtracting the $PSF$ correlated with itself at the correct position ($PSF \star PSF$). In our simulated example, the $PSF$ and the gradient update map is shown in Figure \ref{cd:efficient:update:psf}.
 \begin{figure}[!h]
 	\centering
 	\begin{subfigure}[b]{0.3\linewidth}
@@ -299,4 +307,21 @@ replace the residuals
 	\label{cd:efficient:update:figure}
 \end{figure}
 
+This means we can update the gradient map directly with the product of $(PSF \star PSF)$. We can simply shift $(PSF \star PSF)$ at the correct pixel location and subtract it from the gradient map directly.
 
+There is one issue though: We use zero padded convolution. The $PSF$ at the edges of the image is masked. This means that the product $(PSF \star PSF)$ actually changes with the pixel location. If we update a pixel in the corner of the image, the actual update $(PSF \star PSF)$ at that location looks different than what was shown in Figure \ref{cd:efficient:update:psf}.
+
+The exact update is again expensive to calculate. We need to correlate the $PSF$ with itself for every pixel location. This is as repeating equation \eqref{cd:efficient:gradients:correlation} in each iteration (re-calculating the $PSF$ correlation with the residuals in each iteration). However, the exact gradient update only changes significantly at the edges of the image, when large parts of the $PSF$ are masked by the edges. Otherwise the difference between the exact update and simply shifting $(PSF \star PSF)$ at the pixel location is small.
+
+This is the reason why we chose to accept that the gradient update is only an approximation. The approximation only becomes inaccurate at the edges, and we use the algorithm in the major cycle framework: Every major cycle removes any inaccuracies we introduced during the previous cycle. This may potentially lead to more major cycles until the algorithm converge to the solution. But in practice the serial coordinate descent algorithm did not need more major cycles than CLEAN. We compare CLEAN and the serial coordinate descent algorithm on a real-world observation in Section \ref{results}.
+
+\subsection{Efficient implementation pseudo-code}
+
+putting it all together
+
+
+\subsection{GPU implementation}
+
+\subsection{Distributed implementaion MPI}
+
+\subsection{Serial coordinate descent and similarities to the CLEAN algorithm}
