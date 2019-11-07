@@ -111,9 +111,7 @@ At this point, the greedy strategy has selected a pixel at a location to optimiz
 
 Side note: The reason why this reduces nicely to one dimension is the elastic net regularization is separable. I.e. the regularization can be calculated independently of the surrounding pixels.
 
-Optimizing the one dimensional problem \eqref{cd:serial:step2:onedim} is a lot simpler. In essence, we calculate the gradient for the pixel at the selected location, and apply the proximal operator of elastic net. First, let us look at how the gradient is calculated.
-
-At the moment, we ignor the regularization and just optimize the data term. The gradient arises from the data term of the one dimensional objective \eqref{cd:serial:step2:onedim} ($\left \| I_{dirty} - x_{location} * PSF \right \|_2^2$). After simplifying the partial derivative, we arrive at the calculation:
+Optimizing the one dimensional problem \eqref{cd:serial:step2:onedim} is a lot simpler. In essence, we calculate the gradient for the pixel at the selected location, and apply the proximal operator of elastic net. First, let us look at how the gradient is calculated and ignore the regularization. The gradient arises from the data term of the one dimensional objective \eqref{cd:serial:step2:onedim} ($\left \| I_{dirty} - x_{location} * PSF \right \|_2^2$). After simplifying the partial derivative, we arrive at the calculation:
 
 \begin{equation}
 \begin{split}
@@ -128,34 +126,33 @@ First, we calculate the residuals by convolving the current solution $x$ with th
 
 The Lipschitz constant describes how fast a function $f(x)$ changes with $x$. If $f(x)$ changes slowly, we can descend larger distances along the gradient without the fear for divergence. The Lipschitz constant can be looked at as a data-defined step size.
 
-An interesting point is that the update rule $pixel_{opt} = \frac{gradient_{location}}{Lipschitz_{location}}$ finds the optimal pixel value, if the pixel is independent. Remember that our objective function is convex. The data term of our one dimensional objective \eqref{cd:serial:step2:onedim} actually forms a parabola, with the parameters: $x^2 PSF^2 - 2x \langle resdiuals, PSF_{location}\rangle + C$. Dividing the gradient of the pixel location with the Lipschitz constant is identical to calculating the optimum of the parabola $\frac{-b}{2a}$, where $b = -2 gradient_{location}$ and $a = Lipschitz_{location}$.
+An interesting point is that the update rule $pixel_{opt} = \frac{gradient_{location}}{Lipschitz_{location}}$ finds the optimal pixel value, if the pixel is independent. Remember that our objective function is convex. The data term of our one dimensional objective \eqref{cd:serial:step2:onedim} actually forms a parabola, with the parameters: $x^2 \langle PSF, PSF \rangle - 2x \langle resdiuals, PSF_{location}\rangle + c$. Dividing the gradient of the pixel location with the Lipschitz constant is identical to calculating the optimum of the parabola $\frac{-b}{2a}$, where $b = -2 gradient_{location}$ and $a = Lipschitz_{location}$.
 
 This means if our reconstruction problem has point sources which are far away, such that their $PSF$s do not overlap, then the update rule finds the optimal value for each point source with one iteration. But when the $PSF$s overlap as in our example problem, shown in Figure \ref{cd:serial:aid:figure}, then we need several iterations over the same pixel until coordinate descent converges.
 
-So far, we ignored the regularization. We can calculate the optimal pixel value by $pixel_{opt} = \frac{gradient_{location}}{Lipschitz_{location}}$ without elastic net regularization. The last step is to combine the proximal operator of the elastic net regularization \eqref{cd:elastic:proximal} with the gradient calculation, and we arrive at the following update step:
+\textbf{Including the elastic net regularization}\\
+So far, we ignored the regularization. We can calculate the optimal pixel value without elastic net regularization. The last step is to combine the proximal operator of the elastic net regularization \eqref{cd:elastic:proximal} with the gradient calculation, and we arrive at the following update step:
 
 \begin{equation} \label{cd:serial:step2:update}
 pixel_{opt} = \frac{max(gradient_{location} - \lambda\alpha, 0)}{Lipschitz_{location} + (1 - \alpha)\lambda}
 \end{equation}
 
-This update rule now finds the optimal pixel value with elastic net regularization. If the $PSF$s do not overlap, we still only need one iteration per non-zero pixel. In each iteration of the serial coordinate descent, we calculate the gradient and the Lipschitz of the location, and perform the update step \eqref{cd:serial:step2:update}. It is easy to see that the update step itself is cheap to compute. All variables involved in the update step are one-dimensional. The expensive parts are calculating the gradient and the Lipschitz constant. Both need an inner product to be evaluated.
+This update rule now finds the optimal pixel value with elastic net regularization. If the $PSF$s do not overlap, we still only need one iteration per source.
 
 %Good for sparsity
 
 
-
-
-\subsubsection{Putting it together: Pseudo-code}
+\subsubsection{Inefficient implementation pseudo-code}
+Now we put together our serial coordinate descent algorithm, and show where the bottleneck lies. In each iteration, the serial coordinate descent algorithm selects the pixel with the maximum gradient magnitude, and optimizes the selected pixel with the update rule \eqref{cd:serial:step2:update}.
 
 \begin{lstlisting}
-dirty = IFFT(Gridding(visibilities))
+dirty = IFFT(GridVisibilities(visibilities))
 residuals = dirty
 
 x = new Array
 objectiveValue = 0.5* Sum(residuals * residuals) + ElasticNet(x)
 
 do 
-{
 	oldObjectiveValue = objectiveValue
 	
 	//Step 1: Search pixel
@@ -173,12 +170,133 @@ do
 	x[pixelLocation] = optimalValue
 	residuals = residuals - shiftedPSF * (optimalValue - oldValue)
 	objectiveValue = 0.5 * Sum(residuals * residuals) + lambda * ElasticNet(x, alpha)
-} while (oldObjectiveValue - objectiveValue)  < epsilon
+while (oldObjectiveValue - objectiveValue)  < epsilon
 \end{lstlisting}
+
+The actual update step (line 19) is cheap to compute. We are only dealing with 4 one dimensional variables. The expensive calculations are the inner products. The gradient calculation, the Lipschitz constant and the objective value. The residuals and $PSF$ generally contain millions of pixels. Calculating the inner product of those becomes expensive. 
+
+Also note that the greedy strategy needs to calculate the gradient for each pixel. As it is, the greedy strategy has a quadratic runtime complexity. 
 
 
 \subsection{Efficient implementation}\label{cd:efficient}
-Coordinate descent is useful when each iteration is cheap to compute.
+The bottleneck of the serial coordinate descent algorithm are all the inner products that need to be calculated in each iteration. In each iteration, we need to know the gradient for every pixel, and the Lipschitz constant of the current pixel. Luckily, we can cache a map of gradients, where we save the gradient for every pixel and skip all of the inner products associated with the gradient. Also, we can efficiently calculate and cache the Lipschitz constants. We can greatly reduce the runtime cost for each iteration.
 
+This section shows the implementation details on how we can calculate the map of gradients and the Lipschitz constant efficiently. But first we need to define another implementation detail: How we handle the edges of the convolution.
+
+\subsubsection{Edge handling of the convolution}
+As the reader is probably aware, there are several ways to define the convolution in image processing, depending on how we handle the edges on the image. Two possibilities are relevant for radio interferometric image reconstruction: Circular and zero padded.
+
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/padded.png}
+		\caption{Zero padded convolution.}
+		\label{cd:efficient:convolution:padded}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/circular.png}
+		\caption{Circular convolution.}
+		\label{cd:efficient:convolution:circular}
+	\end{subfigure}
+	\caption{Comparison of the two convolution schemes.}
+	\label{cd:efficient:convolution:figure}
+\end{figure}
+
+Circular convolution assumes the image "wraps" around itself. If we travel over the right edge of the image, we arrive at the left edge. The convolution in Fourier space is circular. Remember: A convonlution in image space is a multiplication in Fourier space, and vice versa. When we convolve the reconstructed image $x$ with the $PSF$ using circular convolution, then non-zero pixels at the right edge of the image "shine" over to the left edge. This is physically impossible.
+
+Zero padding assumes that after the edge, the image is zero. Non-zero pixels at the right edges of the image do not influence the left edge after convolution. This is the physically plausible solution. However, the zero padded convolution is more expensive to calculate. We either have to calculate the convolution in image space, which is too expensive for large kernels, or apply the FFT on a zero-padded image. Either way, it is more expensive than the circular convolution.
+
+In designing a deconvolution algorithm, we have the choice between the circular and the zero-padded convolution scheme. Circular convolution is more efficient to calculate, while zero-padded convolution is closer to the reality. Both choices are possible. Some implementations leave this choice to the user \cite{kenyon2019pymoresane}. We decide on using the zero-padded convolution. This choice influences how we calculate the Lipschitz and gradients efficiently.
+
+
+\subsubsection{Efficient calculation of the Lipschitz constants}
+Quadratic runtime.
+
+We can do better We can be linear.
+
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/padded.png}
+		\caption{Shifted $PSF$.}
+		\label{cd:efficient:lipschitz:padded}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/psf.png}
+		\caption{Sum of squared values.}
+		\label{cd:efficient:lipschitz:circular}
+	\end{subfigure}
+	\caption{Comparison of the two convolution schemes.}
+	\label{cd:efficient:lipschitz:figure}
+\end{figure}
+
+Sum of squared $PSF$ values that lie inside a rectangle.
+
+Scan algorithm
+
+We save the result of rectangle from the origin up to a pixel. 
+
+\begin{lstlisting}
+var scan = new double[,];
+for (i in (0, PSF.Length(0))
+{
+for (j in (0, PSF.Length(1))
+{
+var iBefore = scan[i - 1, j];
+var jBefore = scan[i, j - 1];
+var ijBefore = scan[i - 1, j - 1];
+var current = PSF[i, j] * PSF[i, j];
+scan[i, j] = current + iBefore + jBefore - ijBefore;
+}
+}
+\end{lstlisting}
+
+Each location of scan as the sum of squares of a rectangle spanning from the origin up to the pixel loction $i$ and $j$.
+
+Full value, minus rectangle 1, minus rectangle 2, plus rectangle 3. At most read four locations of $scan[]$
+
+\subsubsection{Using a map of gradients}
+
+replace the residuals
+
+\textbf{Efficient calculation}\\
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/dirty.png}
+		\caption{Dirty Image.}
+		\label{cd:efficient:gradients:dirty}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/psf.png}
+		\caption{Point Spread Function.}
+		\label{cd:efficient:gradients:psf}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/gradients.png}
+		\caption{Gradient for each pixel.}
+		\label{cd:efficient:gradients:gradients}
+	\end{subfigure}
+	
+	\caption{Example of the gradient calculation.}
+	\label{cd:efficient:gradients:figure}
+\end{figure}
+
+\textbf{Efficient update}\\
+\begin{figure}[!h]
+	\centering
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/psf.png}
+		\caption{Point Spread Function.}
+		\label{cd:efficient:update:dirty}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/psf2.png}
+		\caption{Gradient update: $(PSF \star PSF)$.}
+		\label{cd:efficient:update:psf}
+	\end{subfigure}
+	\caption{Example problem with two point sources.}
+	\label{cd:efficient:update:figure}
+\end{figure}
 
 
