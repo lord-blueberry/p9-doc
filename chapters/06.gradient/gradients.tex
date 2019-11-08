@@ -43,19 +43,19 @@ Depending on how we approximate the $PSF$, we may not have any guarantee that we
 \begin{figure}[h]
 	\centering
 	\begin{subfigure}[b]{0.245\linewidth}
-		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/psf.png}
+		\includegraphics[width=\linewidth, clip, trim= 0.125in 0.125in 0.125in 0.125in]{./chapters/03.cd/simulated/psf.png}
 		\caption{$PSF$}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.245\linewidth}
-		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/psf2.png}
-		\caption{Update map}
+		\includegraphics[width=\linewidth, clip, trim= 0.125in 0.125in 0.125in 0.125in]{./chapters/03.cd/simulated/psfSquared.png}
+		\caption{Gradient update}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.245\linewidth}
-		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/psf.png}
+		\includegraphics[width=\linewidth, clip, trim= 0.125in 0.125in 0.125in 0.125in]{./chapters/03.cd/simulated/psfCut.png}
 		\caption{$cut(PSF)$}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.245\linewidth}
-		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/psf2.png}
+		\includegraphics[width=\linewidth, clip, trim= 0.125in 0.125in 0.125in 0.125in]{./chapters/03.cd/simulated/psfSquaredCut.png}
 		\caption{Approx. update}
 	\end{subfigure}
 	
@@ -64,7 +64,7 @@ Depending on how we approximate the $PSF$, we may not have any guarantee that we
 
 The basic coordinate descent method first correlates the residuals with the $PSF$. It pre-calculates the gradient for each pixel. Then, in each iteration, it directly updates the map of gradients with the product of $PSF \star PSF$ (the $PSF$ correlated with itself). In this approximation method, we start from the same pre-calculated map of gradients, but use an approximate update. The first coordinate descent iteration of this approximation method is identical to coordinate descent with the full $PSF$. With each coordinate descent iterations, the gradient map becomes more inaccurate. But with enough major cycles, this method converges to the same result as when the full $PSF$ is used.
 
-The question is, how do we approximate the product of $PSF \star PSF$. As we have seen before, the product of $PSF \star PSF$ also approaches zero away from the center (an example was shown in Figure \ref{cd:efficient:update:figure} in Section \ref{cd:efficient:update}). A naive way to approximate the update step is to cut off"the insignificant value and only use a rectangle of the center, which is a fraction of the total image size. For example: An image of size $1024^2$ also has a $PSF$ the size of $1024^2$. The product $PSF \star PSF$ actually has the size of $2048^2$ pixels due to the correlation. We can try to approximate the product by only using the center rectangle $\frac{1}{8}$ of the total size, ($256^2$ pixels). This approximation works, but leads to artifacts during deconvolution: The image will be reconstructed in visible "blocks" which are the size of the center fraction we use. 
+The question is, how do we approximate the product of $PSF \star PSF$. As we have seen before, the product of $PSF \star PSF$ also approaches zero away from the center (an example was shown in Figure \ref{cd:efficient:update:figure} in Section \ref{cd:efficient:update}). A naive way to approximate the update step is to cut off the insignificant value and only use a rectangle of the center, which is a fraction of the total image size. For example: An image of size $1024^2$ also has a $PSF$ the size of $1024^2$. The product $PSF \star PSF$ actually has the size of $2048^2$ pixels due to the correlation. We can try to approximate the product by only using the center rectangle $\frac{1}{8}$ of the total size, ($256^2$ pixels). This approximation works, but leads to artifacts during deconvolution: The image will be reconstructed in visible "blocks" which are the size of the center fraction we use. 
 
 We use the approximation shown in equation \eqref{gradient:method1:psf2}, where $cut()$ is the function that cuts away everything but the center rectangle of the $PSF$. This is a better approximation than cutting the product of $PSF \star PSF$ directly, and leads to faster convergence.
 
@@ -80,11 +80,11 @@ In our implementation, we use one more trick to improve the approximation: we sc
 \begin{figure}[h]
 	\centering
 	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/psf.png}
+		\includegraphics[width=\linewidth, trim= 0.125in 0.125in 0.125in 0.125in]{./chapters/03.cd/simulated/psf.png}
 		\caption{$PSF$ on log scale}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/psf.png}
+		\includegraphics[width=\linewidth, trim= 0.125in 0.125in 0.125in 0.125in]{./chapters/03.cd/simulated/psf.png}
 		\caption{$PSF$ Approximation}
 	\end{subfigure}
 	
@@ -107,16 +107,34 @@ Nevertheless, this approximation method introduces an error in the final reconst
 To combat the under-estimation of pixel values, we reduce the regularization parameter $\lambda$ for the approximate deconvolution problem. Since we cut off parts of the $PSF$, we also reduce the Lipschitz constant (sum of the squared $PSF$ values) used in the approximate deconvolution. We reduce the $\lambda$ parameter by the same factor that the Lipschitz constant gets reduced. This ensures that the approximate deconvolution and the original deconvolution arrive at the same pixel value for a point source. But it does not completely remove the issue for extended emissions.
 
 \subsection{Major Cycle convergence and implicit path regularization}\label{gradients:pathreg}
+We have two methods for using an approximate the true $PSF$ with a small cutoff. 
+
+Strong emission that overshines the rest. 
+
+After a number of serial coordinate descent deconvolutions with the approximate $PSF$, we are inevitably going to encounter pixels with larger gradients than they should have. Figure \ref{gradient:convergence:sidelobe} shows an example cutoff of the $PSF$ and the $PSF$ values we are ignoring with the approximation.
 
 \begin{figure}[h]
 	\centering
 	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/psf.png}
+		\includegraphics[width=\linewidth, trim= 0.125in 0.125in 0.125in 0.125in]{./chapters/03.cd/simulated/psfCut.png}
 		\caption{$PSF$ cutoff}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=\linewidth, trim= 0.125in 0.125in 0.125in 0.125in]{./chapters/03.cd/simulated/psfReverseCut.png}
+		\caption{Sidelobes}
 	\end{subfigure}
 	
 	\caption{Max sidelobe $PSF$.}
+	\label{gradient:convergence:sidelobe}
 \end{figure} 
+
+ 
+
+ Remember that we are still in the major cycle framework, which is one of the major reasons why we can afford and approximate $PSF$ in the deconvolution problem. 
+
+We have an implicit residual map. The residuals are implicitly represented in the gradient map. The effect of the two methods is we implicitly leave stuff in the residual map that a full $PSF$ would have removed. 
+
+
 
 Problem of using a reduced $PSF$. We have sidelobes.
 

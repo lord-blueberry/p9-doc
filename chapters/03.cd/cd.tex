@@ -67,21 +67,21 @@ We demonstrate the serial deconvolution algorithm with the help of a simulated M
 \begin{figure}[h]
 	\centering
 	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/dirty.png}
+		\includegraphics[width=\linewidth, clip, trim= 0.125in 0.125in 0.125in 0.125in]{./chapters/03.cd/simulated/dirty.png}
 		\caption{Dirty Image.}
 		\label{cd:serial:aid:dirty}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/psf.png}
-		\caption{Point Spread Function.}
-		\label{cd:serial:aid:psf}
-	\end{subfigure}
-	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/elastic.png}
+		\includegraphics[width=\linewidth, clip, trim= 0.125in 0.125in 0.125in 0.125in]{./chapters/03.cd/simulated/elasticNet.png}
 		\caption{Elastic net reconstruction}
 		\label{cd:serial:aid:elastic}
 	\end{subfigure}
-	
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=\linewidth, clip, trim= 0.125in 0.125in 0.125in 0.125in]{./chapters/03.cd/simulated/psf.png}
+		\caption{Point Spread Function.}
+		\label{cd:serial:aid:psf}
+	\end{subfigure}
+
 	\caption{Example problem with two point sources.}
 	\label{cd:serial:aid:figure}
 \end{figure}
@@ -165,9 +165,9 @@ do
 	lipschitz = Sum(shiftedPSF * shiftedPSF)
 	tmp = gradient + oldValue * lipschitz 
 	optimalValue = Max(tmp - lambda*alpha) / (lipschitz + (1 - alpha)*lambda)
+	x[pixelLocation] = optimalValue
 
 	//housekeeping
-	x[pixelLocation] = optimalValue
 	residuals = residuals - shiftedPSF * (optimalValue - oldValue)
 	objectiveValue = 0.5 * Sum(residuals * residuals) + lambda * ElasticNet(x, alpha)
 while (oldObjectiveValue - objectiveValue)  < epsilon
@@ -189,12 +189,12 @@ As the reader is probably aware, there are several ways to define the convolutio
 \begin{figure}[h]
 	\centering
 	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/padded.png}
+		\includegraphics[width=\linewidth, clip, trim= 0.125in 0.125in 0.125in 0.125in]{./chapters/03.cd/simulated/psfZeroPadding.png}
 		\caption{Zero padded convolution.}
 		\label{cd:efficient:convolution:padded}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/circular.png}
+		\includegraphics[width=\linewidth, clip, trim= 0.125in 0.125in 0.125in 0.125in]{./chapters/03.cd/simulated/psfCircular.png}
 		\caption{Circular convolution.}
 		\label{cd:efficient:convolution:circular}
 	\end{subfigure}
@@ -217,7 +217,7 @@ Figure \ref{cd:efficient:lipschitz:padded} shows the $PSF$ shifted to a pixel lo
 \begin{figure}[h]
 	\centering
 	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/padded.png}
+		\includegraphics[width=\linewidth]{./chapters/03.cd/simulated/psf.png}
 		\caption{Shifted $PSF$.}
 		\label{cd:efficient:lipschitz:padded}
 	\end{subfigure}
@@ -235,12 +235,12 @@ This can be exploited with a scan algorithm: We first calculate the result of ev
 \begin{lstlisting}
 var scan = new double[,];
 for (i in (0, PSF.Length(0))
-for (j in (0, PSF.Length(1))
-var iBefore = scan[i - 1, j];
-var jBefore = scan[i, j - 1];
-var ijBefore = scan[i - 1, j - 1];
-var current = PSF[i, j] * PSF[i, j];
-scan[i, j] = current + iBefore + jBefore - ijBefore;
+	for (j in (0, PSF.Length(1))
+		var iBefore = scan[i - 1, j];
+		var jBefore = scan[i, j - 1];
+		var ijBefore = scan[i - 1, j - 1];
+		var current = PSF[i, j] * PSF[i, j];
+		scan[i, j] = current + iBefore + jBefore - ijBefore;
 \end{lstlisting}
 
 Every Lipschitz constant can be now calculated by combining the sums of different rectangles. Our example is shown in Figure \ref{cd:efficient:lipschitz:rectangle}. We start with the total sum of all values, and subtract two rectangles. Because the subtractions overlap, we need to add the third rectangle again. we take the total value. In short, we can calculate each Lipschitz constant by at most 4 lookups in the $scan[,]$ array.
@@ -267,17 +267,17 @@ A convolution in image space is a multiplication in Fourier space. This fact can
 \begin{figure}[h]
 	\centering
 	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/dirty.png}
+		\includegraphics[width=\linewidth, clip, trim= 0.125in 0.125in 0.125in 0.125in]{./chapters/03.cd/simulated/dirty.png}
 		\caption{Dirty Image.}
 		\label{cd:efficient:gradients:dirty}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/psf.png}
+		\includegraphics[width=\linewidth, clip, trim= 0.125in 0.125in 0.125in 0.125in]{./chapters/03.cd/simulated/psf.png}
 		\caption{Point Spread Function.}
 		\label{cd:efficient:gradients:psf}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/gradients.png}
+		\includegraphics[width=\linewidth, clip, trim= 0.125in 0.125in 0.125in 0.125in]{./chapters/03.cd/simulated/gradients.png}
 		\caption{Gradient map.}
 		\label{cd:efficient:gradients:gradients}
 	\end{subfigure}
@@ -294,12 +294,12 @@ Note that if we add pixel in the reconstruction $x$, we subtract the $PSF$ (mult
 \begin{figure}[!h]
 	\centering
 	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/psf.png}
+		\includegraphics[width=\linewidth, clip, trim= 0.125in 0.125in 0.125in 0.125in]{./chapters/03.cd/simulated/psf.png}
 		\caption{Point Spread Function.}
 		\label{cd:efficient:update:dirty}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=\linewidth]{./chapters/03.distribution/simulated/psf2.png}
+		\includegraphics[width=\linewidth, clip, trim= 0.125in 0.125in 0.125in 0.125in]{./chapters/03.cd/simulated/psfSquared.png}
 		\caption{Gradient update: $(PSF \star PSF)$.}
 		\label{cd:efficient:update:psf}
 	\end{subfigure}
@@ -317,11 +317,93 @@ This is the reason why we chose to accept that the gradient update is only an ap
 
 \subsection{Efficient implementation pseudo-code}
 
+Putting it all together
+
+No more residual, use gradient map.
+Pre calculate lipschitz constants with a scan algorithm
+
 putting it all together
+\begin{lstlisting}
+dirty = IFFT(GridVisibilities(visibilities))
+residualsPadded = ZeroPadding(dirty)
+
+psfPadded = ZeroPadding(PSF)
+psfPadded = FlipUD(FlipLR(psfPadded))
+gradientUpdate = iFFT(FFT(ZeroPadding(PSF)) * FFT(psfPadded))
+
+x = new Array[,]
+gradientsMap = iFFT(FFT(residualsPadded) * FFT(psfPadded))
+lipschitzMap = CalcLipschitz(PSF)
+
+objectiveValue = 0.5* Sum(residuals * residuals) + ElasticNet(x)
+
+do 
+	oldObjectiveValue = objectiveValue
+	
+	//Step 1: Search pixel
+	maxAbsDiff = 0
+	maxDiff = 0
+	pixelLocation = (-1, -1)
+	for(i in Range(0, dirty.Length(0))
+		for(j in Range(0, dirty.Length(1))
+			oldValue = x[i, j]
+			tmp = gradientsMap[i, j] + oldValue * lipschitzMap[i, j]
+			optimalValue = Max(tmp - lambda*alpha) / (lipschitz[i, j] + (1 - alpha)*lambda)
+			diff = optimalValue - oldValue
+			
+			if(maxAbsDiff < Abs(diff))
+				maxAbsDiff = Abs(diff)
+				maxDiff = diff
+				pixelLocation = (i, j)
+	
+	//Step 2: Optimize pixel. Now all that is left is to add the maximum value at the correct location
+	x[pixelLocation] += maxDiff
+	
+	//housekeeping
+	shiftedUpdate = Shift(gradientUpdate, pixelLocation)
+	gradientMap = gradientMap - shiftedUpdate * maxDiff
+	objectiveValue = 0.5 * Sum(residuals * residuals) + lambda * ElasticNet(x, alpha)
+while (oldObjectiveValue - objectiveValue)  < epsilon
+\end{lstlisting}
+
+
+Lookups. No residuals, implicitly contained in gradientMaps.
 
 
 \subsection{GPU implementation}
+Easy to use parallel computing.
+
+Step 1: evaluates each pixel, can be done in parallel.
+
+
+ILGPU
+
+Kernels
+
+Synchronization
+See the synchronization problem. Here we see it is serial.
+
 
 \subsection{Distributed implementaion MPI}
+How we distribute it with MPI.
+
+We split up the image and the gradient map into patches.
+
+Each simply updates its patch.
+
+MPI Allreduce
+
 
 \subsection{Serial coordinate descent and similarities to the CLEAN algorithm}
+When we look back at the CLEAN algorithm, we start to see similarities to the serial coordinate descent algorithm. 
+
+CLEAN finds the maximum in the residual image. Serial Coordinate descent finds the maximum in the gradient map.
+
+CLEAN then removes a fixed fraction of the $PSF$ at that point. Serial coordinate descent uses the Lipschitz constant, and subtracts the $PSF$ correlated with itself at that point.
+
+The main difference is that serial coordinate descent calculates the gradient, and CLEAN does not. CLEAN is more a matching pursuit algorithm. But the structure is the same. We can use the serial coordinate descent GPU and MPI implementation. With a few tweaks, we would arrive at the CLEAN algorithm.
+
+By accident, we also found a GPU and MPI implementation for standard CLEAN.
+
+Multi-scale CLEAN is what is used. Difficulty with MPI implementation because of a distributed convolution.
+
