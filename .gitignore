@@ -7,13 +7,13 @@ P9.blg
 P9.lof
 P9.lot
 P9.toc
-chapters/01.intro/intro2.log
 P9.out
 P9.out
 
 # History files
 .Rhistory
 .Rapp.history
+
 
 # Session Data files
 .RData
@@ -47,3 +47,7 @@ vignettes/*.pdf
 # Temporary files created by R markdown
 *.utf8.md
 *.knit.md
+
+/R/images/MSClean
+/R/images/SerialCD
+/R/images/simulated
