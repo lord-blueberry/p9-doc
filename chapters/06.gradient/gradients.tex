@@ -107,11 +107,9 @@ Nevertheless, this approximation method introduces an error in the final reconst
 To combat the under-estimation of pixel values, we reduce the regularization parameter $\lambda$ for the approximate deconvolution problem. Since we cut off parts of the $PSF$, we also reduce the Lipschitz constant (sum of the squared $PSF$ values) used in the approximate deconvolution. We reduce the $\lambda$ parameter by the same factor that the Lipschitz constant gets reduced. This ensures that the approximate deconvolution and the original deconvolution arrive at the same pixel value for a point source. But it does not completely remove the issue for extended emissions.
 
 \subsection{Major Cycle convergence and implicit path regularization}\label{gradients:pathreg}
-We have two methods for using an approximate the true $PSF$ with a small cutoff. 
+In the two presented methods, we use a fraction of the $PSF$ to approximate the deconvolution problem. Both methods rely on the Major Cycle to periodically reset the gradient map. By using only a fraction of the $PSF$, the approximate deconvolution leaves parts of the $PSF$ in the gradient map. Figure \ref{gradient:convergence:sidelobe} shows the fraction of the $PSF$ that get included in the deconvolution, and "sidelobes" which get ignored.
 
-Strong emission that overshines the rest. 
-
-After a number of serial coordinate descent deconvolutions with the approximate $PSF$, we are inevitably going to encounter pixels with larger gradients than they should have. Figure \ref{gradient:convergence:sidelobe} shows an example cutoff of the $PSF$ and the $PSF$ values we are ignoring with the approximation.
+%re-introduce residuals
 
 \begin{figure}[h]
 	\centering
@@ -122,27 +120,64 @@ After a number of serial coordinate descent deconvolutions with the approximate 
 	\begin{subfigure}[b]{0.3\linewidth}
 		\includegraphics[width=\linewidth, trim= 0.125in 0.125in 0.125in 0.125in]{./chapters/03.cd/simulated/psfReverseCut.png}
 		\caption{Sidelobes}
+		\label{gradient:convergence:reverseCut}
 	\end{subfigure}
 	
 	\caption{Max sidelobe $PSF$.}
 	\label{gradient:convergence:sidelobe}
-\end{figure} 
+\end{figure}
 
- 
+After a number of serial coordinate descent iterations, we run into the danger of deconvolving the leftovers of the $PSF$ approximation. In that case, the serial coordinate descent algorithm adds spurious point sources to the image. After a major cycle, we can detect them as spurious and remove them again.
+Degree to how bad this is depends on the maximum absolute value we cut off in the approximation, the maximum absolute value in Figure \ref{gradient:convergence:reverseCut}. With an aggressive approximation, we may end up oscillating from major cycle to major cycle: Adding spurious pixels and removing them again in the next, just to add the same spurious pixels in the one after.
 
- Remember that we are still in the major cycle framework, which is one of the major reasons why we can afford and approximate $PSF$ in the deconvolution problem. 
+But we can estimate at what point we are likely to add spurious pixels. This lets us estimate a minimum $\lambda$ parameter for the elastic net regularization. At this major cycle iteration, we cannot go below the minimum lambda. The next major cycle, the maximum residual is lower, and so is the minimum $\lambda$
 
-We have an implicit residual map. The residuals are implicitly represented in the gradient map. The effect of the two methods is we implicitly leave stuff in the residual map that a full $PSF$ would have removed. 
+This is known as a path regularization. We start with a stronger regularization and continually reduce $\lambda$ until we reached the desired value. We have intermediate results in each major cycle. Coordinate descent methods tend to be faster from a warm start, when we start from an intermediate result \cite{friedman2010regularization}. 
+
+In this work we use the path regularization mainly for convergence of the major cycle. 
+
+How we estimate the minimum $\lambda$ parameter. Imagine the interferometer only observed a point source in the center of the image. In that case, 
+after the first serial coordinate descent iteration, our residuals image looks exactly like the Figure \ref{gradient:convergence:reverseCut}. The serial coordinate descent algorithm should not take another step, or it adds spurious pixels. In other words, the regularization has to suppress all the values in Figure \ref{gradient:convergence:reverseCut}
+
+Remember the elastic net regularization: It is a mixture of the L1 and L2 norm. The L1 norm shrinks the pixel values, while the L2 norm divides them. We need the L1 norm to shrink away the values in Figure \ref{gradient:convergence:reverseCut}.
+
+\begin{equation}
+\begin{split}
+gradients &= residuals \star PSF \\
+maxSidelobe &= Max(gradients) * Max(Abs(Sidelobe(PSF)))) \\
+\lambda_{cycle} &= \frac{maxSidelobe}{\alpha}
+\end{split}
+\end{equation}
+
+This estimate is a minimum. Meaning it is possible that we still add spurious pixels. For example when the sidelobes of two point sources overlap.
+
+The estimate however only considers point sources. For extended emissions, the estimate is too low. Extended emissions are a group of non-zero pixels. Beause they are next to each other, their sidelobes overlap and get amplified. 
+
+An estimate considering extended emissions.
+
+\begin{equation}
+\begin{split}
+gradients &= residuals \star PSF \\
+correction &= Max(1, \frac{Max(gradients)}{Max(residuals) * lipschitz}) \\
+maxSidelobe &= Max(gradients) * Max(Abs(Sidelobe(PSF)))) \\
+\lambda_{cycle} &= \frac{maxSidelobe}{\alpha}
+\end{split}
+\end{equation}
+
+Only considers the "maximum" extended emission. Extended emissions tend to contain the largest pixel value in the residual image. Because of the convolution.
+The correction factor gets reduced the closer the maximum pixel in the residuals. Over several major cycles, the correction factor and the $lambda_{cycle}$ become smaller. 
+Helps convergence.
+
+
+But this is not true for extended emissions.
+
+he serial deconvolution algorithm calculates the gradient map (by correlating the $PSF$ with the residuals).
+
+
+Residuals will be left. 
 
 
 
-Problem of using a reduced $PSF$. We have sidelobes.
-
-Danger of adding them in the deconvolution, just to remove them in the next major cycle (when it is clear that they were bogus). With more extreme approximations, this leads to oscillations (add bogus pixels in one Major cycle, remove them in the next, just to add them again in the cycle after). And in most extreme cases, it can even lead to divergence.
-
-Sidelobe equals to largest absolute $PSF$ value we cut off
-
-We know what the biggest sidelobe is we cut off. That way we can estimate what magnitude of pixel we can be sure that it is bogus. 
 
 \begin{equation}
 \begin{split}
@@ -152,24 +187,3 @@ gradientLimit &= MAX(gradients) * psfSidelobe
 \end{split}
 \end{equation}
 
-Lower bound estimate. At which point we are sure it is bogus.
-This is only true for point sources. 
-problem of correlation, extended emissions. With extended emissions in the image, we still take up bogus pixels. 
-
-Estimate a correlation factor. 
-
-
-Coordinate Descent Path regularization optimization \cite{friedman2010regularization}
-
-
-
-
-
-\cite{clark1980efficient} and the question on how many iterations per major cycle
-Putting it all together
-
-We have the Minor Cycle, which is easy to converge.
-
-
-Danger that CD takes too many pixel into a Major Cycle. Lower bound per iteration, PSF sidelobe
-can still be too low, danger when many psf sidelobes overlap

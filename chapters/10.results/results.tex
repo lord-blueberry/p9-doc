@@ -35,8 +35,8 @@ Wide band imaging is not possible within the time frame of this project. We take
 	\begin{subfigure}[b]{0.4\linewidth}
 		\includegraphics[width=1.0\linewidth]{./chapters/10.results/LMC/meerkat_cutout.png}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.30\linewidth}
-		\includegraphics[width=1.0\linewidth]{./chapters/10.results/cleancomp/clean_briggs.png}
+	\begin{subfigure}[b]{0.28\linewidth}
+		\adjincludegraphics[width=1.0\linewidth, clip, trim={0.72in 0.72in 0.72in 0.72in}]{./chapters/10.results/MSClean/Briggs-CLEAN.png}
 	\end{subfigure}
 	\caption{Narrow band image section used.}
 	\label{results:cutout}
@@ -59,12 +59,12 @@ There are three main visibility weighting scheme for the gridder that lead to di
 \begin{figure}[h]
 	\centering
 	\begin{subfigure}[b]{0.4\linewidth}
-		\includegraphics[width=1.00\linewidth]{./chapters/10.results/cleancomp/clean_briggs.png}
+		\includegraphics[width=1.00\linewidth, clip, trim={0.72in 0.72in 0.72in 0.72in}]{./chapters/10.results/MSClean/Briggs-CLEAN.png}
 		\caption{Briggs weighted multi-scale CLEAN.}
 		\label{results:comp:clean}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.40\linewidth}
-		\includegraphics[width=1.00\linewidth]{./chapters/10.results/cleancomp/cd.png}
+		\includegraphics[width=1.00\linewidth, clip, trim={0.72in 0.72in 0.72in 0.72in}]{./chapters/10.results/SerialCD/CD-reference.png}
 		\caption{Naturally weighted coordinate descent.}
 		\label{results:comp:cd}
 	\end{subfigure}
@@ -83,17 +83,17 @@ Both algorithms detect the three extended emissions at the right side of the ima
 \begin{figure}[h]
 	\centering
 	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=1.00\linewidth]{./chapters/10.results/cleancomp/n132_clean.png}
+		\includegraphics[width=1.00\linewidth]{./chapters/10.results/MSClean/Natural-N132.png}
 		\caption{CLEAN Natural weighting.}
 		\label{results:N132:clean}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=1.00\linewidth]{./chapters/10.results/cleancomp/n132_clean_briggs.png}
+		\includegraphics[width=1.00\linewidth]{./chapters/10.results/MSClean/Briggs-N132.png}
 		\caption{CLEAN Briggs weighting.}
 		\label{results:N132:cleanbriggs}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=1.00\linewidth]{./chapters/10.results/cleancomp/n132_cd.png}
+		\includegraphics[width=1.00\linewidth]{./chapters/10.results/SerialCD/CD-N132.png}
 		\caption{CD Natural weighting.}
 		\label{results:comp:N132:cd}
 	\end{subfigure}
@@ -101,16 +101,16 @@ Both algorithms detect the three extended emissions at the right side of the ima
 	\label{results:cleancomp::N132:figure}
 \end{figure}
 
-Figure \ref{results:cleancomp::N132:figure} compares the naturally-weighted CLEAN, briggs CLEAN and coordinate descent on the N132 supernova remnant. The naturally-weigted CLEAN and coordinate descent use the same $PSF$ for the deconvolution. But coordinate descent finds structures in N132 similar to the briggs-weighted CLEAN. Coordinate descent arrived at a plausible higher-resolved reconstruction of N132.
+Figure \ref{results:cleancomp::N132:figure} compares the naturally-weighted CLEAN, briggs CLEAN and coordinate descent on the N132 supernova remnant. The naturally-weighted CLEAN and coordinate descent use the same $PSF$ for the deconvolution. But coordinate descent finds structures in N132 similar to the briggs-weighted CLEAN. Coordinate descent arrived at a plausible higher-resolved reconstruction of N132.
 
 \begin{figure}[h]
 	\centering
-	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=1.00\linewidth]{./chapters/10.results/cleancomp/clean_calibration.png}
+	\begin{subfigure}[b]{0.4\linewidth}
+		\includegraphics[width=1.00\linewidth]{./chapters/10.results/MSClean/Briggs-Calibration.png}
 		\caption{Briggs CLEAN}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=1.00\linewidth]{./chapters/10.results/cleancomp/cd_calibration.png}
+	\begin{subfigure}[b]{0.4\linewidth}
+		\includegraphics[width=1.00\linewidth]{./chapters/10.results/SerialCD/CD-Calibration.png}
 		\caption{Coordinate Descent}
 	\end{subfigure}
 	\caption{Influence of calibration errors}
