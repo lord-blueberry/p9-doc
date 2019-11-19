@@ -43,19 +43,19 @@ Depending on how we approximate the $PSF$, we may not have any guarantee that we
 \begin{figure}[h]
 	\centering
 	\begin{subfigure}[b]{0.245\linewidth}
-		\includegraphics[width=\linewidth, clip, trim= 0.125in 0.125in 0.125in 0.125in]{./chapters/03.cd/simulated/psf.png}
+		\includegraphics[width=\linewidth, clip, trim= 0.25in 0.25in 0.25in 0.25in]{./chapters/03.cd/simulated/psf.png}
 		\caption{$PSF$}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.245\linewidth}
-		\includegraphics[width=\linewidth, clip, trim= 0.125in 0.125in 0.125in 0.125in]{./chapters/03.cd/simulated/psfSquared.png}
+		\includegraphics[width=\linewidth, clip, trim= 0.25in 0.25in 0.25in 0.25in]{./chapters/03.cd/simulated/psfSquared.png}
 		\caption{Gradient update}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.245\linewidth}
-		\includegraphics[width=\linewidth, clip, trim= 0.125in 0.125in 0.125in 0.125in]{./chapters/03.cd/simulated/psfCut.png}
+		\includegraphics[width=\linewidth, clip, trim= 0.25in 0.25in 0.25in 0.25in]{./chapters/03.cd/simulated/psfCut.png}
 		\caption{$cut(PSF)$}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.245\linewidth}
-		\includegraphics[width=\linewidth, clip, trim= 0.125in 0.125in 0.125in 0.125in]{./chapters/03.cd/simulated/psfSquaredCut.png}
+		\includegraphics[width=\linewidth, clip, trim= 0.25in 0.25in 0.25in 0.25in]{./chapters/03.cd/simulated/psfSquaredCut.png}
 		\caption{Approx. update}
 	\end{subfigure}
 	
@@ -80,11 +80,11 @@ In our implementation, we use one more trick to improve the approximation: we sc
 \begin{figure}[h]
 	\centering
 	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=\linewidth, trim= 0.125in 0.125in 0.125in 0.125in]{./chapters/03.cd/simulated/psf.png}
+		\includegraphics[width=\linewidth, trim= 0.25in 0.25in 0.25in 0.25in]{./chapters/03.cd/simulated/psf.png}
 		\caption{$PSF$ on log scale}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=\linewidth, trim= 0.125in 0.125in 0.125in 0.125in]{./chapters/03.cd/simulated/psf.png}
+		\includegraphics[width=\linewidth, trim= 0.25in 0.25in 0.25in 0.25in]{./chapters/03.cd/simulated/psf.png}
 		\caption{$PSF$ Approximation}
 	\end{subfigure}
 	
@@ -114,11 +114,11 @@ In the two presented methods, we use a fraction of the $PSF$ to approximate the 
 \begin{figure}[h]
 	\centering
 	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=\linewidth, trim= 0.125in 0.125in 0.125in 0.125in]{./chapters/03.cd/simulated/psfCut.png}
+		\includegraphics[width=\linewidth, trim= 0.25in 0.25in 0.25in 0.25in]{./chapters/03.cd/simulated/psfCut.png}
 		\caption{$PSF$ cutoff}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=\linewidth, trim= 0.125in 0.125in 0.125in 0.125in]{./chapters/03.cd/simulated/psfReverseCut.png}
+		\includegraphics[width=\linewidth, trim= 0.25in 0.25in 0.25in 0.25in]{./chapters/03.cd/simulated/psfReverseCut.png}
 		\caption{Sidelobes}
 		\label{gradient:convergence:reverseCut}
 	\end{subfigure}
@@ -157,9 +157,10 @@ An estimate considering extended emissions.
 
 \begin{equation}
 \begin{split}
+psfSidelobe &= Max(PSF - cut(PSF)) \\
 gradients &= residuals \star PSF \\
 correction &= Max(1, \frac{Max(gradients)}{Max(residuals) * lipschitz}) \\
-maxSidelobe &= Max(gradients) * Max(Abs(Sidelobe(PSF)))) \\
+maxSidelobe &= Max(gradients) * Max(psfSidelobe) * correction \\
 \lambda_{cycle} &= \frac{maxSidelobe}{\alpha}
 \end{split}
 \end{equation}
@@ -177,13 +178,4 @@ he serial deconvolution algorithm calculates the gradient map (by correlating th
 Residuals will be left. 
 
 
-
-
-\begin{equation}
-\begin{split}
-psfSidelobe &= MAX(PSF - cut(PSF)) \\
-gradients &= residuals \star PSF \\
-gradientLimit &= MAX(gradients) * psfSidelobe
-\end{split}
-\end{equation}
 

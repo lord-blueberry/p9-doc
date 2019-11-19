@@ -1,125 +1,308 @@
 \section{Parallel coordinate descent methods}\label{pcdm}
-We can approximate the $PSF$ with a small fraction of its true size.
+We demonstrated that the true $PSF$ of the deconvolution problem can be approximated. A smaller $PSF$ can be used, which is only a fraction of the true size. The serial coordinate descent methods, which was used so during this project, achieves a moderate speedup with the $PSF$ approximation. Parallel coordinate descent methods may benefit more from the $PSF$ approximation. For the rest of this work, we develop a parallel coordinate descent deconvolution algorithm. We explain why parallel methods should benefit more from the $PSF$ approximation, and show that they indeed speed up the deconvolution problem.
 
-Naive way to exploit this, we can create patches of the image, four of which are independent of each other.
-Deconvolve four patches in parallel.
-Work is not equally distributed on the different patches. 
 
-Parallel coordinate descent methods can also use the smaller $PSF$. 
+Introduce the principle of parallel coordinate descent methods, and derrive a parallel coordinate descent deconvolution algorithm.
 
-Side note: The basic coordinate descent deconvolution algorithm described in Section \ref{cd} is a serial method. It is serial in the sense that the algorithm takes a descent step and immediately updates the gradient map. The implementation of the basic algorithm uses multiple cores. Parallel coordinate descent methods take several steps at different coordinates before updating the gradients.
+%Naive way to exploit this, we can create patches of the image, four of which are independent of each other.
+%Deconvolve four patches in parallel.
+%Work is not equally distributed on the different patches. 
+
+
 
 \subsection{From serial to parallel}
-Parallel coordinate descent methods take several steps at different coordinates before they update the gradient map. In our deconvolution problem, this means that we risk over-estimating pixel values when we optimize pixels in parallel. Parallel pixel updates have a potentially overlapping $PSF$ (the pixel values are correlated). The more the correlate, the higher the over-estimation gets\footnote{Imagine we optimize two pixels next to each other in serial coordinate descent: The algorithm descents, the first pixel, updates the gradient, and then descents the second pixel. The value of the second pixel will be magnitudes lower than the first, because most of the emission in that area was already explained by the first pixel. If however we update in parallel, both pixels will end up with a similar value, and both pixels try to explain the same emission.}. If we update many correlated pixels in parallel, we may converge slowly, or even diverge.
+Parallel coordinate descent methods take several steps at different coordinates before they update the gradient map. The difficulty in parallel coordinate descent methods lies in dealing with correlated pixel values> In our deconvolution problem, two pixels which are close to each other in the image are correlated. The more they overlap, the more we over-estimate their pixel values with parallel coordinate descent methods\footnote{Imagine we optimize two pixels next to each other in serial coordinate descent: The serial coordinate descent algorithm  optimizes he first pixel, updates the gradient, and then optimizes the second pixel. The value of the second pixel will be magnitudes lower than the first, because most of the emission in that area was already explained by the first pixel. If however we update in parallel, both pixels will end up with a similar value, and both pixels try to explain the same emission.}. This over-estimation leads to slow convergence. Or if we increase the number of parallel updates, can lead to a divergence. This means we cannot simply modify our serial coordinate descent algorithm to take a number of parallel steps. We need a way to deal with the over-estimation. 
 
-Parallel coordinate descent methods have a strategy to deal with correlated pixel values: The shotgun algorithm\cite{bradley2011parallel} estimates the number parallel random updates that can be used without diverging. PCDM\cite{richtarik2016parallel} estimates the expected $PSF$ overlap between random pixels, and adjusts the step size accordingly. In this project, we use the PCDM algorithm and its accelerated variant APPROX \cite{fercoq2015accelerated}. We introduce the algorithm in Section \ref{pcdm:pcdm}.
+Our serial coordinate descent algorithm uses a greedy pixel selection strategy. Parallel coordinate descent methods on the other hand often select their pixels uniformly at random. The random selection strategy lets us estimate how much the parallel algorithm over-estimates the pixel values\cite{richtarik2016parallel}. However, a random strategy is not efficient for our deconvolution problem.
 
-Note that parallel coordinate descent methods tend to select pixels at random. This helps dealing with correlated pixel values: In our deconvolution case, the pixels which are close by to each other tend to be correlated more strongly. But the exact shape of the $PSF$ is also a factor. If the $PSF$s overlap only in a region where it is close to zero, the pair of pixels also have a low correlation factor. A random selection strategy helps to keep a low correlation factor on average, no matter what the $PSF$ looks like. 
+We first explain the parallel coordinate descent method in the next section \ref{pcdm:pcdm}. We then introduce the modifications we developed for an efficient parallel deconvolution algorithm.
 
-But for our deconvolution case, a random strategy brings in its own issues. Remember that the LMC has a bright supernova remnant N132D, which overshadows other sources. A deconvolution algorithm has to deconvolve the pixels belonging to N132D first. A random strategy may waste resources until it has deconvolved the fairly small subset of pixels belonging to N132D. We have adapted the PCDM algorithm for the deconvolution problem, and describe our adaption in detail in Section  \ref{pcdm:adaption}.
+%Parallel coordinate descent methods have a strategy to deal with correlated pixel values: The shotgun algorithm\cite{bradley2011parallel} estimates the number parallel random updates that can be taken without diverging. PCDM estimates the expected $PSF$ overlap between random pixels, and adjusts the step size accordingly. In this project, we use the PCDM algorithm and its accelerated variant APPROX \cite{fercoq2015accelerated}. We introduce the algorithm in Section \ref{pcdm:pcdm}.
+
+%Note that parallel coordinate descent methods tend to select pixels at random. This helps dealing with correlated pixel values: In our deconvolution case, the pixels which are close by to each other tend to be correlated more strongly. But the exact shape of the $PSF$ is also a factor. If the $PSF$s overlap only in a region where it is close to zero, the pair of pixels also have a low correlation factor. A random selection strategy helps to keep a low correlation factor on average, no matter what the $PSF$ looks like. 
+
+%But for our deconvolution case, a random strategy brings in its own issues. Remember that the LMC has a bright supernova remnant N132D, which overshadows other sources. A deconvolution algorithm has to deconvolve the pixels belonging to N132D first. A random strategy may waste resources until it has deconvolved the fairly small subset of pixels belonging to N132D. We have adapted the PCDM algorithm for the deconvolution problem, and describe our adaption in detail in Section  \ref{pcdm:adaption}.
 
 \subsection{Parallel (Block) Coordinate Descent Method (PCDM)} \label{pcdm:pcdm}
-The PCDM algorithm can be seen as a generalization of our basic coordinate descent algorithm from Section \ref{cd}. The basic algorithm descends a single pixel at a time. PCDM can update one, or a whole block of pixels at each iteration. And as the name implies, it can update multiple blocks of pixels before updating the map of gradients. In this project, we use the accelerated variant of the PCDM algorithm, named APPROX \cite{fercoq2015accelerated}. We first generalize our basic coordinate descent method to block-coordinate descend. We then introduce the PCDM algorithm, show how it was adapted to the deconvolution problem and then describe the acceleration method. 
+The PCDM algorithm can be seen as a generalization of our serial coordinate descent algorithm from Section \ref{cd}. The serial algorithm optimizes a single pixel at a time. PCDM can update one, or a whole block of pixels at each iteration. And as the name implies, it can update multiple blocks of pixels in parallel. In this project, we use the accelerated variant of the PCDM algorithm, named APPROX \cite{fercoq2015accelerated}. We first introduce a PCDM deconvolution algorithm and then describe the accelerated variant.
 
-\subsubsection{Parallel updates and degree of seperability}\label{pcdm:pcdm:degree}
-The degree of seperability is the core concept behind parallel coordinate descent methods.
+\subsubsection{Serial block coordinate descent deconvolution}
+Here we introduce the serial block coordinate descent algorithm. Instead of optimizing a single pixel in each iteration, the serial block coordinate descent algorithm can update a block of pixels. The block size is left for the user to define. It can be any number between a single pixel, in which case the algorithm is identical to the serial coordinate descent algorithm from Section \ref{cd}, or the whole image.
 
-Important concept for parallel updates. We explain it with a slightly modified objective function:
-\begin{equation}\label{pcdm:pcdm:degree:formula}
-\begin{split}
-\underset{x}{minimize} \: \frac{1}{2} &\left \| I_{dirty} -  x * PSF \right \|_2^2 + \lambda ElasticNet(x) \\
-\underset{x}{minimize} \: \frac{1}{2} &\left \| I_{dirty} -  Ax \right \|_2^2 + \lambda ElasticNet(x)
-\end{split}
+Remember the single pixel update from the serial coordinate descent algorithm: 
+\begin{equation} \label{pcdm:pcdm:block:single:update}
+pixel_{opt} = \frac{max(gradient_{location} - \lambda\alpha, 0)}{Lipschitz_{location} + (1 - \alpha)\lambda}
 \end{equation}
 
-The main difference is that we represent the convolution $x * PSF$ as a matrix multiplication $Ax$. A columns of matrix $A$ is simply the $PSF$ shifted at the correct pixel location. IF $A$ is the identity matrix, the pixels $x$ in the reconstruction are independent from each other. Each column in $A$ only contains zero except a single 1 where the pixel is located. The whole problem is separable to We can use as many processors as we have pixels. In that case, the deconvolution is completely separable.
+We optimize the pixel at the current location by taking the gradient and dividing it by the Lipschitz constant. For the serial block coordinate descent algorithm we vectorize the update rule. That means $gradient_{location}$ and $Lipschitz_{location}$ and the output $pixel_{opt}$ become vectors:
 
-This is not true in reality, the $PSF$ is actually dense. In our case, every entry of matrix $A$ is non-zero. But we can approximate the deconvolution with a smaller $PSF$, as we have shown in Section \ref{results:gradients}.  In that case, the problem is partially separable.
+\begin{equation} \label{pcdm:pcdm:block:block:update}
+pixels_{opt} = \frac{max(gradients_{locations} - \lambda\alpha, 0)}{Sum(Lipschitz_{locations}) + (1 - \alpha)\lambda}
+\end{equation}
 
-Degree of separability $\omega$:
-Max number of non-zero elements in a matrix columnn.
+This is the serial block coordinate descent update rule. Note that we divide the gradient for each pixel by the the block Lipschitz constant (which is the sum of every pixel Lipschitz constant in the block). The single pixel update rule can take a larger step, but only for a single pixel. 
 
-The smaller the degree of seperability $\omega$, the closer we are to a fully separable problem. 
+The reader might be familiar with the (F)ISTA method\cite{beck2009fista}. The block update shown in equation \eqref{pcdm:pcdm:block:block:update} is related to the (F)ISTA update step. When the block size equal to the image size (we update all pixels in the image in each iteration), then the serial block coordinate descent is equivalent to (F)ISTA.
 
-Parallel updates are less correlated. PCDM algorithm, we can estimate the step size in a parallel environmnent.
+
+\subsubsection{Parallel block coordinate descent deconvolution}
+We present the parallel block coordinate descent algorithm. It is based on the PCD method\cite{richtarik2016parallel}. In this section, we show how it can be used to solve the deconvolution problem. Our parallel coordinate descent algorithm updates $t$ random blocks of pixels in parallel in each iteration. Each iteration is split into three steps: Step 1 is to select $t$ unique blocks of pixels uniformly at random (we cannot select the same block multiple times). In step 2 we update in parallel each selected block in the reconstructed image $x$. And finally in step 3 we update the gradient map.
+
+\begin{lstlisting}
+dirty = IFFT(GridVisibilities(visibilities))
+residualsPadded = ZeroPadding(dirty)
+
+psfPadded = ZeroPadding(PSF)
+psfPadded = FlipUD(FlipLR(psfPadded))
+gradientUpdate = iFFT(FFT(ZeroPadding(PSF)) * FFT(psfPadded))
+
+x = new Array[,]
+gradientsMap = iFFT(FFT(residualsPadded) * FFT(psfPadded))
+lipschitzMap = CalcLipschitz(PSF)
+
+objectiveValue = 0.5* Sum(residuals * residuals) + ElasticNet(x)
+ESO = CalcESO(CountNonZero(PSF), t, x.Length / blockSize)
+
+do 
+	oldObjectiveValue = objectiveValue
+	
+	//Step 1: select t blocks uniformly at random
+	blocks = sample(t)
+	
+	//Step 2: update reconstruction
+	diffBlocks = new Array
+	parallel for each block in blocks
+		blockLipschitz = Sum(GetBlock(LipschitzMap, block))
+		
+		//increase blockLipschitz according to the ESO
+		blockLipschitz = blockLipschitz * ESO
+		gradientsBlock = GetBlock(gradientMap, block)
+		oldBlock = GetBLock(x, block)
+		tmp = gradientsBlock + oldBlock * blockLipschitz
+		optimalBlock = Max(tmp - lambda*alpha) / (blockLipschitz + (1 - alpha)*lambda)
+		diffBlock = optimalBlock - oldBlock
+		
+		x[block] += diffBlock
+		diffBlocks[block] = diffBlock
+	
+	//Step 3: Update gradients
+	for each block in blocks
+		diffBlock = diffBlocks[block]
+		for each pixel in block
+			diff = diffBlock[pixel]
+			shiftedUpdate = Shift(gradientUpdate, pixelLocation)
+			gradientMap = gradientMap - shiftedUpdate * maxDiff
+			
+while maxAbsDiff  < epsilon
+\end{lstlisting}
+
+The parameter $t$ can be thought of as the number of processors. We select a block to optimize in parallel for each available processor. The parallel algorithm presented here is a synchronous implementation. Each processor waits for the others to finish in each step. The implementation used later in this section is asynchronous, where each processor separately selects a block, updates the reconstruction and updates the gradient map independent of the other processors. 
+
+Asynchronous implementation with compare exchange. gradient map gets updated asynchronously.
+
+The core of the parallel coordinate descent algorithm is the Estimated Seperability Overapproximation (ESO). In essence, the ESO represents how much we over-estimate the pixels values when we update $t$ random blocks in parallel. To guarantee convergence, we decrease the step size by the factor of the ESO. With more processors $t$ involved, we have to take smaller and smaller steps to guarantee convergence. Here is a trade-off between the degree of parallelism and the overall convergence speed.
+
+The ESO is derived from three components: The uniform sampling strategy used, the number of parallel updates, and the number of non-zero components in the $PSF$. We use a $t$-nice uniform sampling. The ESO that arises from the $t$-nice sampling (take $t$ blocks uniformly at random) according to\cite{richtarik2016parallel}:
+
+\begin{equation}\label{pcdm:pcdm:eso}
+CalcESO(\omega, t, n) = 1+ \frac{(\omega - 1)(t - 1)}{max(1, n -1)}
+\end{equation}
+
+Where $\omega$ is the number of non-zero entries in the $PSF$, $t$ is the number of parallel updates, and $n$ is the number of blocks in the problem. For example: The image is $256^2$ pixels in size, we update blocks with a size of $4^2$ pixels, the $PSF$ has $\omega = 24$ non zero entries, and we use $t = 4$ processors, then the ESO is:
+
+\begin{equation}
+CalcESO(\omega = 24, t = 4, n = (256^2 / 4^2)) = 1+ \frac{(24 - 1)(4 - 1)}{max(1, 4096 -1)} \approx 1.017
+\end{equation}
+
+The lowest possible value for the ESO is $1$. The fewer processors $t$ we use and the fewer non-zero components $\omega$ the $PSF$ has, the closer the ESO is to 1. We want a small ESO with the highest number of processors possible. As we see from equation \eqref{pcdm:pcdm:eso}, the ESO gets smaller with fewer non-zero values in the $PSF$.
+
+Remember that the $PSF$ in radio astronomy is typically dense. Although most of its values are close to zero, it generally does not have any zero values. The $PSF$ approximation methods we developed in Section \ref{gradient} effectively reduce the number of non-zero values. For the parallel coordinate descent algorithm, this leads to an ESO closer to 1, even  and we can take larger steps without diverging.
+
+
+\subsection{Accelerated parallel block coordinate descent method}
+We introduced the parallel coordinate descent algorithm in the previous section. In this section we extend the previous algorithm with gradient acceleration, similar to the APPROX method \cite{fercoq2015accelerated}.
+
+Instead of using a single gradient map and a single reconstructed image $x$ variable, we an 'explore' and 'correction' variable of both. The algorithm uses an $xExplore$,  $xCorrection$ and $gradientMapExplore$, $gradientMapCorrection$. Intuitively, the 'correction' variables contain the accelerated part of the algorithm, and the 'explore' variables the standard part. The variable $\theta$ is our acceleration variable.
+
+\begin{lstlisting}
+dirty = IFFT(GridVisibilities(visibilities))
+residualsPadded = ZeroPadding(dirty)
+
+psfPadded = ZeroPadding(PSF)
+psfPadded = FlipUD(FlipLR(psfPadded))
+gradientUpdate = iFFT(FFT(ZeroPadding(PSF)) * FFT(psfPadded))
+
+xExplore = new Array[,]
+xCorrection = new Array[,]
+gradientsMapExplore = iFFT(FFT(residualsPadded) * FFT(psfPadded))
+gradientMapCorrection = new Array[,]
+lipschitzMap = CalcLipschitz(PSF)
+
+objectiveValue = 0.5* Sum(residuals * residuals) + ElasticNet(x)
+ESO = CalcESO(CountNonZero(PSF), t, x.Length / blockSize)
+theta = 
+theta0 = 
+
+do 
+	oldObjectiveValue = objectiveValue
+	
+	//Step 1: select t blocks uniformly at random
+	blocks = sample(t)
+	
+	//Step 2: update reconstruction
+	diffBlocks = new Array
+	parallel for each block in blocks
+	blockLipschitz = Sum(GetBlock(LipschitzMap, block))
+	
+	//increase blockLipschitz according to the ESO
+	blockLipschitz = blockLipschitz * ESO
+	gradientsBlock = GetBlock(gradientMap, block)
+	oldBlock = GetBLock(x, block)
+	tmp = gradientsBlock + oldBlock * blockLipschitz
+	optimalBlock = Max(tmp - lambda*alpha) / (blockLipschitz + (1 - alpha)*lambda)
+	diffBlock = optimalBlock - oldBlock
+	
+	x[block] += diffBlock
+	diffBlocks[block] = diffBlock
+	
+	//Step 3: Update gradients
+	for each block in blocks
+	diffBlock = diffBlocks[block]
+	for each pixel in block
+	diff = diffBlock[pixel]
+	shiftedUpdate = Shift(gradientUpdate, pixelLocation)
+	gradientMap = gradientMap - shiftedUpdate * maxDiff
+
+while maxAbsDiff  < epsilon
+\end{lstlisting}
+
+This algorithm is identical to the parallel coordinate descent algorithm when we do not modify $\theta$.
+
+Indeed, the first iteration is identical.
+
+We should converge faster, but we double the amount of memory we need.
+Also, for an asynchronous implementation the problem is the gradient maps: Asynchronous updates to the gradient map need some sort of communication between the different processes. By doubling the gradient map, we also double the need for communication.
+
+It is not clear if the accelerated parallel coordinate descent algorithm is worth the costs. We later find out that at least for the LMC observation it is not.
+
+
+
+\subsection{The problem with random selection for deconvolution} \label{pcdm:adaption}
+Parallel coordinate descent methods depend on a random pixel selection strategy. As we mentioned before, a random selection strategy seems to perform badly on the deconvolution problem. We show the behavior on the N132D supernova remnant of the LMC observation shown in Figure \ref{pcdm:adaption:randomProblem}.
+
+\begin{figure}[h]
+		\centering
+	\begin{subfigure}[b]{0.245\linewidth}
+		\includegraphics[width=1.00\linewidth, clip, trim= 0.25in 0.25in 0.25in 0.25in]{./chapters/05.pcdm/randomProblem/random_1k_block1.png}
+		\caption{8k iterations}
+		\label{pcdm:adaption:randomProblem:block11}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.245\linewidth}
+		\includegraphics[width=1.00\linewidth, clip, trim= 0.25in 0.25in 0.25in 0.25in]{./chapters/05.pcdm/randomProblem/random_10k_block1.png}
+		\caption{80k iterations}
+		\label{pcdm:adaption:randomProblem:block12}
+	\end{subfigure}
+		\begin{subfigure}[b]{0.245\linewidth}
+		\includegraphics[width=1.00\linewidth, clip, trim= 0.25in 0.25in 0.25in 0.25in]{./chapters/05.pcdm/randomProblem/random_1k_block8.png}
+		\caption{8k iterations, $8^2$ block}
+		\label{pcdm:adaption:randomProblem:block81}
+	\end{subfigure}
+		\begin{subfigure}[b]{0.2405\linewidth}
+		\includegraphics[width=1.00\linewidth, clip, trim= 0.25in 0.25in 0.25in 0.25in]{./chapters/05.pcdm/randomProblem/random_10k_block8.png}
+		\caption{80k iterations, $8^2$ block}
+		\label{pcdm:adaption:randomProblem:block82}
+	\end{subfigure}
+	\caption{Random parallel deconvolutions on the LMC N132D supernova remnant.}
+	\label{pcdm:adaption:randomProblem}
+\end{figure}
+
+Large area of the image has only zero-valued pixels. When we randomly select pixels, we are more likely to select a useless pixel. We can waste a lot of resources randomly selecting irrelevant pixels. 
+
+
+A random selection strategy yields an image with obvious artifacts. The reason behind this behavior lies in the first couple of random deconvolution iterations. The parallel algorithm tries to explain as much of the emission as possible with random pixels. The randomly selected pixels are too high. Any random update in the area cannot improve the objective before it has hit one of the first random pixels. We see this behavior in Figure \ref{pcdm:adaption:randomProblem:block11} and \ref{pcdm:adaption:randomProblem:block12}. After 8 thousand iterations we still have mostly a random pattern of pixels. After 80 thousand iterations, we can see the hints of the supernova remnant. But the randomly selected pixels still explain away too much of the emission.
+
+The also persists when we use blocks of pixels. Figure \ref{pcdm:adaption:randomProblem:block81} and \ref{pcdm:adaption:randomProblem:block82} show the result of using blocks $8^2$ pixels. In each iteration we select blocks of pixels. After 80k iterations the N132D supernova remnant is visible, but it still contains artifacts.
+
+We tackled this problem with two strategies, using an active set heuristic and a pseudo-random selection strategy. The active set heuristic improves the efficiency of random block selection, while the pseudo-random selection strategy deals with the artifacts from Figure \ref{pcdm:adaption:randomProblem}.
+
+
+\subsubsection{Active set heuristic}
+Active set heuristic used for cyclic coordinate descent. Choose a subset of blocks and optimize those until convergence. Then choose a new set.
+
+How to choose the active set: We choose all blocks that can be modified currently.
+
+What is an active set iteration.
+We do a set number of iterations on the active set in parallel and then check whether it makes sense to change the active set. 
+Set of heuristic for finding out if the current active set is still valid:
+
+Idea for checking if active set is still valid: If the pixel which would get updated by the serial coordinate descent algorithm is contained in the active set, we are likely good to go.
+
+If the absolute maximum value of the blocks in the active set decreases faster than the abs-max pixel, we also need to restart.
+
+
+\subsubsection{Pseudo-random selection}
+Random selection leads to artifacts. Because we need to hit the same block that was randomly selected in the first few iterations. Greedy strategy possible, but the $ESO$ is defined for selecting pixels $\tau$-nice sampling. A greedy strategy may break the $ESO$ from the $\tau$-nice sampling. 
+
+But greedy strategy is also on a spectrum. We used 
+
+
+\subsubsection{Restarting}
+
+Restarting FISTA.
+
+Can improve convergence speed a lot.
+
+Show code
+
+In our case, we need to change the active set more often. Basically need to restart the acceleration parameter $\theta$ each time we change the active set.
+
+
+\subsection{"Minor" cycles}
+PSF approximations work really well.
+Then we need more major cycles, which kill the benefit from the $PSF$ approximation
+
+How far we can go with the approximation and the current dirty image.
+Re-introduce something similar to the minor cycle of CLEAN. We start the minor cycle by deconvolving the dirty image with the approximate $PSF$. The residuals are now only an approximation, since we used the smaller $PSF$. We now reset the residuals, we convovle the full $PSF$ with the reconstructed image and subtract the result from the dirty image.
+
+We can skip some major cycles.
+
+
+\subsection{Parameters of the accelerated parallel coordinate descent algorithm}
+What was tested.
+Just the pure active set iterations.
+
+We measure the time and the objective value. What parameters lead to the fastest convergence times.
+
+\subsubsection{Block size}
+Block size is not useful to speed up. More difficult code.
+
+From here on out we will always use single pixels. I.e. blocks of the size of 1.
+
+\subsubsection{$PSF$ approximation}
+We expect to benefit a lot more
  
+And it does. 
 
-\subsubsection{From single pixel to blocks}
-block update strategy
+\subsubsection{Pseudo-random strategy}
+By how much do we need to search the area.
 
-closed form solution
-\begin{equation}
-block = \frac{A^Ty}{A^TA}
-\end{equation}
-
-$A^Ty$ are again the gradients.
-we need an inverse of $A^TA$. And it is numerically stable for block sizes below $4^2$. 
-
-A different update rule. We just update the whole block like this
-\begin{equation}
-block = \frac{A^Ty}{Lipschitz}
-\end{equation}
-
-We have one lipschitz constant donw below. This is just the lipschitz constant for each pixel multiplied with each other. In other words: the larger we chose the blocks to be, the smaller steps we can take.
-
-Similarities to (F)ISTA \cite{beck2009fista} for a single block.
-If we chose a block size the same as the image, we arrive at the (F)ISTA algorithm.
-But the Lipschitz constant is enormous. If the image itself is sparse, we basically "waste" step sizes on zero pixels. So we can take larger steps for pixels that matter with smaller step sizes.
-
-Good step sizes get tested out later
+And it is a tiny fraction. A lot less communication cost. Close to random, but not quite.
 
 
-\subsubsection{PCDM in pseudo-code}
-
-PCDM for our deconvolution objective
-
-Select random blocks
-Update blocks in parallel
-update gradient map
-
-Last part is the random selection strategy.
-$\tau$-nice sampling. I.e. take $\tau$ number of pixels uniformly at random.
-
-Core of the algorithm is the update rule
+\subsubsection{Acceleration}
+Not useful
 
 
-The ESO.
-The Estimated Seperability overapproximation
-what selection strategy we use
+\subsection{Comparison to the serial coordinate descent algorithm}
+Which is faster
+
+Proper comparison
+
+Acceleration factor
 
 
-Can be done asynchronously.
-
-\subsection{Adapting random selection strategies for deconvolution} \label{pcdm:adaption}
-The problem with random strategies. We have subsets of pixels that have to be deconvolved first. Even worse: A random strategy can lead to the algorithm getting "stuck": It randomly adds a few pixels close to a source. Now, when. we can get stuck where we first need to remove the old values. 
-Old values potentially need several iterations. So we need to, randomly, select specific pixels multiple times before we can properly add the right pixel.
-Really inefficient.
-
-Other problem of wasted iterations: First, we tend to have a lot of possible pixels to optimize. Then during the iterations, the amount of possible pixels are reduced, and most random selections lead to just a 
-
-
-\subsubsection{Cold start}
-Cold start is when we do not have any pixels.
-
-First iterations are problematic. Here we have a few pixels that reduce the objective function by a lot. Afterwards it tends to become more evenly distributed where multiple pixels are a good choice to reduce the objective function.
-
-Our basic coordinate descent method from Section can be thought of as special case of the PCDM algorithm. Our coordinate descent method descends a single pixel at a time, and updates the gradients after each iteration. The first generalization is that we can update a block of pixels at each iteration, called block coordinate descent. We still update the gradient in each iteration. The next generalization is we update severeal blocks in parallel, and before we update the gradients.
-
-Two extra variables, how many pixels we update together in a block, and how many blocks we update in parallel before we update the gradients.
-
-\subsubsection{Active Set heuristic}
-Active set heuristic used for cyclic coordinate descent. Choose a subset of pixels and optimize those until convergence. Then choose a new set.
-
-Add every block in the active set that has a pixel we can modify.
-Pixels that have
-
-
-\subsubsection{APPROX pseudo code}
-
-
-\subsection{APPROX implementation}
-
-
+\subsection{Scalability of the parallel coordinate descent algorithm}
+How many processors can we realistically use. At what point does the $ESO$ get too small.
 
 
 

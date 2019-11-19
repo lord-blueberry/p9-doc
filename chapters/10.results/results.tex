@@ -50,7 +50,6 @@ In our test reconstruction, we need to account for $w$-term correction and high-
 
 In Section \ref{results:gradients} we show the core result of this project. Namely what effect has an approximate $PSF$ on the deconvolution problem and whether we can use it to further distribute the problem. The answer to that question is affirmative: We can approximate the $PSF$, and we can exploit it to further distribute the deconvolution. But we need more sophisticated coordinate descent algorithms to fully benefit from it.
 
-
 \subsection{Comparison with CLEAN reconstructions} \label{results:cleancomp}
 We use the WSCLEAN \cite{offringa2014wsclean} implementation of multi-scale CLEAN. We compare our coordinate descent reconstruction with two CLEAN reconstructions, oe with naturally weighted visibilities and one with briggs weighted visibilities.
 
@@ -294,4 +293,3 @@ Figure \ref{results:gradients:comparison:image} compares the original result wit
 Difference is negligible. We can use the approximation and arrive at the same result. Speedup of a factor 1.6
 How many major cycles: One more than the original. But same as multi-scale CLEAN.
 
-\subsubsection{Masking the $PSF$}
