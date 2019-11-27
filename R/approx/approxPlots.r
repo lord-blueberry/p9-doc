@@ -15,25 +15,31 @@ readExperimet <- function(folder, file, experimentName, df){
   return(df)
 }
 
-folder <- "approx/gridTest"
-file <- "cpuTest8block1.txt"
-table = read.table(file.path(folder,file), header=TRUE, dec=",", sep=";")
-table[,"cycle"] = as.factor(table$cycle)
-table["experimentName"] = "block1"
+folder <- "approx/PsfSize"
+file <- "PsfSize8.txt"
+data = read.table(file.path(folder,file), header=TRUE, dec=",", sep=";")
+data[,"cycle"] = as.factor(data$cycle)
+data["experimentName"] = "psf8"
+for(i in c(16,32, 64)) {
+  file <- paste("PsfSize", i, ".txt", sep="")
+  data2 = read.table(file.path(folder,file), header=TRUE, dec=",", sep=";")
+  data2[,"cycle"] = as.factor(data2$cycle)
+  data2["experimentName"] = paste("psf",i,sep="")
+  data <- rbind(data, data2)
+}
 
-folder2 <- "approx/searchTest"
-file2 <- "Grid_cpu8block1search0.05.txt"
-t = read.table(file.path(folder2,file2), header=TRUE, dec=",", sep=";")
-t[,"cycle"] = as.factor(t$cycle)
-t["experimentName"] = "searchFraction"
-combined <- rbind(table, t)
+outputfolder <- "./approx/output/"
 
-combined = readExperimet(folder, file2, "searchFraction", table)
-
-ggplot(data = combined, mapping = aes(x = seconds, y = objectiveNormal, linetype=cycle, color= experimentName)) + 
+png(paste(outputfolder, "psfSize.png", sep=""),
+    width = 6.0,
+    height = 4.0,
+    units = "in",
+    res = 256)
+ggplot(data = data, mapping = aes(x = seconds, y = objectiveNormal, color= experimentName)) + 
   xlab("time") +
   ylab("Objective value") +
   geom_line() +
   scale_y_continuous(trans= "log10")+
   scale_x_continuous(trans= "log10")+
-  coord_cartesian(ylim=c(28, 280.0))
+  coord_cartesian(ylim=c(30, 280.0))
+dev.off()
