@@ -145,3 +145,56 @@ ggplot(data, aes(x=x, y=y, fill=intensity))  +
   scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -2, hue = 1.5, gamma = 0.5), guide=FALSE) + 
   theme_void()
 dev.off()
+
+
+#----------------------------------------------- CLEAN images
+inputFolder <- "./images/simulated/exampleCLEAN/"
+outputfolder <- "./images/output/simulated/"
+
+data <- read.table(paste(inputFolder, "dirty_CLEAN_0.csv", sep=""), sep=";", header=TRUE, dec=",")
+minD <- min(data$intensity)
+maxD <- max(data$intensity)
+for(i in 0:3) {
+  data <- read.table(paste(inputFolder, "dirty_CLEAN_", i, ".csv", sep=""), sep=";", header=TRUE, dec=",")
+  png(paste(outputfolder, paste("dirty_CLEAN_", i, ".png",sep=""), sep=""),
+      width = 4.0,
+      height = 4.0,
+      units = "in",
+      res = 256)
+  plot <- ggplot(data, aes(x=x, y=y, fill=intensity))  +
+    geom_tile() +
+    scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -2, hue = 1.5, gamma = 0.5), guide=FALSE, limits=c(minD, maxD)) + 
+    theme_void()
+  print(plot)
+  dev.off()
+}
+
+data <- read.table(paste(inputFolder, "rec_CLEAN.csv", sep=""), sep=";", header=TRUE, dec=",")
+minR <- min(data$intensity)
+maxR <- max(data$intensity)
+png(paste(outputfolder, paste("rec_CLEAN.png",sep=""), sep=""),
+    width = 4.0,
+    height = 4.0,
+    units = "in",
+    res = 256)
+plot <- ggplot(data, aes(x=x, y=y, fill=intensity))  +
+  geom_tile() +
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -2, hue = 1.5, gamma = 0.5), guide=FALSE, limits=c(minR, maxR)) + 
+  theme_void()
+print(plot)
+dev.off()
+
+for(i in 0:3) {
+  data <- read.table(paste(inputFolder, "model_CLEAN_", i, ".csv", sep=""), sep=";", header=TRUE, dec=",")
+  png(paste(outputfolder, paste("model_CLEAN_", i, ".png",sep=""), sep=""),
+      width = 4.0,
+      height = 4.0,
+      units = "in",
+      res = 200)
+  plot <- ggplot(data, aes(x=x, y=y, fill=intensity))  +
+    geom_tile() +
+    scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -2, hue = 1.5, gamma = 0.5), guide=FALSE, limits=c(minR, maxR)) + 
+    theme_void()
+  print(plot)
+  dev.off()
+}
