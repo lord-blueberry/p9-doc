@@ -127,7 +127,7 @@ This section introduces the commonly used architecture for radio interferometric
 
 First, let us look back at the objective function. In the previous section, the objective function \eqref{radio:cs:lasso} contained the visiblity measurements $V$ in Fourier space, the reconstructed image $x$ in image space, and the Fourier transform matrix $F$ that represents the relationship between image and Fourier space. However, this is only one way to formulate the reconstruction problem:
 
-\begin{equation}
+\begin{equation} \label{radio:rec:objective}
 \begin{split}
 \underset{x}{minimize} &\: \left \| V - MFx \right \|_2^2 + \lambda \left \| x \right \|_1 \\
 \underset{V_2}{minimize} &\: \left \| V - MV_2 \right \|_2^2 + \lambda \left \| F^{-1}V_2 \right \|_1 \\
@@ -202,18 +202,33 @@ A CLEAN iteration begins with searching the maximum pixel in the residual image.
 			\includegraphics[width=0.45\linewidth, clip, trim= 1.0in 1.0in 1.0in 1.0in]{./chapters/01.intro/cleanExample/dirty_CLEAN_3.png} & \includegraphics[width=0.45\linewidth, clip, trim= 1.0in 1.0in 1.0in 1.0in]{./chapters/01.intro/cleanExample/model_CLEAN_3.png} 
 		\end{tabular}
 		\caption{Iteration 3}
+		\label{radio:clean:figure:iter3}
 	\end{subfigure}
 
 	\caption{CLEAN deconvolution iterations.}
 	\label{radio:clean:figure}
 \end{figure}
 
+After a number of CLEAN iterations, the model image contains a number of non-zero pixels. But CLEAN also leaves artifacts in the model image. As we see in Figure \ref{radio:clean:figure:iter3}, iteration 3 adds another non-zero pixel close to the already detected one. CLEAN brushes over the artifacts by simply blurring the model image with the "CLEAN-beam" after CLEAN has finished its iterations. The CLEAN-beam represents the accuracy limit of the radio interferometer. By blurring the image, CLEAN reconstructs the image at the limit of the instrument. The blurring with the CLEAN-beam is shown in Figure \ref{radio:clean:beam}
 
-CLEAN deconvolutions algorihm
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.25\linewidth, clip, trim= 1.0in 1.0in 1.0in 1.0in]{./chapters/01.intro/cleanExample/model_CLEAN_3.png}
+	\includegraphics[width=0.25\linewidth, clip, trim= 1.0in 1.0in 1.0in 1.0in]{./chapters/01.intro/cleanExample/rec_CLEAN.png}
+	\caption{Blurring with the CLEAN-beam}
+	\label{radio:clean:beam}
+\end{figure}
 
-Problem
+The CLEAN algorithm assumes the image contains point sources. In each iteration, it essentially adds the most-likely point source. It is a greedy algorithm, because it searches the most-likely point source in each iteration. It approximately minimizes the deconvolution objective of \eqref{radio:rec:objective}, and uses a similar regularization to the L1 norm. The regularization in CLEAN is implicit in the algorithm. In practice, CLEAN implementations use several heuristics, which makes an exact analysis of the regularization difficult.
 
 \subsubsection{The Major/Minor cycle}\label{intro2:opt:cycle}
+During CLEAN deconvolutions, the algorithm assumes that the $PSF$ is constant over the image. However, this is not the case for wide field-of-view observations. The $w$-term changes the $PSF$ depending on the location in the image. CLEAN deconvolutions only approximate the true $PSF$. With more CLEAN iterations the residuals image becomes less accurate. To solve this issue, a deconvolution algorithm is used inside the Major/Minor cycle framework. 
+
+The Minor cycle is responsible for deconvolution. Typically, a CLEAN based algorithm is used. Every CLEAN iteration is then called a "Minor" cycle. After a number of CLEAN iterations, the residual image is too inaccurate. Then, the Major cycle takes the model image of CLEAN, and transforms it back to the original Fourier space, called the "model visibilities. It then subtracts the model visibilities from the measured visibilities, and transforms the residual visibilities back to the image space.
+
+The major cycle has updated the residuals, and the deconvolution algorithm can continue. The Major cycle allows us to use an approximate $PSF$ in the deconvolution algorithm.
 
 
 \subsubsection{Distributed image reconstruction}
+
+Recently, image reconstruction algorithms based on convex optimization techniques were able to reconstruct the model image directly\cite{dabbech2018cygnus}. They can essentially reconstruct 

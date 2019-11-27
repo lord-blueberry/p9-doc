@@ -160,10 +160,10 @@ for(i in 0:3) {
       width = 4.0,
       height = 4.0,
       units = "in",
-      res = 256)
+      res = 192)
   plot <- ggplot(data, aes(x=x, y=y, fill=intensity))  +
     geom_tile() +
-    scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -2, hue = 1.5, gamma = 0.5), guide=FALSE, limits=c(minD, maxD)) + 
+    scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -2, hue = 1.5, gamma = 0.8), guide=FALSE, limits=c(minD, maxD)) + 
     theme_void()
   print(plot)
   dev.off()
@@ -176,10 +176,10 @@ png(paste(outputfolder, paste("rec_CLEAN.png",sep=""), sep=""),
     width = 4.0,
     height = 4.0,
     units = "in",
-    res = 256)
+    res = 192)
 plot <- ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
-  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -2, hue = 1.5, gamma = 0.5), guide=FALSE, limits=c(minR, maxR)) + 
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -2, hue = 1.5, gamma = 0.8), guide=FALSE, limits=c(minR, maxR)) + 
   theme_void()
 print(plot)
 dev.off()
@@ -190,10 +190,10 @@ for(i in 0:3) {
       width = 4.0,
       height = 4.0,
       units = "in",
-      res = 200)
+      res = 192)
   plot <- ggplot(data, aes(x=x, y=y, fill=intensity))  +
     geom_tile() +
-    scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -2, hue = 1.5, gamma = 0.5), guide=FALSE, limits=c(minR, maxR)) + 
+    scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -2, hue = 1.5, gamma = 0.8), guide=FALSE, limits=c(minR, maxR)) + 
     theme_void()
   print(plot)
   dev.off()
