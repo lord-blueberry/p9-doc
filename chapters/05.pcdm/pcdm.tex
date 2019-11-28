@@ -269,19 +269,61 @@ We can skip some major cycles.
 
 \subsection{Parameters of the accelerated parallel coordinate descent algorithm}
 What was tested.
-Just the pure active set iterations.
+Just the pure active set iterations. Boiler plate code was not tested
 
 We measure the time and the objective value. What parameters lead to the fastest convergence times.
 
+
+\subsubsection{$PSF$ approximation}
+We expect to benefit a lot more
+
+Use the combined $PSF$ approximation.
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}{0.6\linewidth}
+		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/parameters/psfSize.png}
+	\end{subfigure}
+	\begin{subfigure}{0.35\linewidth}
+		\begin{tabular}{c | c}
+			PSF Fraction & Total seconds \\ \hline
+			1 / 4 & 256 \\
+			1 / 8 & 256 \\
+			1 / 16 & 256 \\
+			1 / 32 & 256 \\
+			1 / 64 & 256 \\
+		\end{tabular}
+	\end{subfigure}
+	\caption{Convergence speedup with $PSF$ approximation}
+\end{figure}
+
+And it does. A clear advantage for using. Large speedup factor
+Question whether to use $\frac{1}{32}$ or $\frac{1}{64}$.
+
+
 \subsubsection{Block size}
+Test the effect of increasing the block size
+
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}{0.6\linewidth}
+		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/parameters/blockSize.png}
+	\end{subfigure}
+	\begin{subfigure}{0.35\linewidth}
+		\begin{tabular}{c | c}
+			Block Size & Total seconds \\ \hline
+			1 & 256 \\
+			2 & 256 \\
+			4 & 256 \\
+			8 & 256 \\
+		\end{tabular}
+	\end{subfigure}
+	\caption{Convergence speedup with $PSF$ approximation}
+\end{figure}
 Block size is not useful to speed up. More difficult code.
 
 From here on out we will always use single pixels. I.e. blocks of the size of 1.
 
-\subsubsection{$PSF$ approximation}
-We expect to benefit a lot more
  
-And it does. 
 
 \subsubsection{Pseudo-random strategy}
 By how much do we need to search the area.
