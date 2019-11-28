@@ -34,7 +34,7 @@ We can reconstruct the image by finding the optimum of the objective function \e
 
 A side note: We are guaranteed to find the observed image at the minimum of \eqref{radio:cs:l2} is when the measurements fulfill the Nyquist-Shannon sampling theorem. In that case, we can find the minimum by calculating the inverse Fourier transform: $x = F^{-1}V$. We can still calculate the inverse Fourier transform when we are dealing with incomplete measurements, but it does not result in the observed image.
 
-However, the objective \eqref{radio:cs:l2} only includes information about the measurements. As we have mentioned before, we have prior knowledge about the image. We know it is likely to contain stars. Stars are radio-emissions which are concentrated around a single pixel. In that case, most pixels of the image will be zero, except for the locations where the interferometer has located stars. In other words, we know that the image is sparse. We can add a regularization to the objective function \eqref{radio:cs:l2} and force the reconstructed image to be sparse. This results in the modified objective function:
+The objective \eqref{radio:cs:l2} only includes information about the measurements. As we have mentioned before, we have prior knowledge about the image. We know for exampe it is likely to contain point sources. In that case, most pixels of the image will be zero, except for the locations where the interferometer has located the point sources. In other words, we know that the image is sparse. We can add a regularization to the objective function \eqref{radio:cs:l2} and force the reconstructed image to be sparse. This results in the modified objective function:
 
 \begin{equation}\label{radio:cs:lasso}
 \underset{x}{minimize} \: \left \| V - MFx \right \|_2^2 + \lambda \left \| x \right \|_1
@@ -46,17 +46,11 @@ The reconstruction quality also depends on how well the regularization models th
 
 In a sense there is data modeling task involved in the image reconstruction. The better we understand what a plausible image looks like, the higher the reconstruction quality. Recent work managed to reconstruct super-resolved images for the VLA interferometer\cite{dabbech2018cygnus}, where the reconstruction achieved a resolution higher than the limit of the instrument itself.
 
-
-Still an open problem for the data volume of MeerKAT.
-Focus on the numerical optimization algorithm and how it deals with the large data volume of MeerKAT.
-
-A reconstruction algorithm consists of three parts: A regularization that models what a plausible image looks like, an objective function and a numerical optimization algorithm. In this project we focus on the numerical optimization algorithm, and try to speed up the 
-We deal mainly with the numerical optimization algorithm
-Difficu
+The image reconstruction problem is ill-posed, but with the right regularization we can reconstruct an image which even surpasses the accuracy limit of the instrument. However, the regularization also influences other properties of the reconstruction algorithm, such as the wall-clock time for a single reconstruction, or its behavior with very noisy visibilities. The question of the optimal regularization is, as of the time of writing, still open in radio astronomy.
 
 
-\subsection{Introduction to the MeerKAT radio interferometer}
-A radio interferometer consists of several antennas. Each antenna pair measures a visibility in Fourier space. Each measurement consists of an amplitude and phase at a location at a $u$ and $v$  location. The distance between the antennas, which we call the baseline, defines what point in the Fourier space gets sampled. The Figure \ref{radio:sampling:ants} shows the antenna layout of the MeerKAT radio interferometer, and the Figure \ref{radio:sampling:pattern} shows the measurement points in Fourier space. Short baselines sample points close to the origin, and contain the low-frequency Fourier components. They contain information about large areas of the images. Longer baselines measure points further away from the origin. They sample the high-frequency Fourier components. They contain information about edges, and other small structures in the image.
+\subsection{Introduction to the MeerKAT observations}
+So far, we looked at how image reconstruction works in theory. We need a regularization to model our prior knowledge, that the image is a mixture of point sources and extended emissions. Then, all we need is a convex optimization algorithm, which finds us the most likely image. Real-world radio interferometer introduce complexities which have to be handled by the reconstruction algorithm. First, there is a large number of visibility measurements. Any operation on the measurements is potentially time consuming. Secondly, the measurements of modern radio interferometers become more complicated, as we will show in the next section. Here, we show how MeerKAT can produce an almost arbitrary large amount of visibility measurements.
 
 \begin{figure}[!h]
 	\centering
@@ -86,14 +80,21 @@ A radio interferometer consists of several antennas. Each antenna pair measures 
 	\label{intro:sampling}
 \end{figure}
 
-The sampling pattern of the MeerKAT interferometer is not uniform in the Fourier space. We have areas which are densely sampled, and areas which are sparsely sampled. Note that we only have a few samples of the high-frequency Fourier components. We are missing measurements from a large portion of the Fourier space.
 
-Radio interferometers use two tricks to measure more points in the Fourier space. Radio interferometers measure the sky in different radio channels simultaneously. We can add the visibility measurements from different channels together, shown in Figure \ref{radio:sampling:freq}. Each channel measures the Fourier space using the same pattern, but scaled by the radio frequency. 
+The MeerKAT radio interferometer consists of 64 antennas. Each antenna pair creates a single baseline, and each baseline results in a single visibility. This results in 2016 visibilities for the MeerKAT interferometer. The distance between the antennas of each pair is important: The distance defines what point in the Fourier space gets sampled. A short baseline samples close to the origin of the Fourier space, and contain low-frequency Fourier components of the sky image. Long baselines measure points further away from the origin. They sample the high-frequency Fourier components, and contain information about sharp edges in the image. Figure \ref{radio:sampling:ants} shows the 64 antennas of MeerKAT, while the Figure \ref{radio:sampling:pattern} shows the 2016 visibility samples in the Fourier space.
 
-The second trick is to use the earth's rotation to sample different points in the Fourier space. The earth's rotation also rotates the sampling pattern in Fourier space, shown in Figure \ref{radio:sampling:time}, and we can sample the Fourier space at new locations.
 
-The MeerKAT radio interferometer measures 2016 visibilities, for each channel, at each timestep. It has 20 thousand radio channels. The time resolution can be as low as half a second. This results in roughly 80 million visibility measurements per second. In radio astronomy, we want to reconstruct several hours worth of visibility measurements.
+The sampling pattern of the MeerKAT interferometer is not uniform in the Fourier space. We have areas which are densely sampled, and areas which are sparsely sampled. Note that we only have a few samples of the high-frequency Fourier components. We are missing measurements from a large portion of the Fourier space. Modern radio interferometers use two tricks to fill up the Fourier space with more visibility samples: Adding visiblities from different channels, and from different timesteps.
 
+The interferometer measures the sky at different radio channels simultaneously. We can add the visibilities from neighboring channels together, resulting in the visibility pattern shown in Figure \ref{radio:sampling:freq}. Each channel measures the Fourier space using the same pattern, but scaled by the radio frequency.
+
+The interferometer observes the sky over a period of time. Depending on the observation, this can be minutes, up to several hours. During this time, the rotation of the Earth rotates the sampling pattern in Fourier space, shown in Figure \ref{radio:sampling:time}.
+
+The MeerKAT radio interferometer measures 2016 visibilities, for each channel at each timestep. It has 20 thousand channels, and the time resolution can be as low as half a second. This results in roughly 80 million visibility measurements for each second of observation. A real-world observation can span over several hours, and take up several terabytes of disk space. The data volume alone creates difficulties in any practical reconstruction algorithm. The large number of visibility measurements is difficult to keep in memory. Any operation on the whole set of visibilities becomes impractical.
+
+But MeerKAT introduces further complications apart from the large data volume. Adding the visibilities from 20 thousand channels together becomes inaccurate. For an accurate reconstruction, the reconstruction algorithm has to perform wide-band imaging: Instead of reconstructing a single image containing the visibilities from all frequencies, the algorithm reconstructs an image cube, where each image represents a single, or a small fraction of all channels. Wide-band imaging is out of scope for our project.
+
+Furthermore, the reconstructed image from MeerKAT observations generally span a wide field-of-view. 
 wide field of view,
 wide band
 polarization

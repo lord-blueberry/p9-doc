@@ -1,6 +1,6 @@
 \BOOKMARK [1][-]{section.1}{The image reconstruction problem of radio interferometers}{}% 1
 \BOOKMARK [1][-]{section.2}{Introduction to radio interferometric imaging}{}% 2
-\BOOKMARK [2][-]{subsection.2.1}{Introduction to the ill-posed inverse problems}{section.2}% 3
+\BOOKMARK [2][-]{subsection.2.1}{Introduction to the ill-posed inverse problem}{section.2}% 3
 \BOOKMARK [2][-]{subsection.2.2}{Introduction to the MeerKAT radio interferometer}{section.2}% 4
 \BOOKMARK [3][-]{subsubsection.2.2.1}{Introduction to the third visibility term}{subsection.2.2}% 5
 \BOOKMARK [2][-]{subsection.2.3}{Introduction to image reconstruction algorithm for radio interferometer}{section.2}% 6
