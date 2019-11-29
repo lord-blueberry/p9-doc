@@ -75,7 +75,7 @@ file <- "SearchPercent0,01.txt"
 data = read.table(file.path(folder,file), header=TRUE, dec=",", sep=";")
 data[,"cycle"] = as.factor(data$cycle)
 data["experimentName"] = 0.01
-for(i in c(0.05, 0.1, 0.2, 0.4, 0.6, 0.8)) {
+for(i in c(0.1, 0.4, 0.8)) {
   id = paste(i)
   id = sub("\\.", ",", id)
   file <- paste("SearchPercent", id, ".txt", sep="")
@@ -97,6 +97,34 @@ ggplot(data = data, mapping = aes(x = seconds, y = objectiveNormal, color= exper
   geom_line() +
   scale_y_continuous(trans= "log10")+
   scale_x_continuous(trans= "log10")+
-  scale_color_discrete(name = "Search %", labels = levels(data$experimentName))*100 +
+  scale_color_discrete(name = "Search %", labels = levels(data$experimentName)) +
+  coord_cartesian(ylim=c(30, 280.0))
+dev.off()
+
+
+
+folder <- "approx/noAcceleration"
+file <- "PsfSize32.txt"
+data = read.table(file.path(folder,file), header=TRUE, dec=",", sep=";")
+data[,"cycle"] = as.factor(data$cycle)
+data["experimentName"] = "APPROX"
+file <- "TestNotAccelerated.txt"
+data2 = read.table(file.path(folder,file), header=TRUE, dec=",", sep=";")
+data2[,"cycle"] = as.factor(data2$cycle)
+data2[, "experimentName"] <- "PCDM"
+data <- rbind(data, data2)
+data[, "experimentName"] <- as.factor(data[, "experimentName"])
+png(paste(outputfolder, "acceleration.png", sep=""),
+    width = 6.0,
+    height = 4.0,
+    units = "in",
+    res = 256)
+ggplot(data = data, mapping = aes(x = seconds, y = objectiveNormal, color= experimentName)) + 
+  xlab("time") +
+  ylab("Objective value") +
+  geom_line() +
+  scale_y_continuous(trans= "log10")+
+  scale_x_continuous(trans= "log10")+
+  scale_color_discrete(name = "Algorithm", labels = levels(data$experimentName)) +
   coord_cartesian(ylim=c(30, 280.0))
 dev.off()

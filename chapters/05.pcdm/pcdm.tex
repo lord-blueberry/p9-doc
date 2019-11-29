@@ -61,7 +61,7 @@ gradientsMap = iFFT(FFT(residualsPadded) * FFT(psfPadded))
 lipschitzMap = CalcLipschitz(PSF)
 
 objectiveValue = 0.5* Sum(residuals * residuals) + ElasticNet(x)
-ESO = CalcESO(CountNonZero(PSF), t, x.Length / blockSize)
+eso = ESO(CountNonZero(PSF), t, x.Length / blockSize)
 
 do 
 	oldObjectiveValue = objectiveValue
@@ -75,7 +75,7 @@ do
 		blockLipschitz = Sum(GetBlock(LipschitzMap, block))
 		
 		//increase blockLipschitz according to the ESO
-		blockLipschitz = blockLipschitz * ESO
+		blockLipschitz = blockLipschitz * eso
 		gradientsBlock = GetBlock(gradientMap, block)
 		oldBlock = GetBLock(x, block)
 		tmp = gradientsBlock + oldBlock * blockLipschitz
@@ -91,7 +91,7 @@ do
 		for each pixel in block
 			diff = diffBlock[pixel]
 			shiftedUpdate = Shift(gradientUpdate, pixelLocation)
-			gradientMap = gradientMap - shiftedUpdate * maxDiff
+			gradientMap = gradientMap - shiftedUpdate * diff
 			
 while maxAbsDiff  < epsilon
 \end{lstlisting}
@@ -105,13 +105,13 @@ The core of the parallel coordinate descent algorithm is the Estimated Seperabil
 The ESO is derived from three components: The uniform sampling strategy used, the number of parallel updates, and the number of non-zero components in the $PSF$. We use a $t$-nice uniform sampling. The ESO that arises from the $t$-nice sampling (take $t$ blocks uniformly at random) according to\cite{richtarik2016parallel}:
 
 \begin{equation}\label{pcdm:pcdm:eso}
-CalcESO(\omega, t, n) = 1+ \frac{(\omega - 1)(t - 1)}{max(1, n -1)}
+ESO(\omega, t, n) = 1+ \frac{(\omega - 1)(t - 1)}{max(1, n -1)}
 \end{equation}
 
 Where $\omega$ is the number of non-zero entries in the $PSF$, $t$ is the number of parallel updates, and $n$ is the number of blocks in the problem. For example: The image is $256^2$ pixels in size, we update blocks with a size of $4^2$ pixels, the $PSF$ has $\omega = 24$ non zero entries, and we use $t = 4$ processors, then the ESO is:
 
 \begin{equation}
-CalcESO(\omega = 24, t = 4, n = (256^2 / 4^2)) = 1+ \frac{(24 - 1)(4 - 1)}{max(1, 4096 -1)} \approx 1.017
+ESO(\omega = 24, t = 4, n = (256^2 / 4^2)) = 1+ \frac{(24 - 1)(4 - 1)}{max(1, 4096 -1)} \approx 1.017
 \end{equation}
 
 The lowest possible value for the ESO is $1$. The fewer processors $t$ we use and the fewer non-zero components $\omega$ the $PSF$ has, the closer the ESO is to 1. We want a small ESO with the highest number of processors possible. As we see from equation \eqref{pcdm:pcdm:eso}, the ESO gets smaller with fewer non-zero values in the $PSF$.
@@ -122,8 +122,9 @@ Remember that the $PSF$ in radio astronomy is typically dense. Although most of 
 \subsection{Accelerated parallel block coordinate descent method}
 We introduced the parallel coordinate descent algorithm in the previous section. In this section we extend the previous algorithm with gradient acceleration, similar to the APPROX method \cite{fercoq2015accelerated}.
 
-Instead of using a single gradient map and a single reconstructed image $x$ variable, we an 'explore' and 'correction' variable of both. The algorithm uses an $xExplore$,  $xCorrection$ and $gradientMapExplore$, $gradientMapCorrection$. Intuitively, the 'correction' variables contain the accelerated part of the algorithm, and the 'explore' variables the standard part. The variable $\theta$ is our acceleration variable.
+Instead of using a single gradient map and a single reconstructed image $x$ variable, we an 'explore' and 'correction' variable of both. The algorithm uses an $xExplore$,  $xCorrection$ and $gradientMapExplore$, $gradientMapCorrection$. Intuitively, the 'correction' variables contain the accelerated part of the algorithm, and the 'explore' variables the standard part.
 
+We introduce the acceleration variable $theta$, and arrive at the following accelerated, parallel block coordinate descent algorithm:
 \begin{lstlisting}
 dirty = IFFT(GridVisibilities(visibilities))
 residualsPadded = ZeroPadding(dirty)
@@ -139,9 +140,9 @@ gradientMapCorrection = new Array[,]
 lipschitzMap = CalcLipschitz(PSF)
 
 objectiveValue = 0.5* Sum(residuals * residuals) + ElasticNet(x)
-ESO = CalcESO(CountNonZero(PSF), t, x.Length / blockSize)
-theta = 
-theta0 = 
+eso = ESO(CountNonZero(PSF), t, x.Length / blockSize)
+theta0 = t / (x.Length / blockSize)
+theta = theta0
 
 do 
 	oldObjectiveValue = objectiveValue
@@ -155,40 +156,43 @@ do
 	blockLipschitz = Sum(GetBlock(LipschitzMap, block))
 	
 	//increase blockLipschitz according to the ESO
-	blockLipschitz = blockLipschitz * ESO
-	gradientsBlock = GetBlock(gradientMap, block)
-	oldBlock = GetBLock(x, block)
-	tmp = gradientsBlock + oldBlock * blockLipschitz
+	blockLipschitz = blockLipschitz * eso
+	oldBlock = 
+	tmp = theta^2 * GetBlock(gradientsMapCorrection, block) + GetBlock(gradientsMapExplore, block) + GetBLock(xExplore, block) * blockLipschitz
 	optimalBlock = Max(tmp - lambda*alpha) / (blockLipschitz + (1 - alpha)*lambda)
 	diffBlock = optimalBlock - oldBlock
 	
-	x[block] += diffBlock
+	xExplore[block] += diffBlock
+	xCorrection[block] += diffBlock * (-(1.0f - theta / theta0) / theta^2)
 	diffBlocks[block] = diffBlock
 	
 	//Step 3: Update gradients
 	for each block in blocks
-	diffBlock = diffBlocks[block]
-	for each pixel in block
-	diff = diffBlock[pixel]
-	shiftedUpdate = Shift(gradientUpdate, pixelLocation)
-	gradientMap = gradientMap - shiftedUpdate * maxDiff
+		diffBlock = diffBlocks[block]
+		for each pixel in block
+			diff = diffBlock[pixel]
+			shiftedUpdate = Shift(gradientUpdate, pixelLocation)
+			
+			gradientsMapExplore = gradientsMapExplore - shiftedUpdate * diff
+			gradientsMapCorrection = gradientsMapCorrection - shiftedUpdate * diff * (-(1.0f - theta / theta0) / theta^2);
+			
+	theta = (Sqrt((theta^2 * theta^2) + 4 * (theta^2)) - theta^2) / 2.0f;
 
 while maxAbsDiff  < epsilon
+
+output = new float[,]
+for(i in in Range(0, dirty.Length(0))
+	for(j in in Range(0, dirty.Length(0))
+	output[i, j] = theta * xCorrection[i, j] + xExplore[i, j];
 \end{lstlisting}
 
-This algorithm is identical to the parallel coordinate descent algorithm when we do not modify $\theta$.
+The accelerated variant takes larger steps towards the optimum during deconvolution. As such, it should need fewer iterations to converge than the non-accelerated variant. Note that the accelerated deconvolution algorithm reduces to the normal parallel deconvolution algorithm if we skip the $theta$ update. Then, the 'correction' variables stay zero over all iterations.
 
-Indeed, the first iteration is identical.
-
-We should converge faster, but we double the amount of memory we need.
-Also, for an asynchronous implementation the problem is the gradient maps: Asynchronous updates to the gradient map need some sort of communication between the different processes. By doubling the gradient map, we also double the need for communication.
-
-It is not clear if the accelerated parallel coordinate descent algorithm is worth the costs. We later find out that at least for the LMC observation it is not.
-
+The acceleration comes with a cost attached: Instead of a single gradient map and a single reconstructed image, the acceleration algorithm updates two of each. It is not clear whether the added costs of maintaining the 'explore' and 'correction' variables outweigh the benefit we receive with acceleration. As we will see later, the non-accelerated variant is actually faster on the LMC observation than the accelerated variant.
 
 
 \subsection{The problem with random selection for deconvolution} \label{pcdm:adaption}
-Parallel coordinate descent methods depend on a random pixel selection strategy. As we mentioned before, a random selection strategy seems to perform badly on the deconvolution problem. We show the behavior on the N132D supernova remnant of the LMC observation shown in Figure \ref{pcdm:adaption:randomProblem}.
+Both algorithms, the accelerated and non-accelerated variant as presented here do not perform well on the LMC dataset. The reason lies in the random selection strategy: In the first few iterations, the deconvolution algorithm selects blocks at random, and tries to explain the whole emission in that area. In short, the first iterations always over-estimate the block-values. 
 
 \begin{figure}[h]
 		\centering
@@ -216,39 +220,27 @@ Parallel coordinate descent methods depend on a random pixel selection strategy.
 	\label{pcdm:adaption:randomProblem}
 \end{figure}
 
-Large area of the image has only zero-valued pixels. When we randomly select pixels, we are more likely to select a useless pixel. We can waste a lot of resources randomly selecting irrelevant pixels. 
+The Figure \ref{pcdm:adaption:randomProblem} shows the behaviour on the LMC observation. The reconstructions receive obvious artifacts from the random selection strategy. The blocks, which get selected in the first few iterations, keep their over-estimated values until we randomly select them again in later iterations. Other blocks in the neighborhood cannot be changed to a reasonable value until the algorithm has randomly selected the over-estimated blocks. That is why even after 80k iterations, the N132D supernova remnant gets only hinted at in Figure \ref{pcdm:adaption:randomProblem:block12}. Until the over-estimated blocks get selected again, the algorithm cannot do useful updates in that region.
 
+This behavior is pronounced when we choose a block size of one pixel (i.e. we do not group pixels into blocks). Increasing the block size also increases our changes to select one of the over-estimated block again. But as we see in Figure \ref{pcdm:adaption:randomProblem:block82}, the same problem exists with larger block sizes, although less pronounced. After 80k iterations the N132D supernova remnant is visible, but a few random blocks still contain too much of the emission in that area.
 
-A random selection strategy yields an image with obvious artifacts. The reason behind this behavior lies in the first couple of random deconvolution iterations. The parallel algorithm tries to explain as much of the emission as possible with random pixels. The randomly selected pixels are too high. Any random update in the area cannot improve the objective before it has hit one of the first random pixels. We see this behavior in Figure \ref{pcdm:adaption:randomProblem:block11} and \ref{pcdm:adaption:randomProblem:block12}. After 8 thousand iterations we still have mostly a random pattern of pixels. After 80 thousand iterations, we can see the hints of the supernova remnant. But the randomly selected pixels still explain away too much of the emission.
+The order in which we select blocks seems to be relevant in the deconvolution problem. A random selection strategy needs a prohibitive large number of iterations to converge. But we cannot simply switch out the selection strategy. The random selection strategy is at the core of the Parallel coordinate descent methods. Remember the ESO arises from the fact that we select $tau$ pixels uniformly at random. When we select $tau$-pixels with a greedy strategy, we might break the ESO and may not converge.
 
-The also persists when we use blocks of pixels. Figure \ref{pcdm:adaption:randomProblem:block81} and \ref{pcdm:adaption:randomProblem:block82} show the result of using blocks $8^2$ pixels. In each iteration we select blocks of pixels. After 80k iterations the N132D supernova remnant is visible, but it still contains artifacts.
+To solve this behavior, we introduce the pseudo-random selection strategy:  We select a block at random, but greedily search in the neighborhood for the optimal block to optimize. The size of the neighborhood can be defined by the user. It is essentially a mix between a greedy and a random selection strategy. If we choose the neighborhood to be the whole image, we arrive at a greedy strategy. If we choose the neighborhood to be just one block, we are back at a random strategy. The mixture of the greedy and random strategy allows us to fix the problems with the pure random
 
-We tackled this problem with two strategies, using an active set heuristic and a pseudo-random selection strategy. The active set heuristic improves the efficiency of random block selection, while the pseudo-random selection strategy deals with the artifacts from Figure \ref{pcdm:adaption:randomProblem}.
+We also introduced three heuristics that speed up the parallel deconvolution algorithm in practice: An active set heuristic, Restarting heuristic and a 'Minor' cycle.
 
 
 \subsubsection{Active set heuristic}
-Active set heuristic used for cyclic coordinate descent. Choose a subset of blocks and optimize those until convergence. Then choose a new set.
+The active set heuristic is typically used in cyclic coordinate descent: It chooses a subset of blocks, and optimizes the set until it converges. Then it chooses a  new set. We use the active set heuristic together with our pseudo-random selection strategy. A large portion of the blocks in the image will be zero. If we select blocks at pseudo-random, we are likely to select a block that will never contain non-zero values. The active set heuristic increases the likelihood that the pseudo-random strategy selects a relevant block. 
 
-How to choose the active set: We choose all blocks that can be modified currently.
-
-What is an active set iteration.
-We do a set number of iterations on the active set in parallel and then check whether it makes sense to change the active set. 
-Set of heuristic for finding out if the current active set is still valid:
-
-Idea for checking if active set is still valid: If the pixel which would get updated by the serial coordinate descent algorithm is contained in the active set, we are likely good to go.
-
-If the absolute maximum value of the blocks in the active set decreases faster than the abs-max pixel, we also need to restart.
+At the start of the parallel deconvolution algorithm, we iterate over all blocks. We add all blocks whose value can be changed to non-zero. During parallel iterations, the algorithm only selects blocks from the active set.
 
 
-\subsubsection{Pseudo-random selection}
-Random selection leads to artifacts. Because we need to hit the same block that was randomly selected in the first few iterations. Greedy strategy possible, but the $ESO$ is defined for selecting pixels $\tau$-nice sampling. A greedy strategy may break the $ESO$ from the $\tau$-nice sampling. 
-
-But greedy strategy is also on a spectrum. We used 
 
 
-\subsubsection{Restarting}
-
-Restarting FISTA.
+\subsubsection{Restarting heuristic}
+In accelerated gradient methods, like APPROX or (F)ISTA, restarting the acceleration can lead to a significant speedup\cite{fercoq2016restarting}.
 
 Can improve convergence speed a lot.
 
@@ -257,7 +249,7 @@ Show code
 In our case, we need to change the active set more often. Basically need to restart the acceleration parameter $\theta$ each time we change the active set.
 
 
-\subsection{"Minor" cycles}
+\subsubsection{'Minor' cycles}
 PSF approximations work really well.
 Then we need more major cycles, which kill the benefit from the $PSF$ approximation
 
@@ -267,8 +259,12 @@ Re-introduce something similar to the minor cycle of CLEAN. We start the minor c
 We can skip some major cycles.
 
 
-\subsection{Parameters of the accelerated parallel coordinate descent algorithm}
-What was tested.
+\subsection{Tests on the LMC Observation}
+Does the parallel deconvolution algorithm benefit more from the $PSF$ approximation?
+
+Our heuristics have several parameters, we do a sweep on them and see what happens
+
+What was tested
 Just the pure active set iterations. Boiler plate code was not tested
 
 We measure the time and the objective value. What parameters lead to the fastest convergence times.
@@ -286,11 +282,11 @@ Use the combined $PSF$ approximation.
 	\begin{subfigure}{0.35\linewidth}
 		\begin{tabular}{c | c}
 			PSF Fraction & Total seconds \\ \hline
-			1 / 4 & 256 \\
-			1 / 8 & 256 \\
-			1 / 16 & 256 \\
-			1 / 32 & 256 \\
-			1 / 64 & 256 \\
+			1 / 4 & 4941 \\
+			1 / 8 & 1433 \\
+			1 / 16 & 390 \\
+			1 / 32 & 108 \\
+			1 / 64 & 61 \\
 		\end{tabular}
 	\end{subfigure}
 	\caption{Convergence speedup with $PSF$ approximation}
@@ -311,10 +307,10 @@ Test the effect of increasing the block size
 	\begin{subfigure}{0.35\linewidth}
 		\begin{tabular}{c | c}
 			Block Size & Total seconds \\ \hline
-			1 & 256 \\
-			2 & 256 \\
-			4 & 256 \\
-			8 & 256 \\
+			1 & 108 \\
+			2 & 103 \\
+			4 & 248 \\
+			8 & 905 \\
 		\end{tabular}
 	\end{subfigure}
 	\caption{Convergence speedup with $PSF$ approximation}
@@ -328,11 +324,49 @@ From here on out we will always use single pixels. I.e. blocks of the size of 1.
 \subsubsection{Pseudo-random strategy}
 By how much do we need to search the area.
 
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}{0.6\linewidth}
+		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/parameters/searchPercent.png}
+	\end{subfigure}
+	\begin{subfigure}{0.35\linewidth}
+		\begin{tabular}{c | c}
+			Search Percentage & Total seconds \\ \hline
+			0.01 & 106 \\
+			0.1 & 108 \\
+			0.2 & 100 \\
+			0.4 & 104 \\
+			0.8 & 123 \\
+		\end{tabular}
+	\end{subfigure}
+	\caption{Convergence speedup with $PSF$ approximation}
+\end{figure}
+
 And it is a tiny fraction. A lot less communication cost. Close to random, but not quite.
 
 
 \subsubsection{Acceleration}
 Not useful
+
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}{0.6\linewidth}
+		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/parameters/acceleration.png}
+	\end{subfigure}
+	\begin{subfigure}{0.35\linewidth}
+		\begin{tabular}{c | c}
+			Method & Total seconds \\ \hline
+			With Acceleration & 108 \\
+			Without Acceleration & 84 \\
+		\end{tabular}
+	\end{subfigure}
+	\caption{Convergence speedup with $PSF$ approximation}
+\end{figure}
+
+Acceleration not useful. 
+Non-accelerated method is clearly faster at every step. 
+
+aster. Less boilerplate code, meaning it is clearly the better choice
 
 
 \subsection{Comparison to the serial coordinate descent algorithm}

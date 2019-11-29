@@ -92,17 +92,9 @@ The interferometer observes the sky over a period of time. Depending on the obse
 
 The MeerKAT radio interferometer measures 2016 visibilities, for each channel at each timestep. It has 20 thousand channels, and the time resolution can be as low as half a second. This results in roughly 80 million visibility measurements for each second of observation. A real-world observation can span over several hours, and take up several terabytes of disk space. The data volume alone creates difficulties in any practical reconstruction algorithm. The large number of visibility measurements is difficult to keep in memory. Any operation on the whole set of visibilities becomes impractical.
 
-But MeerKAT introduces further complications apart from the large data volume. Adding the visibilities from 20 thousand channels together becomes inaccurate. For an accurate reconstruction, the reconstruction algorithm has to perform wide-band imaging: Instead of reconstructing a single image containing the visibilities from all frequencies, the algorithm reconstructs an image cube, where each image represents a single, or a small fraction of all channels. Wide-band imaging is out of scope for our project.
+But MeerKAT introduces further complications apart from the large data volume. Adding the visibilities from 20 thousand channels together becomes inaccurate. For an accurate reconstruction, the reconstruction algorithm has to perform wide-band imaging: Instead of reconstructing a single image containing the visibilities from all frequencies, the algorithm reconstructs an image cube, where each image represents a single, or a small fraction of all channels. Wide-band imaging is out of scope for our project, and our reconstruction algorithm only considers narrow-band imaging.
 
-Furthermore, the reconstructed image from MeerKAT observations generally span a wide field-of-view. 
-wide field of view,
-wide band
-polarization
-
-We limit to wide field-of-view observations.
-
-
-
+Furthermore, the reconstructed image from MeerKAT observations generally span a wide field-of-view. For an accurate reconstruction, the algorithm has to account for the fact that the visibilities are three dimensional. We include wide field-of-view imaging in our reconstruction algorithm, and discuss the effects of the third visibility term in more detail.
 
 
 \subsubsection{Introduction to the third visibility term}
@@ -122,9 +114,7 @@ V(u, v, w) = \int\int  \frac{I(l, m)}{c(l, m)}  e^{2 \pi i [ul+vm + w(c(l, m) - 
 
 We still have the Fourier transform $ e^{2 \pi i [ul+vm \ldots]}$ at the core. But now the visibilities have a third $w$-term, the image has a normalization factor of $c(l, m)$ and the Fourier transform has a phase-shift term $+ w(c(l, m) - 1)$ added to it. The phase-shift of the Fourier transform depends on the direction from which the radiation was measured. As such, the phase shift changes over the image. It is called a Directionally Dependent Effect (DDE).
 
-There exist several sources of DDE's. The Ionoshpere for example is a natural source that distorts the signal depending on the direction. The $w$-term arises from the interferometer itself. DDE's are commonly difficult to handle in image reconstruction. The $w$-term breaks the two dimensional Fourier relationship between the image and the visibilities. We cannot use the FFT, resulting in a more expensive Fourier transformation.
-
-Note that when the field-of-view is small ($l^2 +m^2 \ll 1$), the wide-field-of-view measurement equation \eqref{intro2:model:widefov} can be approximated with the small field-of-view measurement equation \eqref{intro2:model:smallfov}. The MeerKAT radio interferometer produces wide field-of-view measurements, and the image reconstruction has to correct for DDE's. In this project, we limit our focus and correct only for the $w$-term in our image reconstruction algorithm. 
+There exist several sources of DDE's. The Ionoshpere for example is a natural source that distorts the signal depending on the direction. From different directions, the distortion by the Ionosphere changes. The $w$-term arises from the properties of the interferometer itself. DDE's are costly in terms of computation time. The $w$-term breaks the two dimensional Fourier relationship between the image and the visibilities. We cannot use the FFT, resulting in a more expensive Fourier transformation. The difficulty lies in handling DDE's efficiently in the image reconstruction algorithm.
 
 
 \subsection{Introduction to image reconstruction algorithm for radio interferometer}\label{intro2:rec}
@@ -142,7 +132,7 @@ First, let us look back at the objective function. In the previous section, the 
 
 We can also reconstruct the missing visibilities directly. In that case, we solve an in-painting problem in the Fourier space. Or we can transform the measurements into image space, and solve an equivalent deconvolution problem, where the masking matrix $M$ in Fourier space becomes the convolution kernel called the Point Spread Function $PSF$ (Remember that a multiplication in Fourier space is a convolution in image space.)
 
-These three problems are equivalent in theory. The key difference between the three formulations is that the we generally have magnitudes fewer pixels than visibility measurements in the reconstruction problem. The deconvolution formulation therefore consumes less memory than the other two.
+These three problems are equivalent in theory. The key difference between the three formulations is that the we generally have magnitudes fewer pixels than visibility measurements in the reconstruction problem. The deconvolution problem therefore consumes less memory.
 
 Image reconstruction algorithms for radio interferometers generally use the deconvolution formulation. They first transform the visibility measurements to an image, called the dirty image. Then, they transform the masking matrix $M$ into the $PSF$. At this point, the algorithms reconstruct the image by calculating a deconvolution. Figure \ref{radio:alg:figure} shows a simulated example of a dirt image, $PSF$ and deconvolved image.
 
