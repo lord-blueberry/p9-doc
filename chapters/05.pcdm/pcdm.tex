@@ -26,7 +26,7 @@ We first explain the parallel coordinate descent method in the next section \ref
 \subsection{Parallel (Block) Coordinate Descent Method (PCDM)} \label{pcdm:pcdm}
 The PCDM algorithm can be seen as a generalization of our serial coordinate descent algorithm from Section \ref{cd}. The serial algorithm optimizes a single pixel at a time. PCDM can update one, or a whole block of pixels at each iteration. And as the name implies, it can update multiple blocks of pixels in parallel. In this project, we use the accelerated variant of the PCDM algorithm, named APPROX \cite{fercoq2015accelerated}. We first introduce a PCDM deconvolution algorithm and then describe the accelerated variant.
 
-\subsubsection{Serial block coordinate descent deconvolution}
+\subsubsection{Block coordinate descent deconvolution}
 Here we introduce the serial block coordinate descent algorithm. Instead of optimizing a single pixel in each iteration, the serial block coordinate descent algorithm can update a block of pixels. The block size is left for the user to define. It can be any number between a single pixel, in which case the algorithm is identical to the serial coordinate descent algorithm from Section \ref{cd}, or the whole image.
 
 Remember the single pixel update from the serial coordinate descent algorithm: 
@@ -98,8 +98,6 @@ while maxAbsDiff  < epsilon
 
 The parameter $t$ can be thought of as the number of processors. We select a block to optimize in parallel for each available processor. The parallel algorithm presented here is a synchronous implementation. Each processor waits for the others to finish in each step. The implementation used later in this section is asynchronous, where each processor separately selects a block, updates the reconstruction and updates the gradient map independent of the other processors. 
 
-Asynchronous implementation with compare exchange. gradient map gets updated asynchronously.
-
 The core of the parallel coordinate descent algorithm is the Estimated Seperability Overapproximation (ESO). In essence, the ESO represents how much we over-estimate the pixels values when we update $t$ random blocks in parallel. To guarantee convergence, we decrease the step size by the factor of the ESO. With more processors $t$ involved, we have to take smaller and smaller steps to guarantee convergence. Here is a trade-off between the degree of parallelism and the overall convergence speed.
 
 The ESO is derived from three components: The uniform sampling strategy used, the number of parallel updates, and the number of non-zero components in the $PSF$. We use a $t$-nice uniform sampling. The ESO that arises from the $t$-nice sampling (take $t$ blocks uniformly at random) according to\cite{richtarik2016parallel}:
@@ -153,18 +151,18 @@ do
 	//Step 2: update reconstruction
 	diffBlocks = new Array
 	parallel for each block in blocks
-	blockLipschitz = Sum(GetBlock(LipschitzMap, block))
-	
-	//increase blockLipschitz according to the ESO
-	blockLipschitz = blockLipschitz * eso
-	oldBlock = 
-	tmp = theta^2 * GetBlock(gradientsMapCorrection, block) + GetBlock(gradientsMapExplore, block) + GetBLock(xExplore, block) * blockLipschitz
-	optimalBlock = Max(tmp - lambda*alpha) / (blockLipschitz + (1 - alpha)*lambda)
-	diffBlock = optimalBlock - oldBlock
-	
-	xExplore[block] += diffBlock
-	xCorrection[block] += diffBlock * (-(1.0f - theta / theta0) / theta^2)
-	diffBlocks[block] = diffBlock
+		blockLipschitz = Sum(GetBlock(LipschitzMap, block))
+		
+		//increase blockLipschitz according to the ESO
+		blockLipschitz = blockLipschitz * eso
+		oldBlock = 
+		tmp = theta^2 * GetBlock(gradientsMapCorrection, block) + GetBlock(gradientsMapExplore, block) + GetBLock(xExplore, block) * blockLipschitz
+		optimalBlock = Max(tmp - lambda*alpha) / (blockLipschitz + (1 - alpha)*lambda)
+		diffBlock = optimalBlock - oldBlock
+		
+		xExplore[block] += diffBlock
+		xCorrection[block] += diffBlock * (-(1.0f - theta / theta0) / theta^2)
+		diffBlocks[block] = diffBlock
 	
 	//Step 3: Update gradients
 	for each block in blocks
@@ -190,6 +188,9 @@ The accelerated variant takes larger steps towards the optimum during deconvolut
 
 The acceleration comes with a cost attached: Instead of a single gradient map and a single reconstructed image, the acceleration algorithm updates two of each. It is not clear whether the added costs of maintaining the 'explore' and 'correction' variables outweigh the benefit we receive with acceleration. As we will see later, the non-accelerated variant is actually faster on the LMC observation than the accelerated variant.
 
+\subsection{Asynchronous implementation}
+
+Asynchronous implementation with compare exchange. gradient map gets updated asynchronously.
 
 \subsection{The problem with random selection for deconvolution} \label{pcdm:adaption}
 Both algorithms, the accelerated and non-accelerated variant as presented here do not perform well on the LMC dataset. The reason lies in the random selection strategy: In the first few iterations, the deconvolution algorithm selects blocks at random, and tries to explain the whole emission in that area. In short, the first iterations always over-estimate the block-values. 
@@ -224,7 +225,7 @@ The Figure \ref{pcdm:adaption:randomProblem} shows the behaviour on the LMC obse
 
 This behavior is pronounced when we choose a block size of one pixel (i.e. we do not group pixels into blocks). Increasing the block size also increases our changes to select one of the over-estimated block again. But as we see in Figure \ref{pcdm:adaption:randomProblem:block82}, the same problem exists with larger block sizes, although less pronounced. After 80k iterations the N132D supernova remnant is visible, but a few random blocks still contain too much of the emission in that area.
 
-The order in which we select blocks seems to be relevant in the deconvolution problem. A random selection strategy needs a prohibitive large number of iterations to converge. But we cannot simply switch out the selection strategy. The random selection strategy is at the core of the Parallel coordinate descent methods. Remember the ESO arises from the fact that we select $tau$ pixels uniformly at random. When we select $tau$-pixels with a greedy strategy, we might break the ESO and may not converge.
+The order in which we select blocks seems to be relevant in the deconvolution problem. A random selection strategy needs a prohibitive large number of iterations to converge. But we cannot simply switch out the selection strategy. The random selection strategy is at the core of the Parallel coordinate descent methods. Remember the ESO arises from the fact that we select $tau$ pixels uniformly at random. When we select $\tau$-pixels with a greedy strategy, we might break the ESO and may not converge.
 
 To solve this behavior, we introduce the pseudo-random selection strategy:  We select a block at random, but greedily search in the neighborhood for the optimal block to optimize. The size of the neighborhood can be defined by the user. It is essentially a mix between a greedy and a random selection strategy. If we choose the neighborhood to be the whole image, we arrive at a greedy strategy. If we choose the neighborhood to be just one block, we are back at a random strategy. The mixture of the greedy and random strategy allows us to fix the problems with the pure random
 
@@ -236,21 +237,61 @@ The active set heuristic is typically used in cyclic coordinate descent: It choo
 
 At the start of the parallel deconvolution algorithm, we iterate over all blocks. We add all blocks whose value can be changed to non-zero. During parallel iterations, the algorithm only selects blocks from the active set.
 
-
+Note that the algorithm only adds blocks to the active set, which can be changed to a non-zero value at the start of deconvolution. Over several iterations, there may be blocks that are not in the active set, but are part of the optimal solution. This is remedied with a restarting heuristic.
 
 
 \subsubsection{Restarting heuristic}
-In accelerated gradient methods, like APPROX or (F)ISTA, restarting the acceleration can lead to a significant speedup\cite{fercoq2016restarting}.
+In accelerated gradient methods, like APPROX or (F)ISTA, restarting the acceleration can lead to a significant speedup\cite{fercoq2016restarting}. In our accelerated variant, restarting means we reset the acceleration variable $theta$ restart with the deconvolution, using the intermediate solution from the last iteration. Our accelerated deconvolution algorithm uses an active set. If we detect that important blocks are missing from the active set, we want to restart the deconvolution with a new active set. 
 
-Can improve convergence speed a lot.
+We implemented two restarting heuristics: One heuristic is based on Glasmachers et al.\cite{glasmachers2014coordinate} and restarts the algorithm when the acceleration likely benefits from it. The other heuristic was developed by us and restarts the when the active set is likely to be missing blocks. In our tests, we always needed to restart due to the active set, and never due to the heuristic by Glasmachers.
 
-Show code
+Our own restarting heuristic is based on the following idea: When the parallel deconvolutions start to converge before the currently best greedy step, we restart the algorithm with a new active set.
 
-In our case, we need to change the active set more often. Basically need to restart the acceleration parameter $\theta$ each time we change the active set.
+We introduce a new loop for the active set iteration. For each active set iteration, we execute several parallel deconvolution steps. For example, a single active set iteration may include 1000 parallel deconvolutions for each processor, running for $\tau * 1000$ iterations in total. Each processor updates the gradient maps and the reconstructed image asynchronously. We assume that after each active set iteration, we have landed at least once on the block that the greedy algorithm would have chosen in a single iteration.
+
+At the end of each active set iteration, we check whether the parallel accelerated iterations converge faster than the currently best greedy step. If it does, we restart the parallel algorithm with a new active set.
+
+\begin{lstlisting}
+...
+do
+	lastMaxDiff = GetGreedyMaxBlockDiff(gradientsMapExplore, xExplore)
+	parallelDiffFactor = 0
+	for activeSetIteration in activeSetIterations
+		
+		//concurrent iterations
+		maxParallelDiff = 0
+		parallel for
+			...
+			diffBlock = optimalBlock - oldBlock
+			...
+			
+			if(maxParallelDiff < diffBlock)
+				maxParallelDiff = diffBlock
+				
+		//restarting heuristic
+		if(parallelDiffFactor = 0)
+			parallelDiffFactor = lastMaxDiff / maxParallelDiff
+		
+		currentMaxDiff = GetGreedyMaxBlockDiff(gradientsMapExplore, xExplore)
+		activeSetInvalid = lastAbsMax / maxParallelDiff > parallelDiffFactor * 2
+		activeSetInvalid = activeSetInvalid | currentMaxDiff > lastAbsMax & lastAbsMax / parallelDiffFactor > concurrentFactor
+		if activeSetInvalid
+			Restart()
+			parallelDiffFactor = 0
+		lastMaxDiff = currentMaxDiff
+	..
+while maxAbsDiff  < epsilon
+\end{lstlisting}
+
+After the first active set iteration, we check how close the maximum parallel update is to the best greedy step. The ratio of maximum greedy update and maximum parallel update should stay similar over the course of the algorithm, if the active set is valid. If the active set invalid, if it is missing important blocks, the algorithm will encounter ever smaller values for $maxParallelDiff$, while $lastMaxDiff$ does not decrease significantly over the active set iterations. In that case, the ratio between $lastMaxDiff / maxParallelDiff$ sharply increases, and we restart the algorithm.
+
+We have two similar conditions on which we flag the active set as invalid. If the ratio of $lastMaxDiff / maxParallelDiff$ is twice as big as the ratio of the first active set iteration, we restart the algorithm. The second condition is based on the observation that the $currentMaxDiff$ may increase from active set iteration to active set iteration. In this case, we are likely missing important blocks in the active set and we restart more aggressively: If the ratio $lastMaxDiff / maxParallelDiff$ bigger than the ratio of the first active set iteration.
 
 
-\subsubsection{'Minor' cycles}
-PSF approximations work really well.
+\subsubsection{Re-introduction of a 'Minor' cycles}
+
+
+PSF approximations work really well.\cite{clark1980efficient}
 Then we need more major cycles, which kill the benefit from the $PSF$ approximation
 
 How far we can go with the approximation and the current dirty image.
@@ -273,6 +314,8 @@ We measure the time and the objective value. What parameters lead to the fastest
 \subsubsection{$PSF$ approximation}
 We expect to benefit a lot more
 
+With $\tau = 8$ processors.
+
 Use the combined $PSF$ approximation.
 \begin{figure}[h]
 	\centering
@@ -291,6 +334,8 @@ Use the combined $PSF$ approximation.
 	\end{subfigure}
 	\caption{Convergence speedup with $PSF$ approximation}
 \end{figure}
+
+Major cycles are the discontinuities
 
 And it does. A clear advantage for using. Large speedup factor
 Question whether to use $\frac{1}{32}$ or $\frac{1}{64}$.

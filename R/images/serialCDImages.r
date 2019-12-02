@@ -1,6 +1,8 @@
 #library(rasterVis)
 library(pals)
 library(ggplot2)
+library(reshape2)
+library(pixmap)
 
 asinh <- scales::trans_new(name = 'asinh', transform = function(x) asinh(x*1000), 
                            inverse = function(x) sinh(x)/1000)
@@ -21,6 +23,18 @@ ggplot(data, aes(x=x, y=y, fill=intensity))  +
   theme_void()
 dev.off()
 
+data <- read.table(paste(inputFolder, "CD-Calibration.csv", sep=""), sep=";", header=TRUE, dec=",")
+png(paste(outputfolder, "CD-Calibration.png", sep=""),
+    width = 6.0,
+    height = 5.0,
+    units = "in",
+    res = 200)
+ggplot(data, aes(x=x, y=y, fill=intensity))  +
+  geom_tile() +
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -2, hue = 1.5, gamma = 0.3))
+dev.off()
+
+
 data <- read.table(paste(inputFolder, "CD-N132.csv", sep=""), sep=";", header=TRUE, dec=",")
 png(paste(outputfolder, "CD-N132.png", sep=""),
     width = 6.0,
@@ -32,13 +46,47 @@ ggplot(data, aes(x=x, y=y, fill=intensity))  +
   scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -2, hue = 1.5, gamma = 0.9))
 dev.off()
 
-data <- read.table(paste(inputFolder, "CD-Calibration.csv", sep=""), sep=";", header=TRUE, dec=",")
-png(paste(outputfolder, "CD-Calibration.png", sep=""),
-    width = 6.0,
-    height = 5.0,
+png(paste(outputfolder, "CD-N132-naked.png", sep=""),
+    width = 4.0,
+    height = 4.0,
     units = "in",
     res = 200)
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
-  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -2, hue = 1.5, gamma = 0.3))
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -2, hue = 1.5, gamma = 0.9), guide=FALSE) +
+  theme_void()
+dev.off()
+
+
+#reshaped <- acast(data, y~x, value.var="intensity")
+#write.table(reshaped, file ="N132.csv", sep = ";", row.names = FALSE, col.names = FALSE)
+
+ftN132 <- read.table(paste(inputFolder, "ftN132.csv", sep=""), sep=";", header=FALSE)
+minFT <- min(ftN132)
+mask <- getChannels(read.pnm(paste(inputFolder, "mask.pgm", sep="")))
+masked <- ftN132 * mask
+masked[masked == 0] = minFT
+
+ftData <- c()
+yData <- c()
+xData <- c()
+for(i in 1:nrow(ftN132)) {
+  for(j in 1:ncol(ftN132)) {
+    ftData <- c(ftData, masked[i, j])
+    yData <- c(yData, j)
+    xData <- c(xData, i)
+  }
+}
+dfN132 <- data.frame(y=yData, x=xData, intensity = log(ftData))
+
+png(paste(outputfolder, "CD-N132-FT.png", sep=""),
+    width = 4.0,
+    height = 4.0,
+    units = "in",
+    res = 200)
+min(ftData)
+ggplot(dfN132, aes(x=x, y=y, fill=intensity))  +
+  geom_tile() +
+  scale_fill_gradientn(colors= gray.colors(200, start = 0.1, end = 0.9, gamma = 2.2, alpha = NULL), guide=FALSE) +
+  theme_void()
 dev.off()

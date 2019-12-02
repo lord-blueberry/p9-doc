@@ -1,38 +1,39 @@
 \section{The image reconstruction problem of radio interferometers}
-In Astronomy, new instruments are built with an increasing angular resolution. The higher resolution allows the instruments to detect ever smaller objects in the sky. In radio astronomy however, we have already reached a practical resolution limit for single-dish antennas: Angular resolution depends on the dish-diameter and the observed wavelength. With longer wavelengths we need bigger dishes to achieve a similar angular resolution. The long radio wavelengths require huge dishes for for high angular resolution
-
-There is a practical limit on the antenna-dish diameter we can build. The famous Arecibo observatory is one of the largest single-dish radio telescopes with a diameter of 305 meters. Antennas with such a large diameter become difficult to steer accurately, let alone the construct economically. If we require higher angular resolution, we need to look at another type of instrument: The radio interferometer. They use several smaller antennas together, acting like a single large dish. An interferometer can achieve angular resolutions which are comparable to dishes with a diameter of several kilometers.
-
-But there are drawbacks: The interferometer does not measure the sky in pixels. It measures the sky in Fourier space, which are called visibilities in radio astronomy. Each visibility measurement consists of amplitude and phase of the Fourier component of the observed image. The observed image has to be reconstructed from the visibility measurement. The Figure \ref{intro0:inversefig} shows an example of the image reconstruction problem. The Figure \ref{intro0:inversefig:uvspace} shows the measurements in the Fourier space, and the figure \ref{intro0:inversefig:reconstruction} shows the observed image of the sky, with two stars close to each other. The image reconstruction has to find the observed image \ref{intro0:inversefig:reconstruction} from the measurements \ref{intro0:inversefig:uvspace}. 
-
-\begin{figure}[htp]
-	% preliminary
-	\sbox\twosubbox{%
-		\resizebox{\dimexpr.8\textwidth-1em}{!}{%
-			\includegraphics[height=3cm]{./chapters/01.intro/first.png}%
-			\includegraphics[height=3cm]{./chapters/01.intro/first.png}%
-		}%
-	}
-	\setlength{\twosubht}{\ht\twosubbox}
-	
-	% typeset
-	\centering
-	\subcaptionbox{Measurements of the interferometer in the Fourier space.\label{intro0:inversefig:uvspace}}{%
-		\includegraphics[height=\twosubht]{./chapters/01.intro/first.png}%
-	}\quad
-	\subcaptionbox{Observed image of the sky, showing two stars.\label{intro0:inversefig:reconstruction}}{%
-		\includegraphics[height=\twosubht]{./chapters/01.intro/first.png}%
-	}
-	\caption{The image reconstruction problem, the observed image has to be reconstructed from the Fourier measurements.}\label{intro0:inversefig}
+\begin{figure}[h]
+	\includegraphics[width=\linewidth]{./chapters/01.intro/MeerKAT_milkyWay.jpg}
+	\caption{Center of the Milky Way galaxy at radio wavelengths. Observed by the MeerKAT interferometer.}
+	\label{intro:milky}
 \end{figure}
 
-At first glance, we might believe that the image reconstruction is trivial: The interferometer measures visibilities, and the Fast Fourier Transform (FFT) algorithm is well-known. However, two properties of the visibilities make the image reconstruction difficult: The measurements are both noisy and incomplete.
+Our observable universe emits a wide band of electromagnetic wavelengths. The spectrum visible to our eyes is only a narrow section of all the electromagnetic radiation in the universe. At different wavelengths, the same celestial objects reveal another picture. The center of the milky way galaxy is surrounded by dust clouds, making the center invisible to optical telescopes. The longer radio waves however pass right through the dust clouds, revealing the center of the milky way galaxy to the MeerKAT radio telescope in Figure \ref{intro:milky}.
 
-The atmosphere of the earth is one source that introduces noise. It adds noise to the amplitude and phase of each visibility. The atmosphere changes over time and can under the right circumstances introduce a high level of noise compared to the signal. The image reconstruction should be able to find the observed image from noisy visibility measurements.
+Radio telescopes are build with an ever increasing angular resolution. The higher resolution allows the instruments to detect ever smaller objects in the sky. But radio telescopes have a problem, which they do not share with their optical counterpart: We have already reached a practical resolution limit for single-dish telescopes. Angular resolution depends on the dish-diameter and the observed wavelength. With longer wavelengths, we need bigger dishes to achieve a similar angular resolution. The long radio wavelengths require huge dishes for a similar angular resolution to optical telescopes.
 
-The interferometer measures an incomplete set of visibilities. Note that the Figure \ref{intro0:inversefig:uvspace} shows the Fourier space, which has missing components. The interferometer can only measure a limited set of visibilities. The reconstruction algorithm has to find the observed image even though important information is missing from the measurements.
+There is a practical limit on the antenna-dish diameter we can build. The famous Arecibo observatory is one of the largest single-dish radio telescopes with a diameter of 305 meters. Antennas with such a large diameter become difficult to steer accurately, let alone the construct economically. If we require higher angular resolution, we need to look at another type of instrument: The radio interferometer. They use several smaller antennas together, acting as a single large dish. An interferometer can achieve angular resolutions which are comparable to dishes with a diameter of several kilometers.
 
-These two difficulties, the noise and the incomplete measurements, lead to the fact that there are many different candidate images that fit any measurements.  This is known as an ill-posed inverse problem. We want to find the observed image, even though all we have are imperfect measurements. From the measurements alone, we cannot decide which candidate is the truly observed image. However, we have additional knowledge that simplifies the inverse problem: We know it is an image of the sky, which consists of stars, hydrogen clouds, etc. By including prior knowledge in the reconstruction, we can find the most likely image given the measurements. 
+But there are drawbacks: The interferometer does not measure the sky in pixels, but in the Fourier space. It measures the amplitude and phase of a set of Fourier components. The image has to be calculated from the Fourier measurements. This is the image reconstruction problem of radio interferometers. The measured Fourier components are called visibilities in the radio astronomy literature. From here on forward, we will call the measured Fourier components visibilities.
+
+The Figure \ref{intro:inversefig} shows an example of the image reconstruction problem. The radio interferometer measures a set of visibilities (Fourier components), shown in Figure \ref{intro:inversefig:uv}. The set of visibility measurements is incomplete, meaning the interferometer has not measured all the relevant information for the image reconstruction. The missing visibilities are shown as black dots in Figure \ref{intro:inversefig:uv}. The image reconstruction is tasked to find the observed image, shown in Figure \ref{intro:inversefig:rev}, from the incomplete set of visibilities. 
+
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}{0.4\linewidth}
+		\includegraphics[width=1.0\linewidth, clip, trim= 0.25in 0.25in 0.25in 0.25in]{./chapters/01.intro/reconstruction/CD-N132-FT.png}
+		\caption{Measured visibilities (Fourier components) of the N132 supernova-remnant.}
+		\label{intro:inversefig:uv}
+	\end{subfigure}
+	\begin{subfigure}{0.4\linewidth}
+		\includegraphics[width=1.0\linewidth, clip, trim= 0.25in 0.25in 0.25in 0.25in]{./chapters/01.intro/reconstruction/CD-N132-naked.png}
+		\caption{Observed image of the N132 supernova-remnant.}
+		\label{intro:inversefig:rev}
+	\end{subfigure}
+	\caption{Example of an image reconstruction problem of radio interferometers}
+	\label{intro:inversefig}
+\end{figure}
+
+Furthermore the visibility measurements are corrupted by noise. The atmosphere of the earth can change the true amplitude and phase of each measured visibility. Under unfavorable conditions, the atmosphere can introduce a high level of noise when compared to the signal.
+
+These two difficulties, the noise and the incomplete measurements, lead to the fact that there are many different candidate images that fit any measurements.  This is known as an ill-posed inverse problem. We want to find the observed image, even though all we have are an incomplete set of noisy visibility measurements. From the measurements alone, we cannot decide which candidate is the truly observed image. However, we have additional knowledge that simplifies the inverse problem: We know it is an image of the celestial objects. The image consists of stars, hydrogen clouds, and other celestial objects which emit radio waves. By including prior knowledge in the reconstruction, we can find the most likely image given the measurements. 
 
 The question remains is: How close is the most likely image to the observed one? Is exact reconstruction possible where the most likely and observed image are equal? Surprisingly the answer is yes. It is possible in theory\cite{candes2006robust,donoho2006compressed}, and was shown in practice on low noise measurements\cite{dabbech2018cygnus, dabbech2015moresane}. However, not all algorithms perform equally well when the noise level in the measurements is high. Also, computing resources required for each algorithm can vary significantly. In short, a reconstruction algorithm has three opposing goals:
 \begin{enumerate}
