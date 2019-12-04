@@ -21,13 +21,13 @@ This regularization is a mixture between the L1 and L2 regularization.  The L1 r
 
 \begin{figure}[h]
 	\centering
-	\begin{subfigure}[b]{0.25\linewidth}
-		\includegraphics[width=\linewidth]{./chapters/03.distribution/L1.png}
+	\begin{subfigure}[b]{0.4\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/03.CD/L1.png}
 		\caption{Effect of the pure L1 norm ($\lambda$ = 1.0) on a single point source.}
 		\label{cd:elastic:L1}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.25\linewidth}
-		\includegraphics[width=\linewidth]{./chapters/03.distribution/L2.png}
+	\begin{subfigure}[b]{0.4\linewidth}
+		\includegraphics[width=\linewidth]{./chapters/03.CD/L2.png}
 		\caption{Effect of the pure L2 norm ($\lambda$ = 1.0) on a single point source.}
 		\label{cd:elastic:L2}
 	\end{subfigure}
@@ -154,6 +154,7 @@ residuals = dirty
 x = new Array
 objectiveValue = 0.5* Sum(residuals * residuals) + ElasticNet(x)
 
+diff = 0
 do 
 	oldObjectiveValue = objectiveValue
 	
@@ -170,9 +171,9 @@ do
 	x[pixelLocation] = optimalValue
 
 	//housekeeping
+	diff = newValue - oldValue
 	residuals = residuals - shiftedPSF * (optimalValue - oldValue)
-	objectiveValue = 0.5 * Sum(residuals * residuals) + lambda * ElasticNet(x, alpha)
-while (oldObjectiveValue - objectiveValue)  < epsilon
+while epsilon < Abs(diff) 
 \end{lstlisting}
 
 The actual update step (line 19) is cheap to compute. We are only dealing with 4 one dimensional variables. The expensive calculations are the inner products. The gradient calculation, the Lipschitz constant and the objective value. The residuals and $PSF$ generally contain millions of pixels. Calculating the inner product of those becomes expensive. 
@@ -318,13 +319,9 @@ The exact update is again expensive to calculate. We need to correlate the $PSF$
 This is the reason why we chose to accept that the gradient update is only an approximation. The approximation only becomes inaccurate at the edges, and we use the algorithm in the major cycle framework: Every major cycle removes any inaccuracies we introduced during the previous cycle. This may potentially lead to more major cycles until the algorithm converge to the solution. But in practice the serial coordinate descent algorithm did not need more major cycles than CLEAN. We compare CLEAN and the serial coordinate descent algorithm on a real-world observation in Section \ref{results}.
 
 \subsection{Efficient implementation pseudo-code}
+Now we put all the run time improvements discussed before into the new implementation of the serial coordinate descent algorithm. We pre-calculate the Lipschitz constants and the gradient map. Then during iterations, we update the gradient map directly.
 
-Putting it all together
-
-No more residual, use gradient map.
-Pre calculate lipschitz constants with a scan algorithm
-
-putting it all together
+This leads to the following algorithm:
 \begin{lstlisting}
 dirty = IFFT(GridVisibilities(visibilities))
 residualsPadded = ZeroPadding(dirty)
@@ -338,7 +335,7 @@ gradientsMap = iFFT(FFT(residualsPadded) * FFT(psfPadded))
 lipschitzMap = CalcLipschitz(PSF)
 
 objectiveValue = 0.5* Sum(residuals * residuals) + ElasticNet(x)
-
+maxAbsDiff = 0
 do 
 	oldObjectiveValue = objectiveValue
 	
@@ -364,36 +361,33 @@ do
 	//housekeeping
 	shiftedUpdate = Shift(gradientUpdate, pixelLocation)
 	gradientMap = gradientMap - shiftedUpdate * maxDiff
-while maxAbsDiff  < epsilon
+while epsilon < maxAbsDiff
 \end{lstlisting}
 
+In step 1, we replaced the gradient and Lipschitz calculation with lookups, reducing the runtime costs of the step. In this implementation, step 2 is trivial. We only need to update the reconstruction at the correct location. All the important work has already been completed in step 1.
 
-Lookups. No residuals, implicitly contained in gradientMaps.
-We do not need the $PSF$ directly, we need the product of $PSF \star PSF$, which is the gradient update
-
-Note on objective value calculation. We can skip it generally. Optimize until all pixels are below an epsilon.
+The two most time consuming parts of this implementation are step 1, and updating the gradient map. Our implementation in .Net Core uses parallel computing for both parts. We search for the maximum pixel in parallel, and update the gradient map in parallel.
 
 
 \subsection{GPU implementation}
-We implemented the serial coordinate descent algorithm on the GPU. It is implemented in C\# .netcore with ILGPU\cite{ilgpu}. 
+We implemented the serial coordinate descent algorithm on the GPU. It is implemented in .Net Core with ILGPU\cite{ilgpu}. ILGPU is a Just-In-Time compiler for high performance GPU programs written in .Net Core.
 
-What is a kernel. A kernel in the context of GPU architecture is a small program that runs in parallel on several instances on the GPU. 
+GPU programs are split into kernels. Each kernel consists of a single routine optimized for executing on the GPU. Our serial coordinate descent algorithm consists of Step 1, find the best pixel to optimize, step 2, optimize pixel and then updating the gradient map. The GPU implementation of the Serial coordinate descent algorithm uses three kernels: Kernel 1 is equivalent to step 1. Kernel 2 updates the reconstruction $x$ and kernel 3 updates the gradient map.
 
-Our serial coordinate descent algorithm consists of two steps. Step 1, find the best pixel to optimize, and step 2: Optimize pixel and update the reconstruction $x$ and the gradient map. The ILGPU implementation of the Serial coordinate descent algorithm uses three kernels. Kernel 1 is equivalent to step 1. Kernel 2 updates the reconstruction $x$ and kernel 3 updates the gradient map. 
-
-Kernel 2 and 3 are straight forward to implement. The implementation of kernel 1, searching for the best pixel, is more interesting. Essentially, the first step in the serial coordinate descent algorithm is a max-reduce. We want to find the pixel with the maximum absolute step we can take in this iteration. Reduce operations can be efficiently implemented with a warp shuffle\cite{keplerShuffle}.
-
-It was implemented with warp shuffle, but a simple atomic max operation was faster in practice. This leads to the following kernel:
+Kernel 2 and 3 are straight forward to implement. The implementation of kernel 1, searching for the best pixel, is more interesting. Essentially, this step is a max reduce operation: We want to find the pixel with the maximum absolute step. We implemented the step 1 kernel with an atomic-max instruction:
 \begin{lstlisting}
-MaxPixelKernel(x, gradienstMap, lipschitz, location)
+MaxPixelKernel(x, gradienstMap, lipschitz, location, maxPixel)
 	oldValue = x[location]
 	tmp = gradientsMap[location] + oldValue * lipschitzMap[location]
 	optimalValue = Max(tmp - lambda*alpha) / (lipschitz[location] + (1 - alpha)*lambda)
 	diff = optimalValue - oldValue
 	currentPixel = (absDiff = Abs(diff), diff = diff, location = location)
-	
 	AtomicMax(maxPixel, currentPixel)
 \end{lstlisting}
+
+The kernel is executed on multiple processors in parallel on the GPU. Each processor is checking a single pixel. Communication is done with the atomic-max instruction. The atomic-max writes on a global variable, which keeps track of the current maximum pixel. This implementation turned out to be the fastest for the MaxPixelKernel. Warp shuffle\cite{keplerShuffle} was also tested, but resulted in a slower kernel.
+
+Synchronization
 
 Synchronization between the kernels. It is a serial coordinate descent method. We need to wait for all kernels to finish before we can continue.
 
@@ -402,7 +396,7 @@ Synchronization between the kernels. It is a serial coordinate descent method. W
 do 
 	//Step 1: Search pixel
 	maxPixel = (absDiff = 0, diff = 0, location = (-1, -1))
-	ExecuteMaxPixelKernel(x, gradienstMap, lipschitz)
+	ExecuteMaxPixelKernel(x, gradienstMap, lipschitz, maxPixel)
 	SynchronizeKernels()
 	
 	//Step 2: Optimize

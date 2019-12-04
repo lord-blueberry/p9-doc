@@ -3,7 +3,7 @@ In radio astronomy, there are two classes of radio sources: Point sources and ex
 
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=1.0\linewidth]{./chapters/01.intro/system.png}
+	\includegraphics[width=0.80\linewidth]{./chapters/01.intro/system.png}
 	\caption{Radio interferometry system}
 	\label{intro:system}
 \end{figure}
@@ -65,12 +65,12 @@ So far, we looked at how image reconstruction works in theory. We need a regular
 		\label{radio:sampling:pattern}
 	\end{subfigure}
 	\\
-	\begin{subfigure}[b]{0.47\linewidth}
+	\begin{subfigure}[b]{0.4\linewidth}
 		\includegraphics[width=\linewidth]{./chapters/01.intro/aperture/frequencies.png}
 		\caption{Visibilities added from multiple channels.}
 		\label{radio:sampling:freq}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.47\linewidth}
+	\begin{subfigure}[b]{0.4\linewidth}
 		\includegraphics[width=\linewidth]{./chapters/01.intro/aperture/timesteps.png}
 		\caption{Visibilities added from multiple timesteps.}
 		\label{radio:sampling:time}
@@ -170,32 +170,38 @@ A CLEAN iteration begins with searching the maximum pixel in the residual image.
 
 \begin{figure}[h]
 	\centering
-	\begin{subfigure}[b]{0.45\linewidth}
-		\centering
-		\begin{tabular}{c c}
-			Residuals & Model \\
-			\includegraphics[width=0.45\linewidth, clip, trim= 1.0in 1.0in 1.0in 1.0in]{./chapters/01.intro/cleanExample/dirty_CLEAN_0.png} & \includegraphics[width=0.45\linewidth, clip, trim= 1.0in 1.0in 1.0in 1.0in]{./chapters/01.intro/cleanExample/model_CLEAN_0.png} 
-		\end{tabular}
+	\begin{subfigure}[b]{0.48\linewidth}
+		\begin{subfigure}[b]{0.48\linewidth}
+			\centering
+			Residuals\\
+			\includegraphics[width=1.0\linewidth, clip, trim= 1.0in 1.0in 1.0in 1.0in]{./chapters/01.intro/cleanExample/dirty_CLEAN_0.png}
+		\end{subfigure}
+			\begin{subfigure}[b]{0.48\linewidth}
+			\centering
+			Model\\
+			\includegraphics[width=1.0\linewidth, clip, trim= 1.0in 1.0in 1.0in 1.0in]{./chapters/01.intro/cleanExample/model_CLEAN_0.png}
+		\end{subfigure}
 		\caption{Iteration 0}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.45\linewidth}
-		\begin{tabular}{c c}
-			Residuals & Model \\
-			\includegraphics[width=0.45\linewidth, clip, trim= 1.0in 1.0in 1.0in 1.0in]{./chapters/01.intro/cleanExample/dirty_CLEAN_1.png} & \includegraphics[width=0.45\linewidth, clip, trim= 1.0in 1.0in 1.0in 1.0in]{./chapters/01.intro/cleanExample/model_CLEAN_1.png} 
-		\end{tabular}
+	\begin{subfigure}[b]{0.48\linewidth}
+		\begin{subfigure}[b]{0.48\linewidth}
+			\centering
+			Residuals\\
+			\includegraphics[width=1.0\linewidth, clip, trim= 1.0in 1.0in 1.0in 1.0in]{./chapters/01.intro/cleanExample/dirty_CLEAN_1.png}
+		\end{subfigure}
+		\begin{subfigure}[b]{0.48\linewidth}
+			\centering
+			Model\\
+			\includegraphics[width=1.0\linewidth, clip, trim= 1.0in 1.0in 1.0in 1.0in]{./chapters/01.intro/cleanExample/model_CLEAN_1.png}
+		\end{subfigure}
 		\caption{Iteration 1}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.45\linewidth}
-		\begin{tabular}{c c}
-			\includegraphics[width=0.45\linewidth, clip, trim= 1.0in 1.0in 1.0in 1.0in]{./chapters/01.intro/cleanExample/dirty_CLEAN_2.png} & \includegraphics[width=0.45\linewidth, clip, trim= 1.0in 1.0in 1.0in 1.0in]{./chapters/01.intro/cleanExample/model_CLEAN_2.png} 
-		\end{tabular}
+	\begin{subfigure}[b]{0.48\linewidth}
+		\includegraphics[width=0.48\linewidth, clip, trim= 1.0in 1.0in 1.0in 1.0in]{./chapters/01.intro/cleanExample/dirty_CLEAN_2.png}  \includegraphics[width=0.48\linewidth, clip, trim= 1.0in 1.0in 1.0in 1.0in]{./chapters/01.intro/cleanExample/model_CLEAN_2.png} 
 		\caption{Iteration 2}
-
 	\end{subfigure}
-		\begin{subfigure}[b]{0.45\linewidth}
-		\begin{tabular}{c c}
-			\includegraphics[width=0.45\linewidth, clip, trim= 1.0in 1.0in 1.0in 1.0in]{./chapters/01.intro/cleanExample/dirty_CLEAN_3.png} & \includegraphics[width=0.45\linewidth, clip, trim= 1.0in 1.0in 1.0in 1.0in]{./chapters/01.intro/cleanExample/model_CLEAN_3.png} 
-		\end{tabular}
+	\begin{subfigure}[b]{0.48\linewidth}
+		\includegraphics[width=0.48\linewidth, clip, trim= 1.0in 1.0in 1.0in 1.0in]{./chapters/01.intro/cleanExample/dirty_CLEAN_3.png}  \includegraphics[width=0.48\linewidth, clip, trim= 1.0in 1.0in 1.0in 1.0in]{./chapters/01.intro/cleanExample/model_CLEAN_3.png} 
 		\caption{Iteration 3}
 		\label{radio:clean:figure:iter3}
 	\end{subfigure}

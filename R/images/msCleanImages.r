@@ -17,7 +17,7 @@ png(paste(outputfolder, "Briggs-CLEAN.png", sep=""),
     res = 200)
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
-  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -2, hue = 1.5, gamma = 0.3), guide=FALSE) + 
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -2, hue = 1.5, gamma = 0.4), guide=FALSE) + 
   theme_void()
 dev.off()
 

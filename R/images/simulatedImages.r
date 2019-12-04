@@ -1,6 +1,8 @@
 #library(rasterVis)
 library(pals)
 library(ggplot2)
+library(plotly)
+library(orca)
 
 asinh <- scales::trans_new(name = 'asinh', transform = function(x) asinh(x*1000), 
                            inverse = function(x) sinh(x)/1000)
@@ -147,7 +149,7 @@ ggplot(data, aes(x=x, y=y, fill=intensity))  +
 dev.off()
 
 
-#----------------------------------------------- CLEAN images
+#----------------------------------------------- CLEAN images--------------------------------------------------------
 inputFolder <- "./images/simulated/exampleCLEAN/"
 outputfolder <- "./images/output/simulated/"
 
@@ -198,3 +200,28 @@ for(i in 0:3) {
   print(plot)
   dev.off()
 }
+
+png(paste(outputfolder, "L2Norm.png", sep=""),
+    width = 4.0,
+    height = 4.0,
+    units = "in",
+    res = 200)
+gauss = matrix(nrow=64, ncol=64)
+x0 = 32
+y0 = 32
+for (y in 1:nrow(gauss))
+  for (x in 1:ncol(gauss))
+    gauss[y, x] = 1.0 * exp(-((x0 - x)^2 / 128 + (y0 - y)^2 / 128))
+plot_ly(z=gauss, type="surface", colors="Blues")
+
+
+
+single_pixel = matrix(nrow=64, ncol=64)
+for (y in 1:nrow(single_pixel))
+  for (x in 1:ncol(single_pixel))
+    if(y == y0 & x == x0) {
+      single_pixel[y, x] = 1.0
+    } else {
+      single_pixel[y, x] = 0.0
+    }
+plot_ly(z=single_pixel, type="surface", colors="Blues")
