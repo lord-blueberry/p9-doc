@@ -82,11 +82,11 @@ In our implementation, we use one more trick to improve the approximation: we sc
 \begin{figure}[h]
 	\centering
 	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=\linewidth, trim= 0.25in 0.25in 0.25in 0.25in]{./chapters/03.cd/simulated/psf.png}
+		\includegraphics[width=\linewidth, clip, trim= 0.25in 0.25in 0.25in 0.25in]{./chapters/03.cd/simulated/psf.png}
 		\caption{$PSF$ on log scale}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=\linewidth, trim= 0.25in 0.25in 0.25in 0.25in]{./chapters/03.cd/simulated/psf.png}
+		\includegraphics[width=\linewidth,clip, trim= 0.25in 0.25in 0.25in 0.25in]{./chapters/03.cd/simulated/psf.png}
 		\caption{$PSF$ Approximation}
 	\end{subfigure}
 	
@@ -116,11 +116,11 @@ In the two presented methods, we use a fraction of the $PSF$ to approximate the 
 \begin{figure}[h]
 	\centering
 	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=\linewidth, trim= 0.25in 0.25in 0.25in 0.25in]{./chapters/03.cd/simulated/psfCut.png}
-		\caption{$PSF$ cutoff}
+		\includegraphics[width=\linewidth, clip, trim= 0.25in 0.25in 0.25in 0.25in]{./chapters/03.cd/simulated/psfCut.png}
+		\caption{$PSF$ $\frac{1}{2}$ cutoff}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=\linewidth, trim= 0.25in 0.25in 0.25in 0.25in]{./chapters/03.cd/simulated/psfReverseCut.png}
+		\includegraphics[width=\linewidth, clip, trim= 0.25in 0.25in 0.25in 0.25in]{./chapters/03.cd/simulated/psfReverseCut.png}
 		\caption{Sidelobes}
 		\label{gradient:convergence:reverseCut}
 	\end{subfigure}
