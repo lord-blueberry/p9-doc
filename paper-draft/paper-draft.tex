@@ -1,4 +1,4 @@
-\documentclass[11pt]{article}
+\documentclass[11pt, twocolumn]{article}
 \usepackage{cite}
 
 \usepackage{hyperref}
@@ -31,6 +31,11 @@
 \renewcommand{\familydefault}{\sfdefault}
 \usepackage{setspace}
 \usepackage{acronym}
+%\usepackage[english]{babel}
+
+\usepackage{multicol}
+\setlength{\columnsep}{1cm}
+
 
 
 % Code listenings
@@ -130,40 +135,47 @@
 \end{titlepage}
 
 
+
 \newpage
 \pagestyle{abstract}
-\input{./chapters/abstract.tex}
+%\input{./chapters/abstract.tex}
+
+%\begin{multicols}{2}
 
 %TOC
-\newpage
-\pagestyle{tableofcontent}
-\pagenumbering{Roman}
-\tableofcontents  	
-\newpage
+%\newpage
+%\pagestyle{tableofcontent}
+%\pagenumbering{Roman}
+%\tableofcontents  	
+%\newpage
 
 \pagestyle{documentstyle}
 \setcounter{page}{1}
 \pagenumbering{arabic}
 
-%\input{./chapters/01.intro/intro4.tex}
+\input{./01.intro/intro.tex}
 %\newpage
-%\input{./chapters/01.intro/intro3.tex}
+\input{./chapters/03.cd/cd.tex}
+\input{./chapters/90.conclusion/conclusion.tex}
 %\newpage
+
 %\input{./chapters/02.hypo/hypo.tex}
 %\newpage
 %\input{./chapters/03.distribution/distribution.tex}
 
 \newpage
-\bibliography{mybib}{}
+\bibliography{mybib}{bibencoding=utf8}
 %\bibliographystyle{plain}
 \bibliographystyle{unsrt}
 \newpage
-\listoffigures
-\listoftables
+%\listoffigures
+%\listoftables
+
+%\end{multicols}
 
 \newpage
-\input{./chapters/99.attachment/attachment.tex}
+%\input{./chapters/99.attachment/attachment.tex}
 \newpage
-\input{./chapters/ehrlichkeitserklaerung.tex}
+%\input{./chapters/ehrlichkeitserklaerung.tex}
 
 \end{document}

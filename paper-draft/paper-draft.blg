@@ -1,0 +1,8 @@
+This is BibTeX, Version 0.99dThe top-level auxiliary file: paper-draft.aux
+The style file: unsrt.bst
+Database file #1: mybib.bib
+Warning--entry type for "ilgpu" isn't style-file defined
+--line 747 of file mybib.bib
+Warning--entry type for "keplerShuffle" isn't style-file defined
+--line 754 of file mybib.bib
+(There were 2 warnings)

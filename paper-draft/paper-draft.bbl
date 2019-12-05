@@ -1,0 +1,42 @@
+\begin{thebibliography}{1}
+
+\bibitem{ferrari2014distributed}
+Andr{\'e} Ferrari, David Mary, R{\'e}mi Flamary, and C{\'e}dric Richard.
+\newblock Distributed image reconstruction for very large arrays in radio
+  astronomy.
+\newblock In {\em 2014 IEEE 8th Sensor Array and Multichannel Signal Processing
+  Workshop (SAM)}, pages 389--392. IEEE, 2014.
+
+\bibitem{mcewen2011compressed}
+Jason~D McEwen and Yves Wiaux.
+\newblock Compressed sensing for wide-field radio interferometric imaging.
+\newblock {\em Monthly Notices of the Royal Astronomical Society},
+  413(2):1318--1332, 2011.
+
+\bibitem{nesterov2012efficiency}
+Yu~Nesterov.
+\newblock Efficiency of coordinate descent methods on huge-scale optimization
+  problems.
+\newblock {\em SIAM Journal on Optimization}, 22(2):341--362, 2012.
+
+\bibitem{nesterov2013gradient}
+Yu~Nesterov.
+\newblock Gradient methods for minimizing composite functions.
+\newblock {\em Mathematical Programming}, 140(1):125--161, 2013.
+
+\bibitem{kenyon2019pymoresane}
+Jonathan~S Kenyon.
+\newblock Pymoresane: Python model reconstruction by synthesis-analysis
+  estimators.
+\newblock {\em Astrophysics Source Code Library}, 2019.
+
+\bibitem{ilgpu}
+Marcel Koester.
+\newblock Ilgpu: A modern, lightweight and fast gpu compiler for
+  high-performance .net programs, 2019.
+
+\bibitem{keplerShuffle}
+Justin Luitjens.
+\newblock Faster parallel reductions on kepler, 2014.
+
+\end{thebibliography}
