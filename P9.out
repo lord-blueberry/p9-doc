@@ -58,27 +58,22 @@
 \BOOKMARK [2][-]{subsection.7.7}{Comparison to the serial coordinate descent algorithm}{section.7}% 58
 \BOOKMARK [2][-]{subsection.7.8}{Scalability of the parallel coordinate descent algorithm}{section.7}% 59
 \BOOKMARK [1][-]{section.8}{Discussion}{}% 60
-\BOOKMARK [2][-]{subsection.8.1}{Approximation of the PSF}{section.8}% 61
-\BOOKMARK [2][-]{subsection.8.2}{Calibration errors}{section.8}% 62
-\BOOKMARK [2][-]{subsection.8.3}{CLEAN heuristics for coordinate descent}{section.8}% 63
-\BOOKMARK [2][-]{subsection.8.4}{Approx scales}{section.8}% 64
-\BOOKMARK [2][-]{subsection.8.5}{Hydra}{section.8}% 65
-\BOOKMARK [2][-]{subsection.8.6}{Multi frequency extension}{section.8}% 66
-\BOOKMARK [1][-]{section.9}{Conclusion}{}% 67
-\BOOKMARK [1][-]{section.10}{attachment}{}% 68
-\BOOKMARK [1][-]{section.11}{Larger runtime costs for Compressed Sensing Reconstructions}{}% 69
-\BOOKMARK [2][-]{subsection.11.1}{CLEAN: The Major Cycle Architecture}{section.11}% 70
-\BOOKMARK [2][-]{subsection.11.2}{Compressed Sensing Architecture}{section.11}% 71
-\BOOKMARK [2][-]{subsection.11.3}{Hypothesis for reducing costs of Compressed Sensing Algorithms}{section.11}% 72
-\BOOKMARK [2][-]{subsection.11.4}{State of the art: WSCLEAN Software Package}{section.11}% 73
-\BOOKMARK [3][-]{subsubsection.11.4.1}{W-Stacking Major Cycle}{subsection.11.4}% 74
-\BOOKMARK [3][-]{subsubsection.11.4.2}{Deconvolution Algorithms}{subsection.11.4}% 75
-\BOOKMARK [2][-]{subsection.11.5}{Distributing the Image Reconstruction}{section.11}% 76
-\BOOKMARK [3][-]{subsubsection.11.5.1}{Distributing the Non-uniform FFT}{subsection.11.5}% 77
-\BOOKMARK [3][-]{subsubsection.11.5.2}{Distributing the Deconvolution}{subsection.11.5}% 78
-\BOOKMARK [1][-]{section.12}{Handling the Data Volume}{}% 79
-\BOOKMARK [2][-]{subsection.12.1}{Fully distributed imaging algorithm}{section.12}% 80
-\BOOKMARK [1][-]{section.13}{Image Reconstruction for Radio Interferometers}{}% 81
-\BOOKMARK [2][-]{subsection.13.1}{Distributed Image Reconstruction}{section.13}% 82
-\BOOKMARK [2][-]{subsection.13.2}{First steps towards a distributed Algorithm}{section.13}% 83
-\BOOKMARK [1][-]{section.14}{Ehrlichkeitserkl\344rung}{}% 84
+\BOOKMARK [2][-]{subsection.8.1}{Multi frequency extension}{section.8}% 61
+\BOOKMARK [1][-]{section.9}{Conclusion}{}% 62
+\BOOKMARK [1][-]{section.10}{attachment}{}% 63
+\BOOKMARK [1][-]{section.11}{Larger runtime costs for Compressed Sensing Reconstructions}{}% 64
+\BOOKMARK [2][-]{subsection.11.1}{CLEAN: The Major Cycle Architecture}{section.11}% 65
+\BOOKMARK [2][-]{subsection.11.2}{Compressed Sensing Architecture}{section.11}% 66
+\BOOKMARK [2][-]{subsection.11.3}{Hypothesis for reducing costs of Compressed Sensing Algorithms}{section.11}% 67
+\BOOKMARK [2][-]{subsection.11.4}{State of the art: WSCLEAN Software Package}{section.11}% 68
+\BOOKMARK [3][-]{subsubsection.11.4.1}{W-Stacking Major Cycle}{subsection.11.4}% 69
+\BOOKMARK [3][-]{subsubsection.11.4.2}{Deconvolution Algorithms}{subsection.11.4}% 70
+\BOOKMARK [2][-]{subsection.11.5}{Distributing the Image Reconstruction}{section.11}% 71
+\BOOKMARK [3][-]{subsubsection.11.5.1}{Distributing the Non-uniform FFT}{subsection.11.5}% 72
+\BOOKMARK [3][-]{subsubsection.11.5.2}{Distributing the Deconvolution}{subsection.11.5}% 73
+\BOOKMARK [1][-]{section.12}{Handling the Data Volume}{}% 74
+\BOOKMARK [2][-]{subsection.12.1}{Fully distributed imaging algorithm}{section.12}% 75
+\BOOKMARK [1][-]{section.13}{Image Reconstruction for Radio Interferometers}{}% 76
+\BOOKMARK [2][-]{subsection.13.1}{Distributed Image Reconstruction}{section.13}% 77
+\BOOKMARK [2][-]{subsection.13.2}{First steps towards a distributed Algorithm}{section.13}% 78
+\BOOKMARK [1][-]{section.14}{Ehrlichkeitserkl\344rung}{}% 79

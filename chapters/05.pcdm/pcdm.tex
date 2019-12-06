@@ -458,11 +458,58 @@ Furthermore the accelerated variant has additional run time costs which were not
 
 
 \subsection{Comparison to the serial coordinate descent algorithm}
-Which is faster
+In the previous section, we tested various tuning parameters of the parallel coordinate descent algorithm. In this section, we compare the serial coordinate descent algorithm with the final, simplified parallel coordinate descent algorithm.
 
-Proper comparison
+We took the lessons from the tests and implemented a simplified parallel coordinate descent algorithm. It does not use gradient acceleration, and cannot group pixels into blocks. Each thread can only minimize a single pixel in parallel in each iteration. As we will see shortly, the simplified parallel coordinate descent implementation is significantly faster than the previous parallel iterations.
+
+In this test, we compare the wall-clock time spent on the deconvolution algorithm. The time we measure here does not include the Major cycle. For the parallel coordinate descent algorithm, this means we also measure the time spent in the 'Minor' cycle. 
+
+$PSF$ approximations
+What was measured: Including the 'Minor' cycle.
+\begin{table}
+	\centering
+	\begin{tabular}{c | c | c | c}
+		Algorithm &  $PSF$ Fraction & Total Seconds & Speedup factor\\ \hline
+		Serial CD & $\frac{1}{16}$ & 1486 & --\\
+		Parallel CD & $\frac{1}{32}$ & 75 & $\approx 20$ \\
+	\end{tabular}
+	\caption{Speedup comparison of the serial and parallel coordinate descent algorithm}
+\end{table}
+
+
+Magnitudes faster. Even faster than in the previous test, due to simpler implementation without blocks.
+
+Compare the images from serial coordinate descent to the parallel coordinate descent, shown in Figure \ref{pcdm:comparison:figure}.
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}{0.4\linewidth}
+		\centering
+		Serial CD
+		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/comparison/SerialCD-N132.png}
+	\end{subfigure}
+	\begin{subfigure}{0.4\linewidth}
+		\centering
+		Parallel CD
+		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/comparison/SerialCD-N132.png}
+	\end{subfigure}
+	\\
+	\begin{subfigure}{0.4\linewidth}
+		\centering
+		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/comparison/SerialCD-Calibration.png}
+	\end{subfigure}
+	\begin{subfigure}{0.4\linewidth}
+		\centering
+		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/comparison/PCDM-Calibration.png}
+	\end{subfigure}
+
+	\caption{Comparison of the serial and parallel coordinate descent reconstruction of the LMC observation.}
+	\label{pcdm:comparison:figure}
+\end{figure}
+
 
 Acceleration factor
+
+images
 
 
 \subsection{Scalability of the parallel coordinate descent algorithm}

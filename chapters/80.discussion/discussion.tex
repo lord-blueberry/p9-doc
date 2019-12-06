@@ -1,50 +1,49 @@
 \section{Discussion}\label{discussion}
-Problem of calibration.
+Main thing: parallel coordinate descent works.
+Times comparable to standard CLEAN.
+Reconstruction quality similar, or superior to serial coordinate descent
+Super-resolution..
+One more major cycle.
+Comparable number of major cycles to CLEAN. Exact comparison is difficult
+
+Due to our gradient approximation scheme. We exploit the fact that the $PSF$ of interferometers like MeerKAT is fairly concentrated around the center.
+Exploited by the parallel coordinate descent algorithm. 
+Serial coordinate descent was difficult to speedup, even with GPU and distributed reconstruction.
+
+Easy to extend to a distributed setting, hydra.
+
+Expect it to scale better with larger field of views. The larger the field of view, the more concentrated the $PSF$ is in relation to the whole image.
+It is not clear, whether we introduce a systematic error with the approximation. We couldn't find one.
+
+Serial coordinate descent
+Similar to the standard CLEAN.
+In our implementation, it did not benefit a lot from GPU acceleration. Only by a factor of 2. Unclear if this generalizes to multi-scale CLEAN.
+
+CLEAN
+CLEAN is striclty better with calibration error.
+Better residuals. Compared to coordinate descent methods, it manages small iteration counts.
+Our coordinate descent methods achieved super-resolution. Artificial example, but still.
+
+Question about regularization
+Used the elasticNet regularization. Cheap and easy. More sophisticated, 
+
+Multiy frequency.
 
 
-CLEAN: MAsking as part for low noise. Maybe also works for Coordinate Descent
 
-Figure \ref{results:gradients:update} shows that at major cycle index 4 (the fifth major cycle), all approximations except for $frac{1}{64}$ are within 0.09\% of the original solution. The current implementation stops when coordinate descent converges within 1000 iterations in the current major cycle. This rule may be too strict, and our coordinate descent algorithm may be stopped earlier. 
 
-GPU Coordinate Descent
+
+
+Works well for MeerKAT. Its $PSF$ is located many not work well for LOFAR.
 
 Difficult to achieve speedup with a dense $PSF$ we approximated
 
-\subsection{Approximation of the $PSF$}
-Approximation that works. To our knowledge we are the first to explore an approximated $PSF$. Not relevant for all optimization algorithm, but parallel coordinate descent methods achieve a (significant) speedup.
-
-In our test we were able to use it without needing more major cycles than multi-scale CLEAN.
-
-The need for major cycles could be further reduced. 
-Question of effective heuristics that work for a wide range of 
-
-Parallel deconvolutions
-
-\subsection{Calibration errors}
-Common experience that CLEAN based algorithms handle calibration errors better \cite{offringa2017optimized} than "proper" optimization algorithms.
-
-
-It is a question why. We experienced similar results, but used a simple regularization: elastic net. Other algorithms like MORESANE\cite{dabbech2015moresane} use more sophisticated regularization.
-
-Why does CLEAN work so well with calibration errors? Is there some sort of implicit regulariztion in the way it choses its pixels. (not in the actual regularization)
 
 
 
-\subsection{CLEAN heuristics for coordinate descent}
-Since CLEAN and coordinate descent methods are acting out similar things, we may be able to use CLEAN heuristics to improve coordinate descent based methods.
 
-Masking: CLEAN uses masking to reconstruct sources below the noise level of the image. After a number of iterations, it masks all pixels which are not zero. (Ie. now all sources are detected) and clean deeper. 
 
-Similar stuff can be done for coordinate descent methods. 
 
-Greedy Coordinate descent
-
-\subsection{Approx scales to large field of view}
-Wide field of view observations are what Approx likes.
-
-\subsection{Hydra}
-our coordinate descent method is not distributed yet. Hydra exists. It is APPROX in the distributed environment.
-We had to adapt the implementation of APPROX for the deconvolution problem. Similar adaptions necessary for a distributed algorithm. Problems of cold start, and irrelevant pixels.
 
 
 

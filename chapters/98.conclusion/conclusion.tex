@@ -2,5 +2,16 @@
 
 First based on convex optimization algorithm, that is comparable to CLEAN speed.
 
-Works
+Whether we can do an approximation and simplify the problem for distribution
+Yes we can, but not all deconvolution algorithms benefit from it.
 
+We developed our own algorithm that can benefit greatyl from the approximation. It already benefits from single machine processing. From our results, the developed algorithm is comparable to the runtime of CLEAN. CLEAN is known as one of the fastest deconvolution algorithms.
+
+Exploiting sparsity in the problem. But not everything benefits from it. We need optimization algorihtm that exploits sparsity. Also, different regularizations can break sparsity, making the approximation not as effective.
+Regularization affects the reconstruction quality. As of the time of writing, it is unclear what is the optimal regularization for radio interferometers
+As of the time of writing, it is currently unclear what regularization has the
+
+Unclear how the algorithm generalizes to other reconstruction problems. We just tested it on the LMC observation. A bunch of heuristics.
+
+Generalization on different instruments. Our approximation scheme exploits the fact that instruments are often nearly a gaussian function. This may not work for instruments with lower frequencies, like LOFAR. 
+ 
