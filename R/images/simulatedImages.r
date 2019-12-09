@@ -19,7 +19,7 @@ png(paste(outputfolder, "psf.png", sep=""),
     res = 200)
 ggplot(psf, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
-  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -2, hue = 1.5, gamma = 0.8), guide=FALSE) + 
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.00, r = -1.5, hue = 1.0, gamma = 0.8), guide=FALSE) + 
   theme_void()
 dev.off()
 
@@ -31,7 +31,7 @@ png(paste(outputfolder, "psfCut.png", sep=""),
     res = 200)
 ggplot(psfCut, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
-  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -2, hue = 1.5, gamma = 0.8), guide=FALSE) + 
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.00, r = -1.5, hue = 1.0, gamma = 0.8), guide=FALSE) + 
   theme_void()
 dev.off()
 
@@ -43,7 +43,7 @@ png(paste(outputfolder, "psfReverseCut.png", sep=""),
     res = 200)
 ggplot(psfCut, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
-  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -2, hue = 1.5, gamma = 0.8), guide=FALSE) + 
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.00, r = -1.5, hue = 1.0, gamma = 0.8), guide=FALSE) + 
   theme_void()
 dev.off()
 
@@ -55,7 +55,7 @@ png(paste(outputfolder, "psfZeroPadding.png", sep=""),
     res = 200)
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
-  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -2, hue = 1.5, gamma = 0.8), guide=FALSE) + 
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.00, r = -1.5, hue = 1.0, gamma = 0.8), guide=FALSE) + 
   theme_void()
 dev.off()
 
@@ -67,7 +67,7 @@ png(paste(outputfolder, "psfCircular.png", sep=""),
     res = 200)
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
-  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -2, hue = 1.5, gamma = 0.8), guide=FALSE) + 
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.8), guide=FALSE) + 
   theme_void()
 dev.off()
 
@@ -79,7 +79,7 @@ png(paste(outputfolder, "elasticNet.png", sep=""),
     res = 200)
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
-  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -2, hue = 1.5, gamma = 0.8), guide=FALSE) + 
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.8), guide=FALSE) + 
   theme_void()
 dev.off()
 
@@ -91,7 +91,7 @@ png(paste(outputfolder, "dirty.png", sep=""),
     res = 200)
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
-  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -2, hue = 1.5, gamma = 0.8), guide=FALSE) + 
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.8), guide=FALSE) + 
   theme_void()
 dev.off()
 
@@ -108,7 +108,7 @@ png(paste(outputfolder, "psfSquared.png", sep=""),
     res = 200)
 ggplot(psfSquared, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
-  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -1.5, hue = 1.5, gamma = 0.5), guide=FALSE) + 
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -1.5, hue = 1.0, gamma = 0.5), guide=FALSE) + 
   theme_void()
 dev.off()
 
@@ -120,7 +120,7 @@ png(paste(outputfolder, "psfSquaredCut.png", sep=""),
     res = 200)
 ggplot(psfSquaredCut, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
-  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -2, hue = 1.5, gamma = 0.5), guide=FALSE) + 
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -1.5, hue = 1.0, gamma = 0.5), guide=FALSE) + 
   theme_void()
 dev.off()
 
@@ -132,7 +132,7 @@ png(paste(outputfolder, "psfSquaredEdge.png", sep=""),
     res = 200)
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
-  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -2, hue = 1.5, gamma = 0.5), guide=FALSE) + 
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -1.5, hue = 1.0, gamma = 0.5), guide=FALSE) + 
   theme_void()
 dev.off()
 
@@ -144,7 +144,7 @@ png(paste(outputfolder, "gradients.png", sep=""),
     res = 200)
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
-  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -2, hue = 1.5, gamma = 0.5), guide=FALSE) + 
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -1.5, hue = 1.0, gamma = 0.5), guide=FALSE) + 
   theme_void()
 dev.off()
 
@@ -165,7 +165,7 @@ for(i in 0:3) {
       res = 192)
   plot <- ggplot(data, aes(x=x, y=y, fill=intensity))  +
     geom_tile() +
-    scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -2, hue = 1.5, gamma = 0.8), guide=FALSE, limits=c(minD, maxD)) + 
+    scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -1.5, hue = 1.0, gamma = 0.8), guide=FALSE, limits=c(minD, maxD)) + 
     theme_void()
   print(plot)
   dev.off()
@@ -181,7 +181,7 @@ png(paste(outputfolder, paste("rec_CLEAN.png",sep=""), sep=""),
     res = 192)
 plot <- ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
-  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -2, hue = 1.5, gamma = 0.8), guide=FALSE, limits=c(minR, maxR)) + 
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -1.5, hue = 1.0, gamma = 0.8), guide=FALSE, limits=c(minR, maxR)) + 
   theme_void()
 print(plot)
 dev.off()
@@ -195,7 +195,7 @@ for(i in 0:3) {
       res = 192)
   plot <- ggplot(data, aes(x=x, y=y, fill=intensity))  +
     geom_tile() +
-    scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -2, hue = 1.5, gamma = 0.8), guide=FALSE, limits=c(minR, maxR)) + 
+    scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -1.5, hue = 1.0, gamma = 0.8), guide=FALSE, limits=c(minR, maxR)) + 
     theme_void()
   print(plot)
   dev.off()

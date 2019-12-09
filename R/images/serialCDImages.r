@@ -12,6 +12,8 @@ inputFolder <- "./images/SerialCD/"
 outputfolder <- "./images/output/SerialCD/"
 
 data <- read.table(paste(inputFolder, "CD-reference.csv", sep=""), sep=";", header=TRUE, dec=",")
+limit <- 0.0005
+data$intensity[data$intensity > limit] = limit
 png(paste(outputfolder, "CD-reference.png", sep=""),
     width = 16.0,
     height = 16.0,
@@ -19,11 +21,13 @@ png(paste(outputfolder, "CD-reference.png", sep=""),
     res = 200)
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
-  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -2, hue = 1.5, gamma = 0.3), guide=FALSE) + 
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.5), guide=FALSE) + 
   theme_void()
 dev.off()
 
 data <- read.table(paste(inputFolder, "CD-Calibration.csv", sep=""), sep=";", header=TRUE, dec=",")
+data$x <- (data$x - min(data$x)) * 1.5 / 60.0
+data$y <- (data$y - min(data$y)) * 1.5 / 60.0
 png(paste(outputfolder, "CD-Calibration.png", sep=""),
     width = 6.0,
     height = 5.0,
@@ -31,11 +35,15 @@ png(paste(outputfolder, "CD-Calibration.png", sep=""),
     res = 200)
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
-  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -2, hue = 1.5, gamma = 0.3))
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.3), name="Jansky/Beam") +
+  xlab("Ascension (arc minutes)") +
+  ylab("Declination (arc minutes)")
 dev.off()
 
 
 data <- read.table(paste(inputFolder, "CD-N132.csv", sep=""), sep=";", header=TRUE, dec=",")
+data$x <- (data$x - min(data$x)) * 1.5 / 60.0
+data$y <- (data$y - min(data$y)) * 1.5 / 60.0
 png(paste(outputfolder, "CD-N132.png", sep=""),
     width = 6.0,
     height = 5.0,
@@ -43,7 +51,9 @@ png(paste(outputfolder, "CD-N132.png", sep=""),
     res = 200)
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
-  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -2, hue = 1.5, gamma = 0.9))
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.9), name="Jansky/Beam") +
+  xlab("Ascension (arc minutes)") +
+  ylab("Declination (arc minutes)")
 dev.off()
 
 png(paste(outputfolder, "CD-N132-naked.png", sep=""),
@@ -53,7 +63,7 @@ png(paste(outputfolder, "CD-N132-naked.png", sep=""),
     res = 200)
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
-  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -2, hue = 1.5, gamma = 0.9), guide=FALSE) +
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.9), guide=FALSE) +
   theme_void()
 dev.off()
 
@@ -87,6 +97,6 @@ png(paste(outputfolder, "CD-N132-FT.png", sep=""),
 min(ftData)
 ggplot(dfN132, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
-  scale_fill_gradientn(colors= gray.colors(200, start = 0.1, end = 0.9, gamma = 2.2, alpha = NULL), guide=FALSE) +
+  scale_fill_gradientn(colors= cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.9), guide=FALSE) +
   theme_void()
 dev.off()
