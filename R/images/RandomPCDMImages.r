@@ -64,7 +64,7 @@ data$x <- (data$x - min(data$x)) * 1.5 / 60.0
 data$y <- (data$y - min(data$y)) * 1.5 / 60.0
 png(paste(outputfolder, "SerialCD-N132.png", sep=""),
     width = 6.0,
-    height = 5.0,
+    height = 4.5,
     units = "in",
     res = 200)
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
@@ -78,7 +78,7 @@ data$x <- (data$x - min(data$x)) * 1.5 / 60.0
 data$y <- (data$y - min(data$y)) * 1.5 / 60.0
 png(paste(outputfolder, "PCDM-N132.png", sep=""),
     width = 6.0,
-    height = 5.0,
+    height = 4.5,
     units = "in",
     res = 200)
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
@@ -91,9 +91,11 @@ dev.off()
 data <- read.table(paste(inputFolder, "SerialCD-Calibration.csv", sep=""), sep=";", header=TRUE, dec=",")
 data$x <- (data$x - min(data$x)) * 1.5 / 60.0
 data$y <- (data$y - min(data$y)) * 1.5 / 60.0
+limit <- 0.0005
+data$intensity[data$intensity > limit] = limit
 png(paste(outputfolder, "SerialCD-Calibration.png", sep=""),
     width = 6.0,
-    height = 5.0,
+    height = 4.5,
     units = "in",
     res = 200)
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
@@ -106,9 +108,11 @@ dev.off()
 data <- read.table(paste(inputFolder, "PCDM-Calibration.csv", sep=""), sep=";", header=TRUE, dec=",")
 data$x <- (data$x - min(data$x)) * 1.5 / 60.0
 data$y <- (data$y - min(data$y)) * 1.5 / 60.0
+limit <- 0.0005
+data$intensity[data$intensity > limit] = limit
 png(paste(outputfolder, "PCDM-Calibration.png", sep=""),
     width = 6.0,
-    height = 5.0,
+    height = 4.5,
     units = "in",
     res = 200)
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
