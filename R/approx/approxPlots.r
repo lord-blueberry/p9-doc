@@ -75,7 +75,7 @@ file <- "SearchPercent0,01.txt"
 data = read.table(file.path(folder,file), header=TRUE, dec=",", sep=";")
 data[,"cycle"] = as.factor(data$cycle)
 data["experimentName"] = 0.01
-for(i in c(0.1, 0.4, 0.8)) {
+for(i in c(0.1, 0.2, 0.4, 0.8)) {
   id = paste(i)
   id = sub("\\.", ",", id)
   file <- paste("SearchPercent", id, ".txt", sep="")
