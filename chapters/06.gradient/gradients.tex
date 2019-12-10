@@ -86,11 +86,11 @@ In our implementation, we use one more trick to improve the approximation: we sc
 		\caption{$PSF$ on log scale}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=\linewidth,clip, trim= 0.25in 0.25in 0.25in 0.25in]{./chapters/03.cd/simulated/psf.png}
-		\caption{$PSF$ Approximation}
+		\includegraphics[width=\linewidth,clip, trim= 0.25in 0.25in 0.25in 0.25in]{./chapters/03.cd/simulated/psfCut.png}
+		\caption{$\frac{1}{2}$ Fraction of the $PSF$}
 	\end{subfigure}
 	
-	\caption{Approximate deconvolution with a fraction of the $PSF$.}
+	\caption{Approximate deconvolution with fraction $\frac{1}{2}$ of the $PSF$.}
 \end{figure} 
 The main problem with Method 1 is that the map of gradients becomes less accurate with more coordinate descent iterations. This method sovles this problem by using an approximate deconvolution instead, but it loses the guarantee to converge to the same result as the full $PSF$.
 
@@ -117,15 +117,15 @@ In the two presented methods, we use a fraction of the $PSF$ to approximate the 
 	\centering
 	\begin{subfigure}[b]{0.3\linewidth}
 		\includegraphics[width=\linewidth, clip, trim= 0.25in 0.25in 0.25in 0.25in]{./chapters/03.cd/simulated/psfCut.png}
-		\caption{$PSF$ $\frac{1}{2}$ cutoff}
+		\caption{$\frac{1}{2}$ Fraction of the $PSF$}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.3\linewidth}
 		\includegraphics[width=\linewidth, clip, trim= 0.25in 0.25in 0.25in 0.25in]{./chapters/03.cd/simulated/psfReverseCut.png}
-		\caption{Sidelobes}
+		\caption{$PSF$ Sidelobes}
 		\label{gradient:convergence:reverseCut}
 	\end{subfigure}
 	
-	\caption{Max sidelobe $PSF$.}
+	\caption{Max sidelobe of the $PSF$ cutoff.}
 	\label{gradient:convergence:sidelobe}
 \end{figure}
 

@@ -190,6 +190,39 @@ The acceleration comes with a cost attached: Instead of a single gradient map an
 
 \subsection{Asynchronous implementation}
 
+\begin{lstlisting}
+...
+do
+	lastMaxDiff = GetGreedyMaxBlockDiff(gradientsMapExplore, xExplore)
+	parallelDiffFactor = 0
+	for activeSetIteration in activeSetIterations
+	
+	//concurrent iterations
+	maxParallelDiff = 0
+	parallel for
+	...
+	diffBlock = optimalBlock - oldBlock
+	...
+	
+	if(maxParallelDiff < diffBlock)
+	maxParallelDiff = diffBlock
+	
+	//restarting heuristic
+	if(parallelDiffFactor = 0)
+	parallelDiffFactor = lastMaxDiff / maxParallelDiff
+	
+	currentMaxDiff = GetGreedyMaxBlockDiff(gradientsMapExplore, xExplore)
+	activeSetInvalid = lastAbsMax / maxParallelDiff > parallelDiffFactor * 2
+	activeSetInvalid = activeSetInvalid | currentMaxDiff > lastAbsMax & lastAbsMax / parallelDiffFactor > concurrentFactor
+	if activeSetInvalid
+	Restart()
+	parallelDiffFactor = 0
+	lastMaxDiff = currentMaxDiff
+	..
+while maxAbsDiff  < epsilon
+\end{lstlisting}
+
+
 
 Asynchronous implementation with compare exchange. gradient map gets updated asynchronously.
 All processors do their deconvolution asynchronously, independent of the other processors. This needs synchronization.
@@ -407,7 +440,7 @@ For the rest of this project, we use a block size of $1$, meaning every thread i
 \subsubsection{Pseudo-random strategy}
 We discussed in Section \ref{pcdm:adaption}, a random block selection strategy seems to perform badly on the deconvolution problem. We created the pseudo-random strategy, which selects a block at random, but searches in it's neighborhood for the optimal block to optimize. It is a mixture between a random and a greedy selection strategy.
 
-But the pseudo-random strategy introduces a new tuning parameter, which we call the 'search percentage'. A search percentage of 0 says that after a random block has been selected, we search 0\% of the neighboring blocks in the active set. It is identical to a pure random selection strategy. A search percentage of 1.0 says that after a random block has been selected, we search 100\% of its neighbors in the active set. For example, if we have 256 blocks with 8 threads, a search percentage of 1.0 selects a random block and looks at 32 blocks in its neighborhood. A search percentage of 100\% is identical to a greedy strategy, where each thread searches its part of the active set.
+But the pseudo-random strategy introduces a new tuning parameter, which we call the 'search factor'. A search factor of 0 says that after a random block has been selected, we search 0\% of the neighboring blocks in the active set. It is identical to a pure random selection strategy. A search factor of 1.0 says that after a random block has been selected, we search 100\% of its neighbors in the active set. For example, if we have 256 blocks with 8 threads, a search percentage of 1.0 selects a random block and looks at 32 blocks in its neighborhood. A search percentage of 100\% is identical to a greedy strategy, where each thread searches its part of the active set.
 
 Our parallel coordinate descent algorithm needs a search percentage larger than 0. We compare different search percentages in Figure \ref{pcdm:results:search}.
 
@@ -418,7 +451,7 @@ Our parallel coordinate descent algorithm needs a search percentage larger than 
 	\end{subfigure}
 	\begin{subfigure}{0.35\linewidth}
 		\begin{tabular}{c | c}
-			Search Percentage & Total seconds \\ \hline
+			Search Factor & Total seconds \\ \hline
 			0.01 & 110 \\
 			0.1 & 106 \\
 			0.2 & 104 \\
@@ -430,7 +463,11 @@ Our parallel coordinate descent algorithm needs a search percentage larger than 
 	\label{pcdm:results:search}
 \end{figure}
 
-And it is a tiny fraction. A lot less communication cost. Close to random, but not quite.
+According to this test, the search factor tuning parameter influences the convergence speed, but tuning it does not lead to a significant speedup. A value between 0.01 and 0.4 leads to a similar wall-clock time. It is only when the parameter is set close to 1 (close to fully greedy) where we see a significant increase in wall-clock time.
+
+Based on this test, we fixed the search percentage tuning parameter to a value of 0.1 for all tests in this project. It was enough to alleviate the problems a pure random strategy introduces in the deconvolution problem (discussed previously in Section \ref{pcdm:adaption}).
+
+However, we do not know whether this parameter generally has a small influence on convergence speed, or if it is merely due to the LMC observation we used for this project. To answer this question, we need further tests on diverse observations.
 
 
 \subsubsection{Acceleration}
@@ -480,36 +517,28 @@ We use the same hardware as in the tests of Section \ref{results:LMC}. The table
 
 This parallel coordinate descent implementation is even faster than the implementation tested in the previous Section \ref{pcdm:results}. This implementation is simpler because it does not account for different block sizes. Each processor deconvolves a single pixel in parallel. The simplification leads to another decrease in wall-clock time.
 
-Comparison to CLEAN.
+The total deconvolution time of the parallel coordinate descent algorithm is in the range of the CLEAN algorithm. An exact comparison was not possible in this project. We did not implement the CLEAN algorithm in our .Net Core pipeline. However, the serial coordinate descent algorithm has an almost identical structure to the standard CLEAN algorithm, and we use this fact to get a rough comparison to CLEAN: The multi-scale CLEAN algorithm required 15'000 iterations to converge on the LMC observation. 15'000 serial coordinate descent iterations on the same hardware take approximately 230 seconds, which is more than the parallel coordinate descent algorithm needed.
 
-Note however that the serial coordinate descent requires one less major cycle.
+The serial coordinate descent algorithm is significantly slower than the parallel algorithm. However, it requires one major cycle less than the parallel algorithm to arrive at a similar reconstruction. The Figure \ref{pcdm:comparison:figure} compares the reconstruction of the two algorithms of the LMC observation.
 
-Faster than even the previous parallel coordinate descent implementation. Simplified because we do not need to account for blocks of pixels.
-But needs a major cycle more than the serial coordinate descent algorithm.
-What was measured: Including the 'Minor' cycle.
-		
-Fastest variants of both. Serial coordinate descent
-
-
-Compare the images from serial coordinate descent to the parallel coordinate descent, shown in Figure \ref{pcdm:comparison:figure}.
 \begin{figure}[h]
 	\centering
-	\begin{subfigure}{0.4\linewidth}
+	\begin{subfigure}{0.45\linewidth}
 		\centering
 		Serial CD
 		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/comparison/SerialCD-N132.png}
 	\end{subfigure}
-	\begin{subfigure}{0.4\linewidth}
+	\begin{subfigure}{0.45\linewidth}
 		\centering
 		Parallel CD
 		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/comparison/SerialCD-N132.png}
 	\end{subfigure}
 	\\
-	\begin{subfigure}{0.4\linewidth}
+	\begin{subfigure}{0.45\linewidth}
 		\centering
-		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/comparison/SerialCD-Calibration.png}
+		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/comparison/SerialCD-Calibration2.png}
 	\end{subfigure}
-	\begin{subfigure}{0.4\linewidth}
+	\begin{subfigure}{0.45\linewidth}
 		\centering
 		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/comparison/PCDM-Calibration.png}
 	\end{subfigure}
@@ -518,10 +547,13 @@ Compare the images from serial coordinate descent to the parallel coordinate des
 	\label{pcdm:comparison:figure}
 \end{figure}
 
+Both algorithms arrive at the same reconstruction. Both can super-resolve the N132D supernova-remnant, and have artifacts due to calibration errors. But the serial coordinate descent algorithm has left artifacts from the previous major cycles in the reconstruction: The red rectangle highlights a structure, which was added in a previous major cycle with the implicit path regularization. In a previous major cycle, only the highlighted structure was added. The next major cycle then added all the surrounding structure, including the "waves" from the calibration error. But the serial coordinate descent algorithm did not have enough iterations to properly integrate the old structure from the previous major cycle, leaving a "ghost" structure behind.
 
-Acceleration factor
+The serial coordinate descent can correct the artifact, but it either needs more iterations, or even another major cycle. In either case the serial coordinate descent algorithm needs more computing resources.
 
-images
+The parallel coordinate descent algorithm on the other hand does not contain the "ghost" structure. In a previous major cycle, the parallel algorithm has added a similar structure, but it was able to properly integrate it in the final reconstruction. We suspect this difference is due to the different number of pixels minimized: The reconstruction of the parallel algorithm is the result of roughly half a million single pixel minimizations, while the serial algorithm was had performed roughly 100 thousand single pixel minimizations. The parallel algorithm had more iterations to integrate the structures detected from previous cycles.
+
+Overall the reconstruction of the serial and parallel coordinate descent algorithms are similar. On the LMC dataset, the parallel algorithm was able to reconstruct a slightly superior reconstruction within a fraction of the total runtime of the serial algorithm.
 
 
 \subsection{Scalability of the parallel coordinate descent algorithm}
