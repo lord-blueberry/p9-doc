@@ -128,3 +128,44 @@ ggplot(data = data, mapping = aes(x = seconds, y = objectiveNormal, color= exper
   scale_color_discrete(name = "Algorithm", labels = levels(data$experimentName)) +
   coord_cartesian(ylim=c(30, 280.0))
 dev.off()
+
+
+
+folder <- "approx/pcdm-run/"
+totalIters <- c()
+totalTimes <- c()
+processors <- c(1, 4, 8, 16, 32)
+for(i in processors) {
+  file <- paste("pcdm", i, ".txt", sep="")
+  data = read.table(file.path(folder,file), header=TRUE, dec=".", sep=";")
+  data$iter[6] = 0
+  totalIters <- c(totalIters, sum(data$iter))
+  totalTimes <- c(totalTimes, sum(data$time))
+}
+timePerIteration <- totalTimes/totalIters
+df <- data.frame(times = totalTimes, iters = totalIters, processors = processors, timePerIter=timePerIteration, speedupIter=timePerIteration[1]/timePerIteration, speedupTime = totalTimes[1]/totalTimes)
+
+png(paste(outputfolder, "speedup_pcdm_time.png", sep=""),
+    width = 3.0,
+    height = 4.0,
+    units = "in",
+    res = 256)
+ggplot(data = df, mapping = aes(x = processors, y = speedupTime)) + 
+  xlab("Asynchronous Processors") +
+  ylab("Total Speedup") +
+  geom_line() +
+  scale_x_continuous(trans= "log2")
+dev.off()
+
+png(paste(outputfolder, "speedup_pcdm_iter.png", sep=""),
+    width = 3.0,
+    height = 4.0,
+    units = "in",
+    res = 256)
+ggplot(data = df, mapping = aes(x = processors, y = totalIters)) + 
+  xlab("Asynchronous Processors") +
+  ylab("Total number of iterations") +
+  geom_line() +
+  scale_x_continuous(trans= "log2")
+dev.off()
+  
