@@ -34,7 +34,14 @@ Sparsity, and a cheap single iteration.
 But may be separated with respect to frequency with Lagrangian multipliers. Another dimension for parallelization. 
 Question if cd methods are faster.
 
-Self-calibration.
+Calibration and reconstruction is separate. In self-calibration, both calibration and image reconstruction are sovled together. We solve the image reconstruction problem several times.
+Huge can of worms, due to the self-calibration bias.
+May introduce facetting, a natural way to distribute the problem in image space.
+
+Automation, we do not want to specify a $\lambda$
+Very differnt.
+Our implicit path regularization may help there.
+
 
 Works well for MeerKAT. Probably not for LOFAR. MeerKAT has the small $PSF$
 
@@ -84,9 +91,6 @@ Question about regularization
 Used the elasticNet regularization. Cheap and easy. More sophisticated, 
 
 Multiy frequency.
-
-
-
 
 
 

@@ -1,8 +1,48 @@
 \section{Conclusion}
+In this project, we developed our own image reconstruction pipeline in .Net Core. We implemented the Image Domain Gridder\cite{veenboer2017image} and developed two deconvolution algorithms: A serial and a parallel coordinate descent algorithm.
 
-First based on convex optimization algorithm, that is comparable to CLEAN speed.
+Hypothesis
+Whether we can do an approximation and simplify the deconvolution problem.
 
-Whether we can do an approximation and simplify the problem for distribution
+It works, we developed a $PSF$ approximation scheme which introduces sparsity in the $PSF$. The parallel deconvolution algorithm can exploit the sparsity to achieve a major speedup.
+First deconvolution algorithm based on convex optimization algorithm, that is comparable to CLEAN speed.
+
+Sparsity can speed up the deconvolution problem, but it does not work for any problem. Our tests show that we need specialized algorithms that exploit sparsity. And, our results suggests, if the sparsity is not there the specialized algorithm may in fact be slower. No free lunch theorem.
+
+Very wide field of view and self calibration re-introduce facets. CLEAN is not run on the whole image, but on facets. When this is possible with CLEAN, it is certainly possible with our reconstruction algorithms.
+
+So how big the problem is is not clear. It is not CLEAR whether we actually need a distributed deconvolution algorithm, or whether large problems come with a natural way to distribute the problem.
+
+The algorithm developed here can work in both settings. Developed for a shared-memory system, and achieved a competitive runtime. It is asynchronous, and may benefit further from a GPU-accelerated implementation. Can be easily extended for the distributed setting.
+
+
+The performance of the parallel algorithm depends on three things:
+  on the PSF of the instrument
+  on the regularization
+  on the ignorance of wide-band and full polarization imaging.
+
+PSF of the instrument
+Unclear how the algorithm generalizes to other reconstruction problems. We just tested it on the LMC observation. A bunch of heuristics.
+
+The regularization
+Unclear how useful it is, or what the best is.
+
+wide-band
+Unclear, if the results of this paper also apply when we introduce wide-band imaging.
+
+
+Future:
+
+
+
+
+
+
+
+
+Why is CLEAN so much better with calibration errors?
+
+
 Yes we can, but not all deconvolution algorithms benefit from it.
 
 We developed our own algorithm that can benefit greatyl from the approximation. It already benefits from single machine processing. From our results, the developed algorithm is comparable to the runtime of CLEAN. CLEAN is known as one of the fastest deconvolution algorithms.
@@ -11,7 +51,7 @@ Exploiting sparsity in the problem. But not everything benefits from it. We need
 Regularization affects the reconstruction quality. As of the time of writing, it is unclear what is the optimal regularization for radio interferometers
 As of the time of writing, it is currently unclear what regularization has the
 
-Unclear how the algorithm generalizes to other reconstruction problems. We just tested it on the LMC observation. A bunch of heuristics.
+
 
 Generalization on different instruments. Our approximation scheme exploits the fact that instruments are often nearly a gaussian function. This may not work for instruments with lower frequencies, like LOFAR. 
  
