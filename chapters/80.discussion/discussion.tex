@@ -1,4 +1,57 @@
 \section{Discussion}\label{discussion}
+In this project, we developed a novel $PSF$ approximation scheme. It leverages the fact that large parts of the $PSF$ from modern interferometers are close to zero, and we can approximate the true $PSF$ with a sparse approximation. We then developed a parallel coordinate descent deconvolution algorithm that benefits from a sparse $PSF$. In our test, it achieved a speedup factor of 20 compared to the serial coordinate descent deconvolution algorithm.
+
+We developed two deconvolution algorithms based on convex optimization: A serial, and a parallel coordinate descent algorithm. The general experience is that deconvolution algorithms based on convex optimization are magnitudes slower than CLEAN\cite{offringa2017optimized}. The parallel coordinate descent algorithm together with our approximation methods our approximation method is magnitudes faster than the serial coordinate descent algorithm. On our estimates, the parallel algorithm and CLEAN have a comparable wall-clock time reconstructing a real-world observation. To our knowledge, our parallel algorithm is the only convex optimization based deconvolution algorithm in radio astronomy that has a comparable run time to CLEAN.
+
+T
+
+Potential of GPU. GPU is very good at atomic operations, which may simplify our algorithm.
+
+The parallel coordinate descent algorithm is based on PCDM \cite{richtarik2016parallel}. Adaptions necessary to make the algorithm efficient on the deconvolution problem. Our implemenmtation is not distributed. PCDM can be extended to the distributed setting with Hydra. We can use the same extension to distribute our algorithm.
+
+Problems of large number of nodes. On our test, adding more nodes quickly diminishes the potential speedup. So much so that we can even slow down the parallel algorithm by adding more processors. 
+We suspect that our adaptions for the deconvolution problem, which make it as fast as it is with limited processors, slow down the algorithm with a large number of processors.
+It is possible to fix these issues with further development
+
+
+ElasticNEt
+Our serial and parallel coordinate descent algorithms use the elastic net regularization.
+Similar behavior, our algorithms created plausible super-resolved structures. However, they also were more susceptible to calibration errors.
+This is what we expected \cite{offringa2017optimized}. Same behavior as other deconvolution algorithm based on convex optimization, which use different regularizations.
+
+Comparison of elasticNEt
+Two regularizations are often used in radio astronomy: Starlets \cite{starck2015starlet} and Daubechies wavelets\cite{carrillo2014purify}. Both have been shown to produce super-resolved reconstruction in radio astronomy\cite{dabbech2015moresane, dabbech2018cygnus}. Elastic net is fairly simple. It is not known how elastic net now compares to the more complex regularization.
+The optimal regularization in radio interferometric imaging is, to our knowledge, still an open question. 
+
+Our parallel coordinate descent algorithm can also be used with different regularization, such as starlets and Daubechies wavelets. However, the parallel algorithm is fast, because it can exploit sparsity in the deconvolution problem (which we introduce with our $PSF$ approximation scheme). The elastic net regularization does not influence the sparsity of the $PSF$: It is a regularization which is only considers pixels independent of their neighborhood. The starlet regularization on the other hand considers neighborhoods of pixels of different sizes. For a large neighborhood, this diminishes the sparsity we introduced with our $PSF$ approximation scheme.  
+
+Nevertheless, the starlet regularization also considers small neighborhoods, which can still be 'sparsified' with our $PSF$ approximation scheme, and potentially sped up with our parallel coordinate descent algorithm. It is unclear how our parallel coordinate descent algorithm with starlet regularization compares to MORESANE, the state-of-the-art reconstruction algorithm with starlet regularization.
+
+We developed a proof-of-concept deconvolution algorithm, which only considers wide field-of-view imaging. A real-world reconstruction algorithm has to account for wide band imaging and different polarizations of the input data. This is currently ignored. Wide band imaging increases the problem: We cannot reconstruct one image, but have to reconstruct an image cube at different frequencies simultaneously. Furthermore, we introduce a regularization over the frequency.
+
+It is not know for our parallel deconvolution algorithm, what effect does wide band imaging have. 
+Sparsity, and a cheap single iteration.
+But may be separated with respect to frequency with Lagrangian multipliers. Another dimension for parallelization. 
+Question if cd methods are faster.
+
+Self-calibration.
+
+Works well for MeerKAT. Probably not for LOFAR. MeerKAT has the small $PSF$
+
+
+
+
+
+
+
+
+
+
+How the $PSF$ approximation scheme works for other 
+A simple regularization. It is not known how it compares to more complex 
+
+
+ , which can speed benefits from a sparse $PSF$ With the  We developed a parallel deconvolution algorithm which benefits
 Approximation
 And A coordinate descent algorithm that can  exploit it.
 

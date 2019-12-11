@@ -146,24 +146,24 @@ timePerIteration <- totalTimes/totalIters
 df <- data.frame(times = totalTimes, iters = totalIters, processors = processors, timePerIter=timePerIteration, speedupIter=timePerIteration[1]/timePerIteration, speedupTime = totalTimes[1]/totalTimes)
 
 png(paste(outputfolder, "speedup_pcdm_time.png", sep=""),
-    width = 3.0,
-    height = 4.0,
+    width = 2.5,
+    height = 3.0,
     units = "in",
     res = 256)
 ggplot(data = df, mapping = aes(x = processors, y = speedupTime)) + 
-  xlab("Asynchronous Processors") +
+  xlab("Async. Processors") +
   ylab("Total Speedup") +
   geom_line() +
   scale_x_continuous(trans= "log2")
 dev.off()
 
 png(paste(outputfolder, "speedup_pcdm_iter.png", sep=""),
-    width = 3.0,
-    height = 4.0,
+    width = 2.5,
+    height = 3.0,
     units = "in",
     res = 256)
 ggplot(data = df, mapping = aes(x = processors, y = totalIters)) + 
-  xlab("Asynchronous Processors") +
+  xlab("Async. Processors") +
   ylab("Total number of iterations") +
   geom_line() +
   scale_x_continuous(trans= "log2")

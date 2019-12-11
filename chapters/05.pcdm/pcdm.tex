@@ -1,6 +1,7 @@
 \section{Parallel coordinate descent methods}\label{pcdm}
 We demonstrated that the true $PSF$ of the deconvolution problem can be approximated. A smaller $PSF$ can be used, which is only a fraction of the true size. The serial coordinate descent methods, which was used so during this project, achieves a moderate speedup with the $PSF$ approximation. Parallel coordinate descent methods may benefit more from the $PSF$ approximation. For the rest of this work, we develop a parallel coordinate descent deconvolution algorithm. We explain why parallel methods should benefit more from the $PSF$ approximation, and show that they indeed speed up the deconvolution problem.
 
+%sparse PSF
 
 Introduce the principle of parallel coordinate descent methods, and derrive a parallel coordinate descent deconvolution algorithm.
 
@@ -389,11 +390,11 @@ Figure \ref{pcdm:results:psf} shows the result of our parallel coordinate descen
 	\begin{subfigure}{0.35\linewidth}
 		\begin{tabular}{c | c | c}
 			PSF & ESO & Total seconds \\ \hline
-			1 / 4 & 1.437 & 4941 \\
-			1 / 8 & 1.109 & 1433 \\
-			1 / 16 & 1.027 & 390 \\
-			1 / 32 & 1.007 & 108 \\
-			1 / 64 & 1.002 & 61 \\
+			1 / 4 & 2.750 & 4941 \\
+			1 / 8 & 1.437 & 1433 \\
+			1 / 16 & 1.109 & 390 \\
+			1 / 32 & 1.027 & 108 \\
+			1 / 64 & 1.001 & 61 \\
 		\end{tabular}
 	\end{subfigure}
 	\caption{Convergence times with $PSF$ approximation}
@@ -553,12 +554,49 @@ The serial coordinate descent can correct the artifact, but it either needs more
 
 The parallel coordinate descent algorithm on the other hand does not contain the "ghost" structure. In a previous major cycle, the parallel algorithm has added a similar structure, but it was able to properly integrate it in the final reconstruction. We suspect this difference is due to the different number of pixels minimized: The reconstruction of the parallel algorithm is the result of roughly half a million single pixel minimizations, while the serial algorithm was had performed roughly 100 thousand single pixel minimizations. The parallel algorithm had more iterations to integrate the structures detected from previous cycles.
 
-Overall the reconstruction of the serial and parallel coordinate descent algorithms are similar. On the LMC dataset, the parallel algorithm was able to reconstruct a slightly superior reconstruction within a fraction of the total runtime of the serial algorithm.
+Overall the reconstruction of the serial and parallel coordinate descent algorithms are similar. On the LMC dataset, the parallel algorithm was able to reconstruct a slightly superior reconstruction within a fraction of the total run time of the serial algorithm.
 
 
 \subsection{Scalability of the parallel coordinate descent algorithm}
-How many processors can we realistically use. At what point does the $ESO$ get too small.
+The parallel coordinate descent algorithm out-performs the serial algorithm significantly on personal computing hardware. Lastly, we want to investigate how the parallel algorithm behaves when we increase the number of asynchronous processors.
 
+Distributed parallel algorithms exist. cite hydra\cite{richtarik2016distributed} and hydra$^2$\cite{fercoq2014fast}.
+Out of scope for this project.
 
+Test on a shared memory system and increase the number of processors running asynchronously. Figure \ref{pcdm:scalability:proc} shows the results. The first graph shows the total speedup, the second plot shows the total number of iterations needed, and the last plot shows the ESO for increasing number of processors.
 
+\begin{figure}
+	\centering
+	\begin{subfigure}{0.30\linewidth}
+		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/scalability/speedup_pcdm_time.png}
+	\end{subfigure}
+	\begin{subfigure}{0.30\linewidth}
+		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/scalability/speedup_pcdm_iter.png}
+	\end{subfigure}
+	\begin{subfigure}{0.30\linewidth}
+		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/scalability/speedup_pcdm_eso.png}
+	\end{subfigure}
+	\begin{subfigure}{0.2\linewidth}
+			\begin{tabular}{c | c }
+			Processors & ESO \\ \hline
+			1 & 1.0 \\
+			4 & 1.012 \\
+			8 & 1.027 \\
+			16 & 1.058 \\
+			32 & 1.121 \\
+		\end{tabular}
+	\end{subfigure}
+	\caption{Speedup comparison with increasing number of asynchronous processors.}
+	\label{pcdm:scalability:proc}
+\end{figure}
 
+We see a linear speedup up to 8 processors. But afterwards, the speedup we receive diminishes quickly. After 16 processors, the parallel coordinate descent algorithm even becomes slower. The reason for this behavior lies in the total number of iterations the parallel algorithm needs to reconstruct a solution. As we see in Figure \ref{pcdm:scalability:proc} needs over 3 million parallel iterations to converge with 32 asynchronous processors. With 8 processors, it about half a million iterations to converge.
+
+This drastic increase in total iterations quickly diminishes the speedup we receive by adding more asynchronous processors. This is partly due to the increase in the ESO: Adding more asynchronous processors increases the ESO, which in turn reduces the step size by which we can minimize a pixel in each iteration. However, we suspect there are more effects at play than just the ESO. The ESO for the number of processors is also shown in Figure \ref{pcdm:scalability:proc} does not increase as drastic as the total number of iterations needed.
+
+PCDM and APPROX algorithms did not report a decrease in performance.
+Maybe due to the additions this influences
+
+Maybe hardware.
+
+Not due to the 
