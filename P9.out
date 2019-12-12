@@ -34,7 +34,7 @@
 \BOOKMARK [2][-]{subsection.5.4}{Major Cycle convergence and implicit path regularization}{section.5}% 34
 \BOOKMARK [1][-]{section.6}{Tests on MeerKAT LMC observation}{}% 35
 \BOOKMARK [2][-]{subsection.6.1}{Comparison with CLEAN reconstructions}{section.6}% 36
-\BOOKMARK [2][-]{subsection.6.2}{Coordinate descent acceleration with MPI or GPU}{section.6}% 37
+\BOOKMARK [2][-]{subsection.6.2}{Serial coordinate descent speedup with MPI or GPU}{section.6}% 37
 \BOOKMARK [2][-]{subsection.6.3}{Effect of approximating the PSF}{section.6}% 38
 \BOOKMARK [3][-]{subsubsection.6.3.1}{Method 1: Approximate gradient update}{subsection.6.3}% 39
 \BOOKMARK [3][-]{subsubsection.6.3.2}{Method 2: Approximate deconvolution}{subsection.6.3}% 40

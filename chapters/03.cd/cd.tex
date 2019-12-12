@@ -409,11 +409,13 @@ Note that after each kernel call, we synchronize the program. We wait for all ke
 
 
 \subsection{Distributed implementation MPI}
-How we distribute it with MPI.
+We created a distributed implementation of our serial coordinate descent algorithm using the Message Passing Interface (MPI). In MPI, we use several nodes of computers to solve the problem. Each node has its own processors an main memory, and we use MPI to communicate betweeen the nodes. 
 
-Message pasing interface (MPI)
-We split up the image and the gradient map into facets.
+We split the reconstructed image, and the gradient map into facets of equal size, and use one node for each facet. For example, our image is $1024^2$ pixels in size and we use 4 nodes. This means each node reconstructs a $512^2$ facet of the image, and has the matching $512^2$ entries of the gradient map locally. 
 
+The distributed serial coordinate descent algorithm now searches the maximum pixel locally in each node. Then, all node agree on the best global pixel to optimize, which is an MPI\_ALLREDUCE operation. After MPI\_ALLREDUCE, each node knows the global pixel which gets minimized in this iteration. Then, each node updates its part of the gradient map locally.
+
+This leads to the following pseudo-code algorithm:
 \begin{lstlisting}
 ...
 do 
@@ -448,13 +450,10 @@ do
 while epsilon < maxAbsDiff
 \end{lstlisting}
 
-
-Each simply updates its patch.
-
-MPI Allreduce
+Each node in the distributed serial coordinate descent algorithm communicates its local pixel in each iteration. Meaning the distributed algorithm has a communication step in each serial coordinate descent iteration. The distributed algorithm only has to communicate a single pixel, but has to communicate often. This is a potential down-side of the implementation. Usually, distributed systems can speed up algorithms which communicate a large chunk of data rarely.
 
 
-\subsection{Serial coordinate descent and similarities to the CLEAN algorithm}
+\subsection{Serial coordinate descent and similarities to the CLEAN algorithm}\label{cd:similarities}
 When we look back at the CLEAN algorithm, we start to see similarities to the serial coordinate descent algorithm. 
 
 CLEAN finds the maximum in the residual image. Serial Coordinate descent finds the maximum in the gradient map.

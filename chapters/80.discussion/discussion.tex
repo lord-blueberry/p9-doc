@@ -5,7 +5,7 @@ We developed two deconvolution algorithms based on convex optimization: A serial
 
 T
 
-Potential of GPU. GPU is very good at atomic operations, which may simplify our algorithm.
+Potential of GPU. GPU is very good at atomic operations \cite{keplerShuffle}, which may speed our parallel coordinate descent algorithm. Other algorithms need GPU acceleration to be comparable to CLEAN \cite{dabbech2015moresane}, but our algorithm already is.
 
 The parallel coordinate descent algorithm is based on PCDM \cite{richtarik2016parallel}. Adaptions necessary to make the algorithm efficient on the deconvolution problem. Our implemenmtation is not distributed. PCDM can be extended to the distributed setting with Hydra. We can use the same extension to distribute our algorithm.
 
