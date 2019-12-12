@@ -387,9 +387,7 @@ MaxPixelKernel(x, gradienstMap, lipschitz, location, maxPixel)
 
 The kernel is executed on multiple processors in parallel on the GPU. Each processor is checking a single pixel. Communication is done with the atomic-max instruction. The atomic-max writes on a global variable, which keeps track of the current maximum pixel. This implementation turned out to be the fastest for the MaxPixelKernel. Warp shuffle\cite{keplerShuffle} was also tested, but resulted in a slower kernel.
 
-Synchronization
-
-Synchronization between the kernels. It is a serial coordinate descent method. We need to wait for all kernels to finish before we can continue.
+Now to put the serial coordinate descent implementation on the GPU together, all we need to do is call the kernels, which perform the minimization on the GPU:
 
 
 \begin{lstlisting}
@@ -407,16 +405,49 @@ do
 while maxPixel.absDiff  < epsilon
 \end{lstlisting}
 
-ILGPU implementation finished. 
+Note that after each kernel call, we synchronize the program. We wait for all kernels on the GPU to be finished, before we continue with the next step. As we mentioned before, this is the core behind the serial coordinate descent algorithm. We have to wait for each step to finish before we can continue with the next. 
 
 
-\subsection{Distributed implementaion MPI}
+\subsection{Distributed implementation MPI}
 How we distribute it with MPI.
 
 Message pasing interface (MPI)
+We split up the image and the gradient map into facets.
 
+\begin{lstlisting}
+...
+do 
+	oldObjectiveValue = objectiveValue
+	
+	//Step 1: Search pixel
+	maxAbsDiff = 0
+	maxDiff = 0
+	pixelLocation = (-1, -1)
+	for(i in Range(0, dirty.Length(0))
+		for(j in Range(0, dirty.Length(1))
+			oldValue = x[i, j]
+			tmp = gradientsMap[i, j] + oldValue * lipschitzMap[i, j]
+			optimalValue = Max(tmp - lambda*alpha) / (lipschitz[i, j] + (1 - alpha)*lambda)
+			diff = optimalValue - oldValue
+			
+			if(maxAbsDiff < Abs(diff))
+				maxAbsDiff = Abs(diff)
+				maxDiff = diff
+				pixelLocation = (i, j)
+	
+	//communicate location with nodes
+	globalMaxAbsDiff, globalMaxDiff, globalLocation = MPI_ALLREDUCE(maxAbsDiff, maxDiff, pixelLocation)
+	
+	//Step 2: Optimize pixel.
+	if(globalLocation == pixelLocation)
+		x[globalLocation] += globalMaxDiff
+	
+	//housekeeping
+	shiftedUpdate = Shift(gradientUpdate, globalLocation)
+	gradientMap = gradientMap - shiftedUpdate * globalMaxDiff
+while epsilon < maxAbsDiff
+\end{lstlisting}
 
-We split up the image and the gradient map into patches.
 
 Each simply updates its patch.
 

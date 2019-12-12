@@ -388,7 +388,7 @@ Figure \ref{pcdm:results:psf} shows the result of our parallel coordinate descen
 		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/parameters/psfSize.png}
 	\end{subfigure}
 	\begin{subfigure}{0.35\linewidth}
-		\begin{tabular}{c | c | c}
+		\begin{tabular}{c | r | r}
 			PSF & ESO & Total seconds \\ \hline
 			1 / 4 & 2.750 & 4941 \\
 			1 / 8 & 1.437 & 1433 \\
@@ -419,7 +419,7 @@ The parallel coordinate descent algorithm can group several pixels in blocks, an
 		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/parameters/blockSize.png}
 	\end{subfigure}
 	\begin{subfigure}{0.35\linewidth}
-		\begin{tabular}{c | c}
+		\begin{tabular}{c | r}
 			Block Size & Total seconds \\ \hline
 			$1^2$ & 108 \\
 			$2^2$ & 103 \\
@@ -451,7 +451,7 @@ Our parallel coordinate descent algorithm needs a search percentage larger than 
 		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/parameters/searchPercent.png}
 	\end{subfigure}
 	\begin{subfigure}{0.35\linewidth}
-		\begin{tabular}{c | c}
+		\begin{tabular}{c | r}
 			Search Factor & Total seconds \\ \hline
 			0.01 & 110 \\
 			0.1 & 106 \\
@@ -507,8 +507,8 @@ We use the same hardware as in the tests of Section \ref{results:LMC}. The table
 
 \begin{table} [h]
 	\centering
-	\begin{tabular}{c | c | c | c | c}
-		Algorithm &  $PSF$ Fraction & Major Cycles & Total Seconds in Deconvolution & Speedup factor\\ \hline
+	\begin{tabular}{c | c | r | r | c}
+		Algorithm &  $PSF$  & Major Cycles & Total Seconds in Deconvolution & Speedup factor\\ \hline
 		Serial CD & $\frac{1}{16}$ & 4 & 1486 & --\\
 		Parallel CD & $\frac{1}{32}$ & 5 & 75 & $\approx 20$ \\
 	\end{tabular}
@@ -560,10 +560,9 @@ Overall the reconstruction of the serial and parallel coordinate descent algorit
 \subsection{Scalability of the parallel coordinate descent algorithm}
 The parallel coordinate descent algorithm out-performs the serial algorithm significantly on personal computing hardware. Lastly, we want to investigate how the parallel algorithm behaves when we increase the number of asynchronous processors.
 
-Distributed parallel algorithms exist. cite hydra\cite{richtarik2016distributed} and hydra$^2$\cite{fercoq2014fast}.
-Out of scope for this project.
+Our parallel coordinate descent algorithm is based on PCDM\cite{richtarik2016parallel}. PCDM has been extended for the distributed setting as Hydra\cite{richtarik2016distributed}, and in its accelerated variant as Hydra$^2$\cite{fercoq2014fast}. Extending our parallel coordinate descent algorithm to the distributed setting was not possible in the time frame of this project. But if the parallel algorithm should be distributed in the future, we can apply the methods developed for Hydra and Hydra$^2$.
 
-Test on a shared memory system and increase the number of processors running asynchronously. Figure \ref{pcdm:scalability:proc} shows the results. The first graph shows the total speedup, the second plot shows the total number of iterations needed, and the last plot shows the ESO for increasing number of processors.
+We test the parallel coordinate descent algorithm on a shared memory system (all processors have access to the same main memory), and test how the algorithm behaves for larger number of processors. Figure \ref{pcdm:scalability:proc} shows the results. The first graph shows the total speedup, the second plot shows the total number of iterations needed, and the last plot shows the ESO for increasing number of processors.
 
 \begin{figure}
 	\centering
@@ -576,27 +575,53 @@ Test on a shared memory system and increase the number of processors running asy
 	\begin{subfigure}{0.30\linewidth}
 		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/scalability/speedup_pcdm_eso.png}
 	\end{subfigure}
-	\begin{subfigure}{0.2\linewidth}
-			\begin{tabular}{c | c }
-			Processors & ESO \\ \hline
-			1 & 1.0 \\
-			4 & 1.012 \\
-			8 & 1.027 \\
-			16 & 1.058 \\
-			32 & 1.121 \\
-		\end{tabular}
-	\end{subfigure}
 	\caption{Speedup comparison with increasing number of asynchronous processors.}
 	\label{pcdm:scalability:proc}
 \end{figure}
 
-We see a linear speedup up to 8 processors. But afterwards, the speedup we receive diminishes quickly. After 16 processors, the parallel coordinate descent algorithm even becomes slower. The reason for this behavior lies in the total number of iterations the parallel algorithm needs to reconstruct a solution. As we see in Figure \ref{pcdm:scalability:proc} needs over 3 million parallel iterations to converge with 32 asynchronous processors. With 8 processors, it about half a million iterations to converge.
+We see a linear speedup up to 8 processors. But afterwards, the speedup we receive diminishes quickly. After 16 processors, the parallel coordinate descent algorithm even becomes slower when more processors are added. The reason for this behavior lies in the total number of iterations the parallel algorithm needs to reconstruct a solution. As we see in Figure \ref{pcdm:scalability:proc} needs over 3 million parallel iterations to converge with 32 asynchronous processors. With 8 processors, it about half a million iterations to converge.
 
-This drastic increase in total iterations quickly diminishes the speedup we receive by adding more asynchronous processors. This is partly due to the increase in the ESO: Adding more asynchronous processors increases the ESO, which in turn reduces the step size by which we can minimize a pixel in each iteration. However, we suspect there are more effects at play than just the ESO. The ESO for the number of processors is also shown in Figure \ref{pcdm:scalability:proc} does not increase as drastic as the total number of iterations needed.
+This drastic increase in total iterations quickly diminishes the speedup we receive by adding more asynchronous processors. This is partly due to the increase in the ESO: Adding more asynchronous processors increases the ESO, which in turn reduces the step size by which we can minimize a pixel in each iteration. However, we suspect there are more effects at play than just the ESO. The ESO for the number of processors is also shown in Figure \ref{pcdm:scalability:proc} does not increase as drastic as the total number of iterations needed. 
 
-PCDM and APPROX algorithms did not report a decrease in performance.
-Maybe due to the additions this influences
+\begin{table} [h]
+	\centering
+		\begin{tabular}{c | r }
+			Processors & Iterations per second \\ \hline
+			1 & 1061.7 \\
+			4 & 3849.7 \\
+			8 & 9254.9 \\
+			16 & 16'721.9 \\
+			32 & 32'794.6 \\
+		\end{tabular}
+	\caption{Throughput of the parallel coordinate descent algorithms with additional processors.}
+	\label{pcdm:scalability:throughput}
+\end{table}
 
-Maybe hardware.
+When we look at the throughput of the parallel coordinate descent algorithm in table \ref{pcdm:scalability:throughput}, we see that the number of iterations per second still increases roughly linearly with the number of asynchronous processors. If the parallel algorithm gets slowed down because of communication costs between processors (for example: multiple compare-exchange operations on the same entry in the gradient map), we would see a less-than-linear increase in throughput per added processor. Meaning the slowdown we see in Figure \ref{pcdm:scalability:proc} is likely not due to communication costs, but due to the drastic increase in total number of iterations.
 
-Not due to the 
+Remember that the parallel coordinate descent algorithm uses active set iterations: Each asynchronous processor chooses pixels from the active set for a given number of iterations. When we measure the absolute maximum pixel difference (the maximum step a serial greedy coordinate descent algorithm can take in one iteration) for 8 processors, we observe that it steadily decreases from one active set iteration to the next. At 32 processors, the absolute maximum pixel difference fluctuates from one active set iteration to the next.
+
+This observation leads us to the ESO and our pseudo-random selection strategy: We may see the fluctuation, because we do not choose pixels uniformly at random, and their $PSF$s overlap more than we estimated with the ESO. In that case, the algorithm is in the danger of diverging, which would explain the fluctuation. The solution in that case would be to increase the ESO.
+
+On the other hand, this fluctuation can also be observed with a proper random selection strategy. The second explanation is that with increasing number of processors, a single processor is simply too close to a random selection strategy. Remember: Our pseudo-random strategy greedily searches a fraction of the active set. With an active set of 1024 entries, 32 processors and a search fraction of 0.1, each processor searches 10\% of $\frac{1024}{32}$ entries. By adding more processors, each processor searches through fewer entries, although the total number of entries searched stays the same. The solution in that case would be to increase the Search Fraction.
+
+We tested these two explanations: We ran the parallel coordinate descent algorithm once with an increased ESO (the ESO which arises from 64 processors) and once with an increased Search Fraction. The results are summarized in Table \ref{pcdm:scalability:table}.
+
+\begin{table} [h]
+	\centering
+	\begin{tabular}{c | r | r | r | r | r | c}
+		Test & Processors &  ESO & Search Fraction & \# Iterations & Total Seconds & Speedup\\ \hline \hline
+		Standard & 16 & 1.058 & 0.1 &  868k & 51 & 4.5\\\hline
+		Standard & 32 & 1.121 & 0.1 & 3'213k & 98 & 2.4\\
+		Larger ESO & 32 &  1.246 & 0.1 & 4'220k & 130 & 1.8 \\
+		Larger Search & 32 &  1.121 & 0.4 & 1'171k & 47 & \textbf{5.0} \\
+	\end{tabular}
+	\caption{Speedup comparison for the parallel coordinate descent algorithm, once with increased ESO and once with increased Search Fraction.}
+	\label{pcdm:scalability:table}
+\end{table}
+
+Increasing the Search Fraction lead to a significant decrease in total iterations, which in turn leads to a significant decrease in the wall-clock time, leading to a speedup factor of 5. This means, with a larger Search Factor, the parallel coordinate descent algorithm is again faster with 32 processors instead of 16, and it would remove the 'dip' in Figure \ref{pcdm:scalability:proc}. Noteworthy is that increasing the ESO in our parallel algorithm again lead to an increase in total number of iterations. This result suggests the ESO was not too low, and was not at fault for the slowdown we measured in Figure \ref{pcdm:scalability:proc}. 
+
+Nevertheless, these results are still surprising to us. As we mentioned before, whether we use 1 processor or 16 in our parallel coordinate descent algorithm, we still search the same number of elements in the active set. For a Search Fraction of 0.1, the algorithm always searches 10\% for every parallel iteration. Adding more processors simply reduces the number of elements each processor checks. The results from Table \ref{pcdm:scalability:table} suggests that each processor in our parallel algorithm has to search through a minimum number of elements in the active set to run efficiently. But this view does not agree with our results from Figure \ref{pcdm:results:search}, where we used 8 processors and a Search Fraction of 0.01. Each of the 8 processors searched through fewer elements than in this test with 32 processors and a Search Fraction of 0.1. But with 8 processors, it did not lead to a large increase in wall-clock time.
+
+It is not clear why exactly our parallel coordinate descent algorithm needs so many more iterations to converge with 32 processors, or why increasing the Search Fraction can remedy the problem. But the total number of iterations needed to converge seem to be the bottleneck for this algorithm. A thorough analysis may lead to a variant of our algorithm which needs fewer iterations to converge and therefore may be even faster. In the time frame of this project, it was not possible to further analyze the behavior.

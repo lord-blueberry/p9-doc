@@ -135,6 +135,7 @@ folder <- "approx/pcdm-run/"
 totalIters <- c()
 totalTimes <- c()
 processors <- c(1, 4, 8, 16, 32)
+ESO <- c(1.0, 1.012, 1.027, 1.058, 1.121)
 for(i in processors) {
   file <- paste("pcdm", i, ".txt", sep="")
   data = read.table(file.path(folder,file), header=TRUE, dec=".", sep=";")
@@ -142,8 +143,8 @@ for(i in processors) {
   totalIters <- c(totalIters, sum(data$iter))
   totalTimes <- c(totalTimes, sum(data$time))
 }
-timePerIteration <- totalTimes/totalIters
-df <- data.frame(times = totalTimes, iters = totalIters, processors = processors, timePerIter=timePerIteration, speedupIter=timePerIteration[1]/timePerIteration, speedupTime = totalTimes[1]/totalTimes)
+timePerIteration <- totalIters/totalTimes
+df <- data.frame(times = totalTimes, iters = totalIters, processors = processors, timePerIter=timePerIteration, speedupIter=timePerIteration[1]/timePerIteration, speedupTime = totalTimes[1]/totalTimes, eso=ESO)
 
 png(paste(outputfolder, "speedup_pcdm_time.png", sep=""),
     width = 2.5,
@@ -168,4 +169,15 @@ ggplot(data = df, mapping = aes(x = processors, y = totalIters)) +
   geom_line() +
   scale_x_continuous(trans= "log2")
 dev.off()
-  
+
+png(paste(outputfolder, "speedup_pcdm_eso.png", sep=""),
+    width = 2.5,
+    height = 3.0,
+    units = "in",
+    res = 256)
+ggplot(data = df, mapping = aes(x = processors, y = eso)) + 
+  xlab("Async. Processors") +
+  ylab("ESO") +
+  geom_line() +
+  scale_x_continuous(trans= "log2")
+dev.off()

@@ -25,7 +25,7 @@
 \BOOKMARK [3][-]{subsubsection.4.3.3}{Using a map of gradients}{subsection.4.3}% 25
 \BOOKMARK [2][-]{subsection.4.4}{Efficient implementation pseudo-code}{section.4}% 26
 \BOOKMARK [2][-]{subsection.4.5}{GPU implementation}{section.4}% 27
-\BOOKMARK [2][-]{subsection.4.6}{Distributed implementaion MPI}{section.4}% 28
+\BOOKMARK [2][-]{subsection.4.6}{Distributed implementation MPI}{section.4}% 28
 \BOOKMARK [2][-]{subsection.4.7}{Serial coordinate descent and similarities to the CLEAN algorithm}{section.4}% 29
 \BOOKMARK [1][-]{section.5}{PSF approximation for parallel and distributed deconvolution}{}% 30
 \BOOKMARK [2][-]{subsection.5.1}{Intuition for approximating the PSF}{section.5}% 31
