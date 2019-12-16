@@ -96,6 +96,7 @@ Because coordinate descent methods only optimize a single pixel at a time, they 
 
 \subsubsection{Step 1: Choosing single a pixel}
 Our serial coordinate descent algorithm uses a greedy strategy. From all possible pixels, it searches the pixel whose gradient has the largest magnitude. In each iteration, it chooses the pixel which reduces the objective function the most. There are two other strategies that are used in coordinate descent: Random and Cyclic.
+%with the maximum possible difference in this iteration
 
 A random strategy chooses, as the name implies, each pixel at random. Usually, the pixels are chosen from a uniform distribution. The greedy strategy leads to cheaper iteration compared to the greedy strategy, because we do not check the gradient of each pixel.
 
@@ -454,15 +455,15 @@ Each node in the distributed serial coordinate descent algorithm communicates it
 
 
 \subsection{Serial coordinate descent and similarities to the CLEAN algorithm}\label{cd:similarities}
-When we look back at the CLEAN algorithm, we start to see similarities to the serial coordinate descent algorithm. 
+When we look back at the CLEAN algorithm described in Section \ref{intro2:CLEAN}, we can see similarities in their structures: In the first step, CLEAN searches the location of the maximum pixel in the residuals, while serial coordinate descent searches the location of the absolute maximum change. In the second step, CLEAN subtracts a fraction of the $PSF$ at that location, while coordinate descent calculates the optimal pixel value and subtracts the product of $PSF \star PSF$ from the gradient map. 
 
-CLEAN finds the maximum in the residual image. Serial Coordinate descent finds the maximum in the gradient map.
+CLEAN and serial coordinate descent have the same overall structure. But serial coordinate descent uses the gradient map instead of explicit residuals (the gradient map contains the information of the residuals implicitly). In a sense, the serial coordinate descent can be looked at as a CLEAN algorithm, which uses the gradient map instead of the residual map, and the product of $PSF \star PSF$ instead of the $PSF$. Both algorithms use essentially use the same operations, but the content in their memory is different. As such, one iteration of standard CLEAN is roughly as expensive as an iteration of serial coordinate descent. 
 
-CLEAN then removes a fixed fraction of the $PSF$ at that point. Serial coordinate descent uses the Lipschitz constant, and subtracts the $PSF$ correlated with itself at that point.
+The side effect of their similar structure is that any speedup we achieve by using GPU acceleration for serial coordinate descent can plausibly be used to speedup CLEAN to a similar amount. Our distribution scheme for serial coordinate descent can also be used for a distributed standard CLEAN. 
 
-The main difference is that serial coordinate descent calculates the gradient, and CLEAN does not. CLEAN is more a matching pursuit algorithm. But the structure is the same. We can use the serial coordinate descent GPU and MPI implementation. With a few tweaks, we would arrive at the CLEAN algorithm.
+The main difference between the two algorithms is that serial coordinate descent does not need the blurring step typically used in CLEAN algorithms. In Section \ref{intro2:CLEAN}, we introduced the CLEAN concept of the model image. Standard CLEAN detects point sources, and puts them in the model image. When the observation shows an extended emission, the standard CLEAN approximates it as a set of point sources. After CLEAN has finished finding all the point sources, it blurs the model image with the clean-beam, a 2d Gaussian representing the accuracy of the instrument, resulting in the reconstructed image.
 
-By accident, we also found a GPU and MPI implementation for standard CLEAN.
+In this project, we use the elastic net regularization, which has a simple model for extended emissions, namely the L2 norm. As such our serial coordinate descent algorithm can find the reconstructed image directly without any blurring. This may result in super-resolved reconstructions: The serial coordinate descent algorithm may find structures which are smaller than the accuracy limit of the instrument. We will show plausible super-resolved reconstructions by the serial coordinate descent algorithm with elastic net regularization in Section \ref{results}.
 
-Multi-scale CLEAN is what is used. Difficulty with MPI implementation because of a distributed convolution.
+%Multi-scale CLEAN is what is used. Difficulty with MPI implementation because of a distributed convolution.
 
