@@ -25,6 +25,18 @@ ggplot(data, aes(x=x, y=y, fill=intensity))  +
   theme_void()
 dev.off()
 
+data <- read.table(paste(inputFolder, "CD-reference-residuals.csv", sep=""), sep=";", header=TRUE, dec=",")
+png(paste(outputfolder, "CD-reference-residuals.png", sep=""),
+    width = 9.0,
+    height = 8.0,
+    units = "in",
+    res = 200)
+ggplot(data, aes(x=x, y=y, fill=intensity))  +
+  geom_tile() +
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.5), name="Jansky/Beam") +
+  theme_void()
+dev.off()
+
 data <- read.table(paste(inputFolder, "CD-Calibration.csv", sep=""), sep=";", header=TRUE, dec=",")
 data$x <- (data$x - min(data$x)) * 1.5 / 60.0
 data$y <- (data$y - min(data$y)) * 1.5 / 60.0

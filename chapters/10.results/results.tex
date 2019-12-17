@@ -46,38 +46,56 @@ At the center of our image section \ref{results:cutout} we see the N132D superno
 
 The total field-of-view of our image section is roughly 1.3 degrees(or 4600 arc seconds). Our reconstruction has $3072^2$ pixel with a resolution of 1.5 arc seconds per pixel. this is still a wide field-of-view reconstruction problem. We have to account for the effects of the $w$-term to achieve a high-dynamic range reconstruction.
 
-In our test reconstruction, we need to account for $w$-term correction and high-dynamic range. We have excluded wide-band imaging as not feasible within the time frame of this project. In Section \ref{results:cleancomp} we compare the reconstructions of CLEAN with our coordinate descent based algorithm on the LMC observation. The next Section \ref{results:speedup} presents the speedup we achieve with coordinate descent by using our distributed or GPU-accelerated implementations.
+In our test reconstruction, we need to account for $w$-term correction and high-dynamic range. We have excluded wide-band imaging as not feasible within the time frame of this project. In Section \ref{results:cleancomp} we compare the reconstructions of CLEAN with our serial coordinate descent algorithm on the LMC observation. The next Section \ref{results:speedup} presents the speedup we achieve with serial coordinate descent by using our distributed or GPU-accelerated implementations.
 
 In Section \ref{results:gradients} we show the core result of this project. Namely what effect has an approximate $PSF$ on the deconvolution problem and whether we can use it to further distribute the problem. The answer to that question is affirmative: We can approximate the $PSF$, and we can exploit it to further distribute the deconvolution. But we need more sophisticated coordinate descent algorithms to fully benefit from it.
 
-\subsection{Comparison with CLEAN reconstructions} \label{results:cleancomp}
-We use the WSCLEAN \cite{offringa2014wsclean} implementation of multi-scale CLEAN. We compare our coordinate descent reconstruction with two CLEAN reconstructions, oe with naturally weighted visibilities and one with briggs weighted visibilities.
 
-There are three main visibility weighting scheme for the gridder that lead to different $PSF$s from the same measurements: Natural, uniform, and Briggs\cite{briggsWeighting}. Natural weighting scheme leads to an image with a lower noise level, but a wider $PSF$. Uniform weighting leads to a higher noise level, but to a $PSF$ whgich is more concentrated around a single pixel. Briggs weighting is a scheme combines the best from both worlds, receiving an image with acceptable noise level while getting a more concentrated $PSF$. As such it is widely used in radio astronomy image reconstruction. Our gridder implements the natural weighting scheme only. Nevertheless our coordinate descent algorithm is able to retrieve structures similar to the briggs-weighted multi-scale CLEAN reconstruction, even though coordinate descent has to work with a wider $PSF$.
+\subsection{Comparison with CLEAN reconstructions} \label{results:cleancomp}
+We use the WSCLEAN \cite{offringa2014wsclean} implementation of multi-scale CLEAN algorithm. We compare our coordinate descent reconstruction with two CLEAN reconstructions, oe with naturally weighted visibilities and one with briggs-weighted visibilities.
+
+There are three main visibility weighting scheme for the gridder that lead to different $PSF$s from the same measurements: Natural, uniform, and Briggs\cite{briggsWeighting}. Natural weighting scheme leads to an image with a lower noise level, but a wider $PSF$. Uniform weighting leads to a higher noise level, but to a $PSF$ which is more concentrated around a single pixel. Briggs weighting is a scheme combines the best from both worlds, receiving an image with acceptable noise level while getting a more concentrated $PSF$. As such it is widely used in radio astronomy image reconstruction. Our gridder implements the natural weighting scheme only. Nevertheless our coordinate descent algorithm is able to retrieve structures similar to the briggs-weighted multi-scale CLEAN reconstruction, even though coordinate descent has to work with a wider $PSF$.
+
+Figure \ref{results:cleancomp:figure} shows the reconstruction of both briggs-weighted multi-scale CLEAN and the naturally weighted coordinate descent reconstruction. We used a regularization parameter of $\lambda = 1.0 * Lipschitz$ and $\alpha = 0.01$. The elastic net regularization is biased heavily towards the L2 norm. We stopped the serial coordinate descent if every possible pixel change is below $\epsilon = 1e^{-5}$. We use these parameters for the whole project unless we specify otherwise.
+
+\newpage
 
 \begin{figure}[h]
 	\centering
-	\begin{subfigure}[b]{0.45\linewidth}
+	\begin{subfigure}[b]{0.49\linewidth}
 		\includegraphics[width=1.00\linewidth, clip, trim={0.72in 0.72in 0.72in 0.72in}]{./chapters/10.results/MSClean/Briggs-CLEAN.png}
 		\caption{Briggs weighted multi-scale CLEAN.}
 		\label{results:comp:clean}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.45\linewidth}
+	\begin{subfigure}[b]{0.49\linewidth}
 		\includegraphics[width=1.00\linewidth, clip, trim={0.72in 0.72in 0.72in 0.72in}]{./chapters/10.results/SerialCD/CD-reference.png}
 		\caption{Naturally weighted coordinate descent.}
 		\label{results:comp:cd}
 	\end{subfigure}
+	\\
+	\begin{subfigure}[b]{0.49\linewidth}
+		\includegraphics[width=1.00\linewidth, clip, trim={0.36in 0.36in 0.0in 0.36in}]{./chapters/10.results/MSClean/briggs-CLEAN-residuals.png}
+		\caption{Residuals of multi-scale CLEAN.}
+		\label{results:comp:clean-res}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.49\linewidth}
+		\includegraphics[width=1.00\linewidth, clip, trim={0.36in 0.36in 0.0in 0.36in}]{./chapters/10.results/SerialCD/CD-reference-residuals.png}
+		\caption{Residuals of coordinate descent.}
+		\label{results:comp:cd-res}
+	\end{subfigure}
+
 	\caption{Comparison of the whole image}
 	\label{results:cleancomp:figure}
 \end{figure}
 
-Figure \ref{results:cleancomp:figure} shows the reconstruction of both briggs-weighted multi-scale CLEAN and the naturally weighted coordinate descent reconstruction.
-%parameters for CLEAN and Coordinate descent. Lambda and alpha
-CLEAN used 6 major cycles and 14 thousand minor cycle iterations. Our coordinate descent implementation converged after 5 major cycles and needed 100 thousand iterations to converge.
+\newpage
 
-Coordinate descent needs a large number of iterations to converge when compared to multi-scale CLEAN. Note that a coordinate descent iteration is cheaper to compute than one iteration of multi-scale CLEAN. Also note that because we are searching for structures close to the noise level of the image, coordinate descent often adds pixels belonging to the noise in one major cycle, just to remove them in the next one. Path regularization\cite{friedman2010regularization} can combat this problem, and gets further investigated in the following Section \ref{results:gradients}.
+Multi-scale reconstructed its image within 6 Major and 14 thousand Minor cycle iterations. Our serial coordinate descent algorithm converged after 5 Major cycles and used 100 thousand iterations to converge. Our algorithm required roughly 8 times more iterations. It took a total of 35 minutes to reconstruct an image on an Intel Xeon E3-1505M with 8 logical cores. On this data set, our algorithm used one Major cycle less than multi-scale CLEAN. However, the number of Major cycles is not directly comparable. We do not use the identical criteria to initiate another Major cycle: At the beginning of each deconvolution, we check the maximum pixel difference. If it is below $\epsilon_{major} = 1e^{-4}$, we stop the reconstruction. We have not compared our stopping criterion to WSCLEAN. As such, the number of Major cycles are only a rough comparison. Our serial coordinate descent uses a similar number of Major cycles as multi-scale CLEAN.
 
-Both algorithms detect the three extended emissions at the right side of the image. They detect various point sources at the same location. Coordinate descent and multi-scale CLEAN arrive at a roughly similar result. Coordinate descent detects similar structures in the N132 supernova remnant, as the briggs-weighted CLEAN, but also includes calibration errors in its reconstruction of the faint extended emissions.
+Both algorithms detect the three extended emissions at the right side of the image. They detect various point sources at the same location. Coordinate descent and multi-scale CLEAN arrive at a roughly similar result. Coordinate descent detects similar structures in the N132D supernova remnant, as the briggs-weighted CLEAN, but also includes calibration errors in its reconstruction of the faint extended emissions.
+
+When we compare the reconstruction quality of multi-scale CLEAN an our serial coordinate descent algorithm, we note that the magnitudes of the residual image of multi-scale CLEAN \ref{results:comp:clean-res} is significantly lower than the magnitudes in our algorithm, shown in \ref{results:comp:cd-res}. In the residual image of the serial coordinate descent algorithm, we still see some emissions belonging to stars, or extended emissions. This is to be expected, as multi-scale CLEAN uses several heuristics developed specifically for radio interferometric imaging\cite{offringa2017optimized}. Note however that the serial coordinate descent algorithm leaves large negative values in the residual image, while multi-scale CLEAN includes it in its reconstruction. Multi-scale CLEAN has several areas of negative pixel values, which is implausible.
+
 
 \begin{figure}[h]
 	\centering
@@ -96,11 +114,11 @@ Both algorithms detect the three extended emissions at the right side of the ima
 		\caption{CD Natural weighting.}
 		\label{results:comp:N132:cd}
 	\end{subfigure}
-	\caption{N132 comparison}
+	\caption{N132D comparison}
 	\label{results:cleancomp::N132:figure}
 \end{figure}
 
-Figure \ref{results:cleancomp::N132:figure} compares the naturally-weighted CLEAN, briggs CLEAN and coordinate descent on the N132 supernova remnant. The naturally-weighted CLEAN and coordinate descent use the same $PSF$ for the deconvolution. But coordinate descent finds structures in N132 similar to the briggs-weighted CLEAN. Coordinate descent arrived at a plausible higher-resolved reconstruction of N132.
+We now compare sections of the briggs-weighted multi-scale CLEAN with our naturally weighted serial coordinate descent algorithm. We compare the reconstruction of the N132D supernova-remnant in Figure \ref{results:cleancomp::N132:figure}. For comparison, we also included the naturally weighted mutli-scale CLEAN reconstruction in Figure \ref{results:N132:clean}. With natural weighting, multi-scale CLEAN reconstructs N132D as a Gaussian blob. Serial coordinate descent on the other hand is able to find structures inside the remnant with the same $PSF$, shown in Figure \ref{results:comp:N132:cd}. These are plausible super-resolved structures. They are also detected with briggs-weighted multi-scale CLEAN, shown in Figure \ref{results:N132:cleanbriggs}. But mutli-scale CLEAN needs briggs-weighting to reconstruct the smaller structures. As we mentioned, briggs-weighting leads to a more concentrated $PSF$.
 
 \begin{figure}[h]
 	\centering
@@ -116,9 +134,9 @@ Figure \ref{results:cleancomp::N132:figure} compares the naturally-weighted CLEA
 	\label{results:cleancomp::calib:figure}
 \end{figure}
 
-Calibration errors on the other hand negatively influence the coordinate descent reconstruction. Figure \ref{results:cleancomp::calib:figure} shows a cutout of the right hand section of the reconstruction, where a faint extended emission is next to a point source with calibration errors. Multi-scale CLEAN is able to differentiate between the "ripples" from the calibration error, and the signal from the extended emission. Coordinate descent with the elastic net regularization includes the ripples into the reconstructed image. 
+If we compare the reconstruction algorithm on areas with calibration errors, we clearly see that it negatively influences the reconstruction of serial coordinate descent. Figure \ref{results:cleancomp::calib:figure} shows a cutout of the right hand section of the reconstruction, where a faint extended emission is next to a point source with calibration errors. Multi-scale CLEAN is able to differentiate between the 'ripples' from the calibration error, and the extended emission. Coordinate descent with the elastic net regularization includes the ripples into the reconstructed image. 
 
-The only way to exclude the ripples from the reconstruction is to increase the regularization parameter $\lambda$., such as no pixel gets included which is not above the noise level + calibration error in the image. However, that would lead to other sources being "regularized away" in other regions of the image, which do not have a severe calibration error close by. 
+The easiest way to exclude the calibration ripples from the reconstruction is to increase the regularization parameter $\lambda$, such as no pixel gets included which is not above the noise level + calibration error in the image. However, that would lead to other sources being "regularized away" in other regions of the image, which do not have a severe calibration error close by. 
 
 
 \subsection{Serial coordinate descent speedup with MPI or GPU}\label{results:speedup}
@@ -228,7 +246,7 @@ The performance is similar to the first method at first glance. Both methods con
 
 The approximate deconvolution converges faster than the first method. At the start of the same major cycle, this method always has a lower objective. However, it is not guaranteed to converge to the same result. This can be seen in the fact that it never reaches the same objective value as the original. The objective value of the approximation is within 0.07\% (Factor of 0.0007, roughly twice the factor of the first method). The difference gets more significant, the more extreme we chose the deconvolution approximation.
 
-Nevertheless, the approximate deconvolution converges surprisingly close to the original solution. The question is, is this difference of 0.07\% in the objective value significant? The answer to this question depends on what kind of error the approximation introduces in the image. The obvious error is that the approximation chronically under-estimates the pixel values: The maximum pixel value in N132 of the original is 0.0024 Jansky/beam, while the maximum of the $\frac{1}{16}$ approximation is 0.00235 Jansky/beam. The pixel magnitude is important in the self-calibration regime \cite{offringa2017optimized} (When we take the result of the reconstruction and try to improve the calibration).
+Nevertheless, the approximate deconvolution converges surprisingly close to the original solution. The question is, is this difference of 0.07\% in the objective value significant? The answer to this question depends on what kind of error the approximation introduces in the image. The obvious error is that the approximation chronically under-estimates the pixel values: The maximum pixel value in N132D of the original is 0.0024 Jansky/beam, while the maximum of the $\frac{1}{16}$ approximation is 0.00235 Jansky/beam. The pixel magnitude is important in the self-calibration regime \cite{offringa2017optimized} (When we take the result of the reconstruction and try to improve the calibration).
 
 The under-approximation of pixel values is an error we cannot ignore. One naive remedy is to start with the deconvolution approximation, but switch to the original $PSF$ after a certain number of major cycle. This would give us the guarantee to converge to the same result, but let us use an approximation at the start. We propose another solution: Combining the two approximation methods.
 
