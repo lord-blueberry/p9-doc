@@ -94,7 +94,9 @@ Multi-scale reconstructed its image within 6 Major and 14 thousand Minor cycle i
 
 Both algorithms detect the three extended emissions at the right side of the image. They detect various point sources at the same location. Coordinate descent and multi-scale CLEAN arrive at a roughly similar result. Coordinate descent detects similar structures in the N132D supernova remnant, as the briggs-weighted CLEAN, but also includes calibration errors in its reconstruction of the faint extended emissions.
 
-When we compare the reconstruction quality of multi-scale CLEAN an our serial coordinate descent algorithm, we note that the magnitudes of the residual image of multi-scale CLEAN \ref{results:comp:clean-res} is significantly lower than the magnitudes in our algorithm, shown in \ref{results:comp:cd-res}. In the residual image of the serial coordinate descent algorithm, we still see some emissions belonging to stars, or extended emissions. This is to be expected, as multi-scale CLEAN uses several heuristics developed specifically for radio interferometric imaging\cite{offringa2017optimized}. Note however that the serial coordinate descent algorithm leaves large negative values in the residual image, while multi-scale CLEAN includes it in its reconstruction. Multi-scale CLEAN has several areas of negative pixel values, which is implausible.
+When we compare the reconstruction quality of multi-scale CLEAN an our serial coordinate descent algorithm, we note that the magnitudes of the residual image of multi-scale CLEAN \ref{results:comp:clean-res} is significantly lower than the magnitudes in our algorithm, shown in \ref{results:comp:cd-res}. In the residual image of the serial coordinate descent algorithm, we still see some emissions belonging to stars, or extended emissions. This is to be expected, as multi-scale CLEAN uses several heuristics developed specifically for radio interferometric imaging\cite{offringa2017optimized}. 
+%Describe Masking
+Note however that the serial coordinate descent algorithm leaves large negative values in the residual image, while multi-scale CLEAN includes it in its reconstruction. Multi-scale CLEAN has several areas of negative pixel values, which is implausible.
 
 
 \begin{figure}[h]
@@ -167,33 +169,31 @@ We do not have a CLEAN implementation in our .Net Core pipeline. However, we men
 Overall the serial coordinate descent algorithm with GPU acceleration is still several factors slower than CLEAN. The speedup we achieve with MPI is significant. But because serial coordinate descent and CLEAN have such a similar structure, we can expect a similar speedup with a CLEAN-MPI implementation. We need another method to speed up our deconvolution algorithm.
 
 
-\subsection{Effect of approximating the $PSF$} \label{results:gradients}
-Hypothesis.
+\subsection{Serial coordinate descent with an approximate $PSF$} \label{results:gradients}
+In this section, we test our main hypothesis on the MeerKAT LMC data: The Major cycle allows us to use an approximation of the true $PSF$ in Minor cycle. We believe this can be exploited. We may be able to use a fraction of the true $PSF$ in the serial coordinate descent algorithm, potentially speeding up the deconvolution and simplifying distribution.
 
-As we described in Section \ref{gradients}, the $PSF$ for deconvolution is as big as the image. For wide field-of-view observations of MeerKAT, the $PSF$ is approximately a gaussian with decreasing pixel values the further we move from the center. Most of the values in the $PSF$ are close to zero. The question is, what effect has an approximate deconvolution with a smaller $PSF$? If we can approximate the deconvolution with a small enough $PSF$, we can solve patches of the image independently of each other. However, the $PSF$ approximation may need more major cycles to converge.
+An example of the $PSF$ approximation is shown Figure \ref{results:gradients:clark}. Instead of the full $PSF$, we use a window around the center of the $PSF$. The sides of the window are a fraction of the full $PSF$.
+\begin{figure}[h]
+	\centering
+	\begin{subfigure}[b]{0.245\linewidth}
+		\includegraphics[width=\linewidth, clip, trim= 0.25in 0.25in 0.25in 0.25in]{./chapters/03.cd/simulated/psf.png}
+		\caption{Full $PSF$}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.245\linewidth}
+		\includegraphics[width=\linewidth, clip, trim= 0.25in 0.25in 0.25in 0.25in]{./chapters/03.cd/simulated/psfCut.png}
+		\caption{$\frac{1}{2}PSF$ approximation}
+	\end{subfigure}
+	\caption{Example of a $PSF$ approximation.}
+	\label{results:gradients:clark}
+\end{figure}
 
-
-
-%We compare the objective value and see if it converges. Measure speedup
-
-%PSF is responsible for calculating the gradient of coordinate descent.
-
-%Remember CD:
-
-%The two approximation methods
-
-The effect of approximating the $PSF$ are not clear. We know that thanks to the $w$-term in the visibilities, the $PSF$ is not constant over the image. We already need several major cycles to converge. With a good approximation of the $PSF$, we may speed up the individual iterations of coordinate descent without needing more major cycle.
-
-We presented two methods to approximating the $PSF$ for the deconvolution in Section \ref{gradients}. Method 1 updates only a fraction of the gradients, and Method 2 uses a fraction of the $PSF$ for deconvolution. We test both methods on the LMC data and explore what effects the approximations have on the reconstruction.
-
-
-
+In this section, we test ever smaller window sizes and observe the convergence speed of our serial coordinate descent algorithm. We developed two methods to exploit an approximate $PSF$ in our serial coordinate descent algorithm: Method 1, approximate update and method 2, approximate deconvolution. At the start of each Major cycle, we calculate the objective value of the current solution, and track its development for each Major cycle. Finally, we combine the two approximation methods and compare how much we can speed up our serial coordinate descent method.
 
 
-\subsubsection{Method 1: Approximate gradient update}
-Our coordinate descent method updates the map of gradients after each iteration.  Method 1 starts with the same map of gradients as the original, but then only updates a fraction of the gradients in each iteration. It updates a rectangle of the most significant gradients.With each coordinate descent iteration, the map of gradients gets less accurate. Because we do an approximate update of gradients, this method should converge to the same result as the original with enough major cycles.
-
-At the beginning of each major cycle, we calculate the objective value of the current solution. We compare the objective value and the wall-clock time of the original and the approximate gradient update. This is a minimization problem, meaning the lowest objective is the most accurate reconstruction (according to the elastic net regularization).
+\subsubsection{Method 1: Approximate update}
+As described in Section \ref{gradients:methods:update}, we normally use the product of $PSF \star PSF$ to update the gradient map in each iteration of serial coordinate descent. This method uses the approximate $PSF$ to update the gradient map: $Cut(PSF) \star Cut(PSF)$. With each iteration, the gradient map becomes less accurate. This approximation method is guaranteed to converge to the same result, if we have unlimited number of major cycles.
+	
+To test the convergence behaviour, we calculate the objective value of the current solution at the start of each Major cycle. We compare the objective value and the wall-clock time of the original serial coordinate descent and the serial coordinate descent using an approximate gradient update. This is a minimization problem, meaning the lowest objective is the most accurate reconstruction (according to the elastic net regularization).
 
 \begin{figure}[h]
 	\centering
@@ -207,24 +207,17 @@ At the beginning of each major cycle, we calculate the objective value of the cu
 		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/ApproxUpdate/speedup_total.png}
 	\end{subfigure}
 	
-	\caption{Effect of only updating a fraction of the gradients.}
+	\caption{Convergence of the approx. update.}
 	\label{results:gradients:update}
 \end{figure}
 
-The smallest fraction of gradient updater, for which coordinate still converges is $\frac{1}{64}$ of the total update. Meaning, we can update only a rectangle of $48^2$ pixels, or an image patch of 72 arc-seconds in size. However, it is obvious from the Figure \ref{results:gradients:update} that coordinate descent needs more major cycles to converge with such an extreme approximation.
+Figure \ref{results:gradients:update} shows the convergence rate of the serial coordinate descent algorithm with the approximate update method. Each line represents a run with a specific $PSF$ window. The size of the window are a fraction of the full $PSF$. For example, the full $PSF$ in this test has $3072^2$ pixels. The approximation $\frac{1}{64}$ uses a window around the center of the $PSF$, which is is $48^2$ pixels in size. The $\frac{1}{64}$  approximation is uses the smallest window around the $PSF$ for which the serial coordinate descent algorithm still converges. If we use less aggressive approximations, we see the serial coordinate descent algorithm reach a similar objective value within three Major cycles. 
 
-With less extreme approximations, we also reduce the number of necessary major cycles. The approximation of $\frac{1}{32}$ needs two more major cycle, while all other need the one more as the original method\footnote{6 cycles to converge, and one extra cycle which is here to measure the final objective}. The objective values of the approximations end within 0.03\% of the original(the objective value of the approximations are higher by a factor of 0.0003).
+We compare two different wall-clock times: The average time necessary for a single serial coordinate descent iteration, and the total time spent in the algorithm. We see from the two speedup curves in Figure \ref{results:gradients:update} that the speedup per iteration increases less than linear with the $PSF$ fraction used in the approximation. Although each iteration becomes cheaper with a smaller $PSF$ window, we may need more iterations to converge to the same result. This is indeed the case for a $PSF$ window smaller than $\frac{1}{32}$. We see a significant drop total speedup. Overall with gradient update approximations give us a speedup factor of 1.6, if we use $\frac{1}{32}$ of the full $PSF$.
 
-Figure \ref{results:gradients:update} also shows two speedup comparisons. The speedup from the approximation is harder to quantify. For one, each iteration of coordinate descent becomes cheaper, because we only update a small part of the gradient map. This is the per iteration speedup. The second speedup Figure compares the overall time spent in deconvolution. Although each iteration becomes cheaper with the approximation, we may need more iterations to converge. Also, we have an implicit path regularization in the approximation. Therefore, a speedup per coordinate descent iteration does not necessarily lead to an overall speedup.
-
-As we discussed in section In Section \ref{gradients:pathreg}, we have a limit in each major cycle to how far we can trust our approximation. That is why in the first major cycle coordinate descent gets started with a higher $\lambda$ regularization than specified. In each successive major cycle, we reduce the $\lambda$ parameter until we reach the specified value. This is an implicit form of path regularization, and may help speeding up the convergence rate of coordinate descent in general \cite{friedman2010regularization}. In our case, we need path regularization to ensure convergence over several major cycles (Aggressive approximations like $\frac{1}{64}$ start to oscillate over several major cycle). Notice that the overall speedup in Figure \ref{results:gradients:update} is lower than the speedup we get per iteration. This suggests path regularization as implemented here does not speed up convergence rate.
-
-Overall with gradient update approximations give us a speedup factor of around 1.5. Depending on how aggressive we approximate, We need one or two more major cycles than the original coordinate descent deconvolutions. This puts gradient update approximations on par with multi-scale CLEAN in terms of major cycles. 
 
 \subsubsection{Method 2: Approximate deconvolution}
-In this method, we use a fraction of the total $PSF$ for deconvolution. This method solves a different deconvolution problem, where the $PSF$ is for example only $\frac{1}{8}$ the size. The downside is that method 2 is not guaranteed to converge to the same optimum. Nevertheless, we solve the approximate deconvolution problem with several different fractions of the $PSF$ and compare how close the approximate solution is to the original.
-
-As before, we measure the true objective value for the approximate solution at the beginning of each major cycle iteration. The Figure \ref{results:gradients:aproxDeconv} compares the approximate deconvolution to the original.
+As described in Section \ref{gradients:methods:deconv}, this approximation method uses the same approximation to update the gradient map($Cut(PSF) \star Cut(PSF)$). This approximation method also uses the approximate $PSF$ to initialize the gradient map: $gradients = residuals \star Cut(PSF)$. As such, this approximation method deconvolves the image not with the full $PSF$, but with the center window. This method is not guaranteed to converge to the same result. Nevertheless, we run our serial coordinate descent algorithm on different $PSF$ fractions and compare the true objective value at the start of each Major cycle. The results are shown in Figure \ref{results:gradients:aproxDeconv}.
 
 \begin{figure}[h]
 	\centering
@@ -242,46 +235,24 @@ As before, we measure the true objective value for the approximate solution at t
 	\label{results:gradients:aproxDeconv}
 \end{figure}
 
-The performance is similar to the first method at first glance. Both methods converge in a similar manner, with a similar factor of speedup. For the $PSF$ fraction $\frac{1}{64}$ this is largely due to the same path regularization used in this method. For larger $PSF$'s, starting from $\frac{1}{16}$, the path regularization becomes less important with this method, as it only effects the regularization parameter $\lambda$ of major cycle index 0. Indeed, this method is less likely to oscillate and seems to have a more stable convergence.
+Again, the smallest window for which the serial coordinate descent algorithm converges is $\frac{1}{64}$. Similar to method 1, the serial coordinate descent algorithm reaches a similar objective value within 3 Major cycles, for all $PSF$ windows except $\frac{1}{64}$. The total speedup however is notably different: It reaches a larger total speedup. The total speedup curve generally matches better with the 'per iteration speedup' curve. This suggests that the approximate deconvolution method does not require significantly more iterations to converge, even when we use a $PSF$ window of $\frac{1}{16}$. 
 
-The approximate deconvolution converges faster than the first method. At the start of the same major cycle, this method always has a lower objective. However, it is not guaranteed to converge to the same result. This can be seen in the fact that it never reaches the same objective value as the original. The objective value of the approximation is within 0.07\% (Factor of 0.0007, roughly twice the factor of the first method). The difference gets more significant, the more extreme we chose the deconvolution approximation.
-
-Nevertheless, the approximate deconvolution converges surprisingly close to the original solution. The question is, is this difference of 0.07\% in the objective value significant? The answer to this question depends on what kind of error the approximation introduces in the image. The obvious error is that the approximation chronically under-estimates the pixel values: The maximum pixel value in N132D of the original is 0.0024 Jansky/beam, while the maximum of the $\frac{1}{16}$ approximation is 0.00235 Jansky/beam. The pixel magnitude is important in the self-calibration regime \cite{offringa2017optimized} (When we take the result of the reconstruction and try to improve the calibration).
-
-The under-approximation of pixel values is an error we cannot ignore. One naive remedy is to start with the deconvolution approximation, but switch to the original $PSF$ after a certain number of major cycle. This would give us the guarantee to converge to the same result, but let us use an approximation at the start. We propose another solution: Combining the two approximation methods.
+The approximate deconvolution method is not guaranteed to lead to the same result. Nevertheless, the true objective value of the results are practically identical in Figure \ref{results:gradients:aproxDeconv}. However, as we mentioned before, this approximation method systematically under-estimates the true pixel values. The pixel magnitude is important in the self-calibration regime \cite{offringa2017optimized}. Self-calibration uses intermediate results of the image reconstruction to improve the calibration. A systematic under-estimation of the pixel values leads to a bias in self-calibration.
 
 
 \subsubsection{Combination of Method 1 and 2}\label{results:gradients:comparison}
-The two approximation methods have two different shortcomings: Approximate gradient update (method 1) converges more slowly, and converges to the same result as the original. Approximate deconvolution (method 2) converges faster than method 1, but does not converge to the same result. Here, we combine the two methods to remedy the shortcomings: For the first couple of major cycles, we use approximate deconvolution, and then switch to approximate gradient update.
+The approximation method 2, approximate deconvolution, leads to a systematic under-estimation of the true pixel values. This is undesirable for a reconstruction algorithm. The obvious question is, how does the serial coordinate descent algorithm perform when we combine the two approximation methods: We start with method 2. When the algorithm converged, we switch to method 1 and correct the systematic error introduced by method 2. We compare the speedup we achieve by combining the two approximation methods in Table \ref{results:gradients:comparison:speedup}.
 
-We compare the original, approximate gradient update, approximate deconvolution and our combination in. We use the factor $\frac{1}{16}$ for approximations, meaning we update $\frac{1}{16}$ of the gradients, and do the approximate deconvolution with $\frac{1}{16}$ of the $PSF$.
 
-\begin{figure}[h]
+\begin{table}[h]
 	\centering
-	\begin{subfigure}[b]{0.33\linewidth}
-		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/comparison.png}
-	\end{subfigure}
-	\begin{subfigure}[b]{0.66\linewidth}
-		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/comparison_zoom.png}
-	\end{subfigure}
-	
-	\caption{Comparison of the two methods using the fraction $\frac{1}{16}$ of the $PSF$.}
-	\label{results:gradients:comparison:figure}
-\end{figure}
-
-Figure \ref{results:gradients:comparison:figure}
-
-We switch from approximate deconvolution to gradient update after the path regularization has reached the target $\lambda$ for the first time. In the case of the LMC data, the implementation uses approximate deconvolution for major cycle index 0 and 1, and then switches to approximate gradient update.
-
-\begin{table}
-	\centering
-	\begin{tabular}{ c||c|c } 
+	\begin{tabular}{ c | c ||c|c } 
 		\hline
-		Method & Iteration Speedup & Total Speedup \\ \hline \hline
-		Original & 1.00 & 1.00 \\ 
-		(Method 1) Approx. gradient update & 1.66 & 1.55 \\ 
-		(Method 2) Approx. deconvolution & 1.67 & 1.68 \\ \hline
-		Combination & 1.69 & 1.68 \\ 
+		Method & $PSF$ Fraction & Iteration Speedup & Total Speedup \\ \hline \hline
+		Original & $\frac{1}{16}$ & 1.00 & 1.00 \\ 
+		(Method 1) Approx. gradient update & $\frac{1}{16}$ & 1.66 & 1.55 \\ 
+		(Method 2) Approx. deconvolution & $\frac{1}{16}$ & 1.67 & 1.68 \\ \hline
+		Combined & $\frac{1}{16}$ & 1.69 & 1.68 \\ 
 		\hline
 	\end{tabular}
 
@@ -289,8 +260,8 @@ We switch from approximate deconvolution to gradient update after the path regul
 	\label{results:gradients:comparison:speedup}
 	
 \end{table}
-Speedup. Combination is the fastest overall and leads to the lowest objective function. Actually beats the original by a small margin.
-Approximation errors are not correlated. We can use Method 1 to remove the approximation errors of Method 2.
+
+Combining the two approximation methods leads to a total speedup with a $PSF$ window of $\frac{1}{16}$. The combined approximation method achieves a larger speedup than method 1 or method 2 on the same $PSF$ window size. We suspect the error each approximation method introduces is uncorrelated. Meaning the error we introduce with approximation method 2 can be efficiently corrected with approximation method 1, which leads to a higher total speedup.
 
 
 \begin{figure}[h]
@@ -315,6 +286,5 @@ Approximation errors are not correlated. We can use Method 1 to remove the appro
 Figure \ref{results:gradients:comparison:image} compares the original result with the result of the combined approximation. Virtually identical. Same problem with calibration. Only visual difference in the extended emission with calibration errors. 
 
 
-Difference is negligible. We can use the approximation and arrive at the same result. Speedup of a factor 1.6
-How many major cycles: One more than the original. But same as multi-scale CLEAN.
+
 

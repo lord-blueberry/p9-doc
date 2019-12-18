@@ -31,7 +31,7 @@ We approximate the $PSF$ by only using a window around the center. Each side is 
 
 Using an approximate $PSF$ influences three parts of the algorithm: The gradient map, the Lipschitz map and the product $PSF \star PSF$. At the beginning of the algorithm, we calculate the gradient map by correlating the dirty image with the $PSF$ ($I_{dirty} \star PSF$) We also calculate the Lipschitz constants for each pixel. The product $PSF \star PSF$ is used to update the gradient map in each iteration. We developed two approximation methods for the serial coordinate descent algorithm. Method 1 is called 'approximate update', and method 2 is called 'approximate deconvolution'. 
 
-\subsubsection{Method 1: Approximate update}
+\subsubsection{Method 1: Approximate update} \label{gradients:methods:update}
 The approximate update method only uses the approximate $PSF$ for updating the gradient map. Instead of using the product $PSF \star PSF$, this method uses the product $Cut(PSF) \star Cut(PSF)$ to update the gradient map in each iteration. Figure \ref{gradients:update:figure} shows the effect of the approximation.  
 
 \begin{figure}[h]
@@ -60,7 +60,7 @@ The approximate update method only uses the approximate $PSF$ for updating the g
 This method uses the full $PSF$ to initialize the gradient and the Lipschitz map. But it only uses an approximation for the update in each iteration of serial coordinate descent. The error we introduce with the approximation gets more severe with more iterations of serial coordinate descent. But the upside is the first iteration in every Major cycle is always identical to the serial coordinate descent algorithm without approximation. This means with enough major cycles, we are guaranteed to converge to the same result.
 
 
-\subsubsection{Method 2: Approximate deconvolution}
+\subsubsection{Method 2: Approximate deconvolution} \label{gradients:methods:deconv}
 This method also uses the approximate gradient update. But instead of initializing the gradient map with the full $PSF$, it also uses the approximate $PSF$ for initializing the gradient and the Lipschitz map. In essence, this method solves an approximate deconvolution problem:
 
 \begin{equation}\label{gradients:method2:objective}
