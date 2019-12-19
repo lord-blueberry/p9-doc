@@ -36,7 +36,7 @@ Wide band imaging is not possible within the time frame of this project. We take
 		\includegraphics[width=1.0\linewidth]{./chapters/10.results/LMC/meerkat_cutout.png}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.28\linewidth}
-		\adjincludegraphics[width=1.0\linewidth, clip, trim={0.72in 0.72in 0.72in 0.72in}]{./chapters/10.results/MSClean/Briggs-CLEAN.png}
+		\adjincludegraphics[width=1.0\linewidth, clip, trim={0.72in 0.72in 0.72in 0.72in}]{./chapters/10.results/MSClean/Natural-CLEAN.png}
 	\end{subfigure}
 	\caption{Narrow band image section used.}
 	\label{results:cutout}
@@ -60,28 +60,25 @@ Figure \ref{results:cleancomp:figure} shows the reconstruction of both briggs-we
 
 \newpage
 
-\begin{figure}[h]
+\begin{figure}[!htp]
 	\centering
-	\begin{subfigure}[b]{0.49\linewidth}
-		\includegraphics[width=1.00\linewidth, clip, trim={0.72in 0.72in 0.72in 0.72in}]{./chapters/10.results/MSClean/Briggs-CLEAN.png}
-		\caption{Briggs weighted multi-scale CLEAN.}
+	\begin{subfigure}[b]{0.950\linewidth}
+		\includegraphics[width=0.412\linewidth, clip, trim={0.72in 0.72in 0.72in 0.72in}]{./chapters/10.results/MSClean/Natural-CLEAN.png}
+		\includegraphics[width=0.490\linewidth, clip, trim={0.36in 0.36in 0.0in 0.36in}]{./chapters/10.results/MSClean/Natural-CLEAN-residuals.png}
+		\caption{Multi-scale CLEAN.}
 		\label{results:comp:clean}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.49\linewidth}
-		\includegraphics[width=1.00\linewidth, clip, trim={0.72in 0.72in 0.72in 0.72in}]{./chapters/10.results/SerialCD/CD-reference.png}
-		\caption{Naturally weighted coordinate descent.}
-		\label{results:comp:cd}
+	\begin{subfigure}[b]{0.95\linewidth}
+		\includegraphics[width=0.412\linewidth, clip, trim={0.72in 0.72in 0.72in 0.72in}]{./chapters/10.results/SerialCD/CD-reference.png}
+		\includegraphics[width=0.490\linewidth, clip, trim={0.36in 0.36in 0.0in 0.36in}]{./chapters/10.results/SerialCD/CD-reference-residuals.png}
+		\caption{Serial coordinate descent.}
+		\label{results:comp:clean}
 	\end{subfigure}
-	\\
-	\begin{subfigure}[b]{0.49\linewidth}
-		\includegraphics[width=1.00\linewidth, clip, trim={0.36in 0.36in 0.0in 0.36in}]{./chapters/10.results/MSClean/briggs-CLEAN-residuals.png}
-		\caption{Residuals of multi-scale CLEAN.}
-		\label{results:comp:clean-res}
-	\end{subfigure}
-	\begin{subfigure}[b]{0.49\linewidth}
-		\includegraphics[width=1.00\linewidth, clip, trim={0.36in 0.36in 0.0in 0.36in}]{./chapters/10.results/SerialCD/CD-reference-residuals.png}
-		\caption{Residuals of coordinate descent.}
-		\label{results:comp:cd-res}
+	\begin{subfigure}[b]{0.95\linewidth}
+		\includegraphics[width=0.412\linewidth, clip, trim={0.72in 0.72in 0.72in 0.72in}]{./chapters/10.results/iuwt/iuwt-model.png}
+		\includegraphics[width=0.490\linewidth, clip, trim={0.36in 0.36in 0.0in 0.36in}]{./chapters/10.results/iuwt/iuwt-residuals.png}
+		\caption{MORESANE (IUWT).}
+		\label{results:comp:clean}
 	\end{subfigure}
 
 	\caption{Comparison of the whole image}
@@ -107,14 +104,19 @@ Note however that the serial coordinate descent algorithm leaves large negative 
 		\label{results:N132:clean}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.32\linewidth}
-		\includegraphics[width=1.00\linewidth]{./chapters/10.results/MSClean/Briggs-N132.png}
-		\caption{CLEAN Briggs weighting.}
-		\label{results:N132:cleanbriggs}
-	\end{subfigure}
-	\begin{subfigure}[b]{0.32\linewidth}
 		\includegraphics[width=1.00\linewidth]{./chapters/10.results/SerialCD/CD-N132.png}
 		\caption{CD Natural weighting.}
 		\label{results:comp:N132:cd}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.32\linewidth}
+		\includegraphics[width=1.00\linewidth]{./chapters/10.results/iuwt/iuwt-N132}
+		\caption{CD Natural weighting.}
+		\label{results:comp:N132:cd}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.32\linewidth}
+		\includegraphics[width=1.00\linewidth]{./chapters/10.results/MSClean/Briggs-N132.png}
+		\caption{CLEAN Briggs weighting.}
+		\label{results:N132:cleanbriggs}
 	\end{subfigure}
 	\caption{N132D comparison}
 	\label{results:cleancomp::N132:figure}

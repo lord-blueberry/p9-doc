@@ -9,7 +9,7 @@ The parallel coordinate descent algorithm from Section \ref{pcdm:async} does not
 \subsection{From serial to parallel block coordinate descent}\label{pcdm:pcdm}
 We start with our serial coordinate descent algorithm and first modify it to a serial block coordinate descent algorithm. A block is a group of pixels. In our case, a block is always a rectangle of neighboring pixels. For example: A block of $4^2$ pixels can be minimized in a single iteration of the serial block coordinate descent algorithm.
 
-Later in Section \ref{pcdm:pcdm:eso} we introduce the main concept which allows us to adapt the serial block algorithm to a parallel block coordinate descent algorithm.
+Later in Section \ref{pcdm:pcdm:eso} we introduce the main concept which allows us to adapt the serial block algorithm to a parallel block coordinate descent algorithm. We show a synchronous implementation of the parallel coordinate descent algorithm in Section \ref{pcdm:pcdm:approx}.
 
 \subsubsection{Block coordinate descent}
 Instead of optimizing a single pixel in each iteration, the serial block coordinate descent algorithm can update a block of pixels. We start with the update rule of the serial coordinate descent algorithm, and show how it can be adapted to update a block of pixels in each iteration. Remember the single pixel update from the serial coordinate descent algorithm: 
@@ -56,10 +56,10 @@ The ESO only needs to know the number of non-zero components. It is independent 
 However, note that the ESO assumes we choose $\tau = 4$ blocks uniformly at random. Indeed, a uniform random selection strategy is a core assumption for the parallel coordinate descent method\cite{richtarik2016parallel}. Random selection strategies tend to perform badly on the deconvolution problem. Later in Section \ref{pcdm:adaption}, we develop a pseudo-random selection strategy which does not break the random selection assumption of the ESO, but performs better on the deconvolution problem.
 
 
-\subsubsection{Accelerated parallel block coordinate descent method}
+\subsubsection{Accelerated parallel block coordinate descent method} \label{pcdm:pcdm:approx}
 So far, we introduced the serial block coordinate descent and the ESO. The serial block coordinate descent can update a block of pixels in a single iteration, and the ESO estimates how much $PSF$s overlap when we perform parallel update steps. We put this together in an accelerated, parallel block coordinate descent algorithm based on APPROX\cite{fercoq2015accelerated}.
 
-
+T
 
 We introduced the parallel coordinate descent algorithm in the previous section. In this section we extend the previous algorithm with gradient acceleration, similar to the APPROX method 
 

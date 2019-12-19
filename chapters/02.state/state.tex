@@ -12,11 +12,26 @@ Not all algorithms are here from
 
 \subsection{Deconvolution}
 
-\subsubsection{CLEAN}
+\subsection{Multi-scale CLEAN}
+
+Multi scale, multi-frequency extension of the standard CLEAN algorithm.
+
+Multi-frequency is for wide-band imaging, which is out of scope. We limit ourselves to the multi-scale variant.
+
+Cleans different resolutions.
+
+First chooses a resolution
+Performs a number of standard CLEAN on the selected resolution.
 
 Various Improvements and speedups\cite{clark1980efficient, schwab1984relaxing, rau2011multi, offringa2017optimized}, but the core algorithm is still this.
 
-\subsubsection{MORESANE}
+\subsection{MORESANE}
+
+Uses the starlet wavelet
+
+Generally produces better results than multi-scale CLEAN, but is less robust versus calibration errors.
+
+The basic algorithm is??
 
 \subsubsection{PURIFY}
 

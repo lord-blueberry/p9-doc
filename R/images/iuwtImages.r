@@ -27,6 +27,8 @@ ggplot(data, aes(x=x, y=y, fill=intensity))  +
   theme_void()
 dev.off()
 
+minimum <- -0.01279203
+maximum <- 0.0217463
 data <- read.table(paste(inputFolder, "iuwt-residuals.csv", sep=""), sep=";", header=TRUE, dec=",")
 png(paste(outputfolder, "iuwt-residuals.png", sep=""),
     width = 9.0,
@@ -35,7 +37,7 @@ png(paste(outputfolder, "iuwt-residuals.png", sep=""),
     res = 200)
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
-  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.5), name="Jansky/Beam") +
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.5), name="Jansky/Beam", limit = c(minimum, maximum)) +
   theme_void()
 dev.off()
 
