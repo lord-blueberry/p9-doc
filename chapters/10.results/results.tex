@@ -62,19 +62,22 @@ Figure \ref{results:cleancomp:figure} shows the reconstruction of both briggs-we
 
 \begin{figure}[!htp]
 	\centering
-	\begin{subfigure}[b]{0.950\linewidth}
+	\begin{subfigure}[b]{0.98\linewidth}
+		\centering
 		\includegraphics[width=0.412\linewidth, clip, trim={0.72in 0.72in 0.72in 0.72in}]{./chapters/10.results/MSClean/Natural-CLEAN.png}
 		\includegraphics[width=0.490\linewidth, clip, trim={0.36in 0.36in 0.0in 0.36in}]{./chapters/10.results/MSClean/Natural-CLEAN-residuals.png}
 		\caption{Multi-scale CLEAN.}
 		\label{results:comp:clean}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.95\linewidth}
+	\begin{subfigure}[b]{0.98\linewidth}
+		\centering
 		\includegraphics[width=0.412\linewidth, clip, trim={0.72in 0.72in 0.72in 0.72in}]{./chapters/10.results/SerialCD/CD-reference.png}
 		\includegraphics[width=0.490\linewidth, clip, trim={0.36in 0.36in 0.0in 0.36in}]{./chapters/10.results/SerialCD/CD-reference-residuals.png}
 		\caption{Serial coordinate descent.}
 		\label{results:comp:clean}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.95\linewidth}
+	\begin{subfigure}[b]{0.98\linewidth}
+		\centering
 		\includegraphics[width=0.412\linewidth, clip, trim={0.72in 0.72in 0.72in 0.72in}]{./chapters/10.results/iuwt/iuwt-model.png}
 		\includegraphics[width=0.490\linewidth, clip, trim={0.36in 0.36in 0.0in 0.36in}]{./chapters/10.results/iuwt/iuwt-residuals.png}
 		\caption{MORESANE (IUWT).}
@@ -95,24 +98,29 @@ When we compare the reconstruction quality of multi-scale CLEAN an our serial co
 %Describe Masking
 Note however that the serial coordinate descent algorithm leaves large negative values in the residual image, while multi-scale CLEAN includes it in its reconstruction. Multi-scale CLEAN has several areas of negative pixel values, which is implausible.
 
+\newpage
 
-\begin{figure}[h]
+\begin{figure}[!htp]
 	\centering
-	\begin{subfigure}[b]{0.32\linewidth}
-		\includegraphics[width=1.00\linewidth]{./chapters/10.results/MSClean/Natural-N132.png}
+	\begin{subfigure}[b]{1.0\linewidth}
+		\centering
+		\includegraphics[width=0.40\linewidth]{./chapters/10.results/MSClean/Natural-N132.png}
+		\includegraphics[width=0.40\linewidth]{./chapters/10.results/MSClean/Natural-image-N132.png}
 		\caption{CLEAN Natural weighting.}
-		\label{results:N132:clean}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.32\linewidth}
-		\includegraphics[width=1.00\linewidth]{./chapters/10.results/SerialCD/CD-N132.png}
-		\caption{CD Natural weighting.}
-		\label{results:comp:N132:cd}
+	\begin{subfigure}[b]{1.0\linewidth}
+		\centering
+		\includegraphics[width=0.40\linewidth]{./chapters/10.results/SerialCD/CD-N132.png}
+		\includegraphics[width=0.40\linewidth]{./chapters/10.results/SerialCD/CD-image-N132.png}
+		\caption{CLEAN Natural weighting.}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.32\linewidth}
-		\includegraphics[width=1.00\linewidth]{./chapters/10.results/iuwt/iuwt-N132}
-		\caption{CD Natural weighting.}
-		\label{results:comp:N132:cd}
+	\begin{subfigure}[b]{1.0\linewidth}
+		\centering
+		\includegraphics[width=0.40\linewidth]{./chapters/10.results/iuwt/iuwt-N132.png}
+		\includegraphics[width=0.40\linewidth]{./chapters/10.results/iuwt/iuwt-image-N132.png}
+		\caption{CLEAN Natural weighting.}
 	\end{subfigure}
+
 	\begin{subfigure}[b]{0.32\linewidth}
 		\includegraphics[width=1.00\linewidth]{./chapters/10.results/MSClean/Briggs-N132.png}
 		\caption{CLEAN Briggs weighting.}
@@ -122,7 +130,32 @@ Note however that the serial coordinate descent algorithm leaves large negative 
 	\label{results:cleancomp::N132:figure}
 \end{figure}
 
+
 We now compare sections of the briggs-weighted multi-scale CLEAN with our naturally weighted serial coordinate descent algorithm. We compare the reconstruction of the N132D supernova-remnant in Figure \ref{results:cleancomp::N132:figure}. For comparison, we also included the naturally weighted mutli-scale CLEAN reconstruction in Figure \ref{results:N132:clean}. With natural weighting, multi-scale CLEAN reconstructs N132D as a Gaussian blob. Serial coordinate descent on the other hand is able to find structures inside the remnant with the same $PSF$, shown in Figure \ref{results:comp:N132:cd}. These are plausible super-resolved structures. They are also detected with briggs-weighted multi-scale CLEAN, shown in Figure \ref{results:N132:cleanbriggs}. But mutli-scale CLEAN needs briggs-weighting to reconstruct the smaller structures. As we mentioned, briggs-weighting leads to a more concentrated $PSF$.
+
+\begin{figure}[!htp]
+	\centering
+	\begin{subfigure}[b]{1.0\linewidth}
+		\centering
+		\includegraphics[width=0.45\linewidth]{./chapters/10.results/MSClean/Natural-Calibration.png}
+		\includegraphics[width=0.45\linewidth]{./chapters/10.results/MSClean/Natural-image-Calibration.png}
+		\caption{Briggs CLEAN}
+	\end{subfigure}
+	\begin{subfigure}[b]{1.0\linewidth}
+		\centering
+		\includegraphics[width=0.45\linewidth]{./chapters/10.results/SerialCD/CD-Calibration.png}
+		\includegraphics[width=0.45\linewidth]{./chapters/10.results/SerialCD/CD-image-Calibration.png}
+		\caption{Coordinate Descent}
+	\end{subfigure}
+	\begin{subfigure}[b]{1.0\linewidth}
+		\centering
+		\includegraphics[width=0.45\linewidth]{./chapters/10.results/iuwt/iuwt-Calibration.png}
+		\includegraphics[width=0.45\linewidth]{./chapters/10.results/iuwt/iuwt-image-Calibration.png}
+		\caption{MORESANE (IUWT)}
+	\end{subfigure}
+	\caption{Influence of calibration errors}
+	\label{results:cleancomp::calib:figure}
+\end{figure}
 
 \begin{figure}[h]
 	\centering
