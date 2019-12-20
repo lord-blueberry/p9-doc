@@ -51,7 +51,10 @@ In our test reconstruction, we need to account for $w$-term correction and high-
 In Section \ref{results:gradients} we show the core result of this project. Namely what effect has an approximate $PSF$ on the deconvolution problem and whether we can use it to further distribute the problem. The answer to that question is affirmative: We can approximate the $PSF$, and we can exploit it to further distribute the deconvolution. But we need more sophisticated coordinate descent algorithms to fully benefit from it.
 
 
-\subsection{Comparison with CLEAN reconstructions} \label{results:cleancomp}
+\subsection{Comparison with state-of-the-art reconstruction algorithms} \label{results:cleancomp}
+
+T
+
 We use the WSCLEAN \cite{offringa2014wsclean} implementation of multi-scale CLEAN algorithm. We compare our coordinate descent reconstruction with two CLEAN reconstructions, oe with naturally weighted visibilities and one with briggs-weighted visibilities.
 
 There are three main visibility weighting scheme for the gridder that lead to different $PSF$s from the same measurements: Natural, uniform, and Briggs\cite{briggsWeighting}. Natural weighting scheme leads to an image with a lower noise level, but a wider $PSF$. Uniform weighting leads to a higher noise level, but to a $PSF$ which is more concentrated around a single pixel. Briggs weighting is a scheme combines the best from both worlds, receiving an image with acceptable noise level while getting a more concentrated $PSF$. As such it is widely used in radio astronomy image reconstruction. Our gridder implements the natural weighting scheme only. Nevertheless our coordinate descent algorithm is able to retrieve structures similar to the briggs-weighted multi-scale CLEAN reconstruction, even though coordinate descent has to work with a wider $PSF$.
@@ -112,18 +115,18 @@ Note however that the serial coordinate descent algorithm leaves large negative 
 		\centering
 		\includegraphics[width=0.40\linewidth]{./chapters/10.results/SerialCD/CD-N132.png}
 		\includegraphics[width=0.40\linewidth]{./chapters/10.results/SerialCD/CD-image-N132.png}
-		\caption{CLEAN Natural weighting.}
+		\caption{Multi-scale CLEAN.}
 	\end{subfigure}
 	\begin{subfigure}[b]{1.0\linewidth}
 		\centering
 		\includegraphics[width=0.40\linewidth]{./chapters/10.results/iuwt/iuwt-N132.png}
 		\includegraphics[width=0.40\linewidth]{./chapters/10.results/iuwt/iuwt-image-N132.png}
-		\caption{CLEAN Natural weighting.}
+		\caption{Coordinate Descent.}
 	\end{subfigure}
 
 	\begin{subfigure}[b]{0.32\linewidth}
 		\includegraphics[width=1.00\linewidth]{./chapters/10.results/MSClean/Briggs-N132.png}
-		\caption{CLEAN Briggs weighting.}
+		\caption{MORESANE (IUWT).}
 		\label{results:N132:cleanbriggs}
 	\end{subfigure}
 	\caption{N132D comparison}

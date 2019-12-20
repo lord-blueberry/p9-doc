@@ -1,18 +1,13 @@
 \section{Discussion}\label{discussion}
 In this project, we developed a novel $PSF$ approximation scheme. It leverages the fact that large parts of the $PSF$ from modern interferometers are close to zero, and we can approximate the true $PSF$ with a sparse approximation. We then developed a parallel coordinate descent deconvolution algorithm that benefits from a sparse $PSF$. In our test, it achieved a speedup factor of 20 compared to the serial coordinate descent deconvolution algorithm.
 
-We developed two deconvolution algorithms based on convex optimization: A serial, and a parallel coordinate descent algorithm. The general experience is that deconvolution algorithms based on convex optimization are magnitudes slower than CLEAN\cite{offringa2017optimized}. The parallel coordinate descent algorithm together with our approximation methods our approximation method is magnitudes faster than the serial coordinate descent algorithm. On our estimates, the parallel algorithm and CLEAN have a comparable wall-clock time reconstructing a real-world observation. To our knowledge, our parallel algorithm is the only convex optimization based deconvolution algorithm in radio astronomy that has a comparable run time to CLEAN.
-
 T
 
-Potential of GPU. GPU is very good at atomic operations \cite{keplerShuffle}, which may speed our parallel coordinate descent algorithm. Other algorithms need GPU acceleration to be comparable to CLEAN \cite{dabbech2015moresane}, but our algorithm already is.
-
+Faster than CLEAN. And it scales. Minimum $PSF$ size is based on the resolution, and we can add more processors efficiently for a larger field of view.
+Question whether this is necessary.
+Self-calibration regime: The ionosphere influences different parts of the image. This naturally splits a wide-field of view image into facets. How large are the images.
 The parallel coordinate descent algorithm is based on PCDM \cite{richtarik2016parallel}. Adaptions necessary to make the algorithm efficient on the deconvolution problem. Our implemenmtation is not distributed. PCDM can be extended to the distributed setting with Hydra. We can use the same extension to distribute our algorithm.
-
-Problems of large number of nodes. On our test, adding more nodes quickly diminishes the potential speedup. So much so that we can even slow down the parallel algorithm by adding more processors. 
-We suspect that our adaptions for the deconvolution problem, which make it as fast as it is with limited processors, slow down the algorithm with a large number of processors.
-It is possible to fix these issues with further development
-
+Our parallel algorithm is competitive, if the $PSF$ is concentrated around the center. This is true for MeerKAT. Maybe not for LOFAR.
 
 ElasticNEt
 Our serial and parallel coordinate descent algorithms use the elastic net regularization.
@@ -27,12 +22,37 @@ Our parallel coordinate descent algorithm can also be used with different regula
 
 Nevertheless, the starlet regularization also considers small neighborhoods, which can still be 'sparsified' with our $PSF$ approximation scheme, and potentially sped up with our parallel coordinate descent algorithm. It is unclear how our parallel coordinate descent algorithm with starlet regularization compares to MORESANE, the state-of-the-art reconstruction algorithm with starlet regularization.
 
-We developed a proof-of-concept deconvolution algorithm, which only considers wide field-of-view imaging. A real-world reconstruction algorithm has to account for wide band imaging and different polarizations of the input data. This is currently ignored. Wide band imaging increases the problem: We cannot reconstruct one image, but have to reconstruct an image cube at different frequencies simultaneously. Furthermore, we introduce a regularization over the frequency.
+
+e developed a proof-of-concept deconvolution algorithm, which only considers wide field-of-view imaging. A real-world reconstruction algorithm has to account for wide band imaging and different polarizations of the input data. This is currently ignored. Wide band imaging increases the problem: We cannot reconstruct one image, but have to reconstruct an image cube at different frequencies simultaneously. Furthermore, we introduce a regularization over the frequency.
 
 It is not know for our parallel deconvolution algorithm, what effect does wide band imaging have. 
 Sparsity, and a cheap single iteration.
 But may be separated with respect to frequency with Lagrangian multipliers. Another dimension for parallelization. 
 Question if cd methods are faster.
+
+
+Potential of GPU. GPU is very good at atomic operations \cite{keplerShuffle}, which may speed our parallel coordinate descent algorithm. Other algorithms need GPU acceleration to be comparable to CLEAN \cite{dabbech2015moresane}, but our algorithm already is.
+
+
+TT
+
+
+We developed two deconvolution algorithms: A serial, and a parallel coordinate descent algorithm. The general experience is that deconvolution algorithms based on convex optimization are magnitudes slower than CLEAN\cite{offringa2017optimized}. The parallel coordinate descent algorithm together with our approximation methods our approximation method is magnitudes faster than the serial coordinate descent algorithm. On our estimates, the parallel algorithm and CLEAN have a comparable wall-clock time reconstructing a real-world observation. To our knowledge, our parallel algorithm is the only convex optimization based deconvolution algorithm in radio astronomy that has a comparable run time to CLEAN.
+
+TT
+
+
+
+
+
+
+
+
+
+
+
+
+W
 
 Calibration and reconstruction is separate. In self-calibration, both calibration and image reconstruction are sovled together. We solve the image reconstruction problem several times.
 Huge can of worms, due to the self-calibration bias.
