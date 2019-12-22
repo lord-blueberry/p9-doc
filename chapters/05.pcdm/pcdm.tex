@@ -212,40 +212,39 @@ This behavior is pronounced when we choose a block size of one pixel (i.e. we do
 
 A random selection strategy needs a prohibitive large number of iterations to converge. But we cannot simply switch out the selection strategy. The random selection strategy is at the core of the Parallel coordinate descent methods. Remember the ESO arises from the fact that we select $tau$ pixels uniformly at random. When we select $\tau$-pixels with a greedy strategy, we might break the ESO, and the parallel algorithm may not converge at all.
 
-To solve this behavior, we introduce the pseudo-random selection strategy:  We select a block at random, but greedily search in the neighborhood for the optimal block to optimize. The size of the neighborhood can be defined by the user. It is essentially a mix between a greedy and a random selection strategy. If we choose the neighborhood to be the whole image, we arrive at a greedy strategy. If we choose the neighborhood to be just one block, we are back at a random strategy. The mixture of the greedy and random strategy allows us to fix the problems with the pure random
-
-We also introduced three heuristics that speed up the parallel deconvolution algorithm in practice: An active set heuristic, Restarting heuristic and a 'Minor' cycle.
+To solve this behavior, we introduce the pseudo-random selection strategy:  We select a block at random, but greedily search in the neighborhood for the optimal block to optimize. The size of the neighborhood can be defined by the user. It is essentially a mix between a greedy and a random selection strategy. If we choose the neighborhood to be the whole image, we arrive at a greedy strategy. If we choose the neighborhood to be just one block, we are back at a random strategy. The mixture of the greedy and random strategy allows us to fix the problems with the pure random strategy, without breaking any assumptions from the Parallel Coordinate Descent Method's ESO. The mixture of the greedy and random strategy is represented in a 'Search Fraction' parameter. It is a tuning parameter of our parallel coordinate descent algorithm. The optimal value for the Search Fraction is explored later in Section \ref{pcdm:results:fraction}. We now introduce three related extensions, which speed up the  parallel coordinate descent in practice: An active set heuristic, Restarting heuristic and a 'Minor' cycle.
 
 
 \subsubsection{Active set heuristic}
-The active set heuristic is typically used in cyclic coordinate descent: It chooses a subset of blocks, and optimizes the set until it converges. Then it chooses a  new set. We use the active set heuristic together with our pseudo-random selection strategy. A large portion of the blocks in the image will be zero. If we select blocks at pseudo-random, we are likely to select a block that will never contain non-zero values. The active set heuristic increases the likelihood that the pseudo-random strategy selects a relevant block. 
+The active set heuristic is typically used in cyclic coordinate descent: It chooses a subset of blocks, and optimizes the set until it converges. Then it chooses a  new set. We use the active set heuristic together with our pseudo-random selection strategy. A large portion of the blocks in the image will be zero. If we select blocks at pseudo-random, we are likely to select a block that will never contain non-zero values and we wasted computing resources by trying to update this block. The active set heuristic increases the likelihood that the pseudo-random strategy selects a relevant block. 
 
-At the start of the parallel deconvolution algorithm, we iterate over all blocks. We add all blocks whose value can be changed to non-zero. During parallel iterations, the algorithm only selects blocks from the active set.
+At the start of the parallel deconvolution algorithm, we initialize the active set by iterating over all blocks. We add all blocks which contain non-zero pixels, or pixels which may become non-zero by a serial coordinate descent iteration. Now during asynchronous parallel coordinate descent iterations, each processors only selects blocks from the active set. This increases the chance that each processor selects a block where pixel values can actually be modified.
 
 Note that the algorithm only adds blocks to the active set, which can be changed to a non-zero value at the start of deconvolution. Over several iterations, there may be blocks that are not in the active set, but are part of the optimal solution. This is remedied with a restarting heuristic.
 
 
 \subsubsection{Restarting heuristic}
-In accelerated gradient methods, like APPROX or (F)ISTA, restarting the acceleration can lead to a significant speedup\cite{fercoq2016restarting}. In our accelerated variant, restarting means we reset the acceleration variable $theta$ restart with the deconvolution, using the intermediate solution from the last iteration. Our accelerated deconvolution algorithm uses an active set. If we detect that important blocks are missing from the active set, we want to restart the deconvolution with a new active set. 
+In accelerated gradient methods like APPROX or (F)ISTA, restarting the acceleration can lead to a significant speedup\cite{fercoq2016restarting}. In our accelerated variant, we use the current reconstructed image as the starting point, and reset the 'correction' gradient map and image $x$ to zero. The question is, at what point is it useful to restart our parallel coordinate descent algorithm?
 
-We implemented two restarting heuristics: One heuristic is based on Glasmachers et al.\cite{glasmachers2014coordinate} and restarts the algorithm when the acceleration likely benefits from it. The other heuristic was developed by us and restarts the when the active set is likely to be missing blocks. In our tests, we always needed to restart due to the active set, and never due to the heuristic by Glasmachers.
+We implemented two restarting strategies: One strategy is based on Glasmachers et al.\cite{glasmachers2014coordinate} and restarts the algorithm when the acceleration likely benefits from it. The other heuristic was developed by us and restarts the when the active set is likely to be missing blocks. There may be non-zero blocks in the image, which were not included when we initialized the active set. Our strategy estimates when the active set is likely missing relevant blocks, and restarts the algorithm with a new active set. In our tests, we always needed to restart due to the active set, and never due to the heuristic by Glasmachers. This is why we focus on our own developed restarting strategy, and ignore Glasmachers' in the pseudo-code.
 
-Our own restarting heuristic is based on the following idea: When the parallel deconvolutions start to converge before the currently best greedy step, we restart the algorithm with a new active set.
+Our own restarting heuristic is based on the following idea: We compare the maximum pixel difference after a number of asynchronous, parallel updates, to the difference a single step of serial block coordinate descent would produce. When the active set contains all relevant blocks, the parallel deconvolutions converge at a similar rate as the serial block coordinate descent. If the active set is missing important blocks, then the updates of the parallel coordinate descent start to converge, while the serial block coordinate descent update stays similar.
 
-We introduce a new loop for the active set iteration. For each active set iteration, we execute several parallel deconvolution steps. For example, a single active set iteration may include 1000 parallel deconvolutions for each processor, running for $\tau * 1000$ iterations in total. Each processor updates the gradient maps and the reconstructed image asynchronously. We assume that after each active set iteration, we have landed at least once on the block that the greedy algorithm would have chosen in a single iteration.
-
-At the end of each active set iteration, we check whether the parallel accelerated iterations converge faster than the currently best greedy step. If it does, we restart the parallel algorithm with a new active set.
-
+We extend the asynchronous parallel coordinate descent implementation with the active set and restarting heuristic:
 \begin{lstlisting}
 ...
 do
 	lastMaxDiff = GetGreedyMaxBlockDiff(gradientsMapExplore, xExplore)
+	
 	parallelDiffFactor = 0
 	for activeSetIteration in activeSetIterations
+		parallelDiffs = new Array[]
 		...
 		//asynchronous iterations
 		...
-			
+		
+		maxParallelDiff = Max(parallelDiffs)
+		
 		//restarting heuristic
 		if(parallelDiffFactor = 0)
 			parallelDiffFactor = lastMaxDiff / maxParallelDiff
@@ -257,36 +256,36 @@ do
 			Restart()
 			parallelDiffFactor = 0
 		lastMaxDiff = currentMaxDiff
-	..
-while maxAbsDiff  < epsilon
+	...
+while lastMaxDiff  < epsilon
 \end{lstlisting}
 
-After the first active set iteration, we check how close the maximum parallel update is to the best greedy step. The ratio of maximum greedy update and maximum parallel update should stay similar over the course of the algorithm, if the active set is valid. If the active set invalid, if it is missing important blocks, the algorithm will encounter ever smaller values for $maxParallelDiff$, while $lastMaxDiff$ does not decrease significantly over the active set iterations. In that case, the ratio between $lastMaxDiff / maxParallelDiff$ sharply increases, and we restart the algorithm.
+In each 'active set iteration', we let the asynchronous processors deconvolve the image for a set number of iterations. For example: Each processor deconvolves 1000 blocks asynchronously. If we use $\tau = 8 processors$, then this results in a single active set iteration consisting of 8000 asynchronous iterations. Remember that we are now using a pseudo-random strategy. After enough parallel iterations, we are practically guaranteed to have selected the same block as a single serial block coordinate descent algorithm, if it is contained in the active set.
+ 
+After the first active set iteration, we save the factor of how much the parallel update how close the maximum parallel update is to the best greedy step. The ratio of maximum greedy update and maximum parallel update should stay similar over the course of the algorithm, if the active set is valid. If the active set invalid, if it is missing important blocks, the algorithm will encounter ever smaller values for $maxParallelDiff$, while $lastMaxDiff$ does not decrease significantly over the active set iterations. In that case, we restart the algorithm with a new active set.
 
-We have two similar conditions on which we flag the active set as invalid. If the ratio of $lastMaxDiff / maxParallelDiff$ is twice as big as the ratio of the first active set iteration, we restart the algorithm. The second condition is based on the observation that the $currentMaxDiff$ may increase from active set iteration to active set iteration. In this case, we are likely missing important blocks in the active set and we restart more aggressively: If the ratio $lastMaxDiff / maxParallelDiff$ bigger than the ratio of the first active set iteration.
+In several tests, we also observed that the maximum greedy update may actually increase from one active set iteration to the next. This is possible when we were unlucky and did not select the maximum block within one of the many asynchronous iterations, or when the active set is invalid (the maximum block is not contained in the active set). In the latter case we want to restart the algorithm. This is why we added a more aggressive condition which flags the active set as invalid, if $currentMaxDiff$ increases over active set iterations.
 
 
 \subsubsection{Re-introduction of a 'Minor' cycles}
-As we will demonstrate in the next section, the parallel coordinate descent deconvolution algorithm benefits significantly from our $PSF$ approximation. The drawback of our $PSF$ approximation is that it needs more major cycles to converge. We re-introduce a similar minor cycle to the Clark CLEAN algorithm \cite{clark1980efficient}, and reduce the number of necessary major cycles.
+As we will demonstrate in Section \ref{results}, the parallel coordinate descent deconvolution algorithm benefits significantly from our $PSF$ approximation method. The drawback of our $PSF$ approximation is that it needs more major cycles to converge. We re-introduce a similar minor cycle to the Clark CLEAN algorithm \cite{clark1980efficient}, and reduce the number of necessary major cycles.
 
-The CLEAN algorithm developed by Clark also uses only a fraction of the $PSF$ during CLEAN deconvolutions. After a number of iterations, the residuals of the Clark algorithm are inaccurate, and it resets the residuals with the full $PSF$.
-
-We use a similar idea: We run our parallel coordinate descent deconvolution algorithm, and retrieve the intermediate solution. We then decide whether we reset the residuals using the full $PSF$ (the 'minor' cycle), or we use the major cycle.
+The CLEAN algorithm developed by Clark also uses only a fraction of the $PSF$ during CLEAN deconvolutions. After a number of iterations, the residuals of the Clark algorithm are inaccurate, and it resets the residuals with the full $PSF$. We use a similar idea: We run our parallel coordinate descent deconvolution algorithm and retrieve the intermediate solution. We then decide whether we reset the residuals using the full $PSF$ (the 'minor' cycle), or we use the major cycle.
 
 Resetting the residuals with the full $PSF$ is done as follows:
-
 \begin{lstlisting}
 residuals = iFFT(Gridding(visibilities))  	//Major cycle
-x = deconvolve(residuals, Cut(PSF)) 		//Deconvolve with approximate PSF
-residuals_minor = residuals - iFFT(FFT(x) * FFT(PSF))
+x = DeconvolveParallel(residuals, Cut(PSF)) 		//Deconvolve with approximate PSF
+residuals_minor = residuals - iFFT(FFT(x) * FFT(PSF)) //Update with full PSF
 \end{lstlisting}
 
-We convolve the intermediate solution $x$ with the $PSF$ in Fourier space, and subtract the result from the original residuals from the major cycle. This allows us to use fewer major cycles when we use an aggressive $PSF$ approximation.
+We convolve the intermediate solution $x$ with the full $PSF$ in Fourier space, and subtract the result from the original residuals from the major cycle. This allows us to remove some of the errors which the $PSF$ approximation introduces, and reduce the number of Major cycles.
 
-The question only question that remains is, when to use a major cylce or a 'minor' cycle. Remember from Section \ref{gradients}, we introduced a heuristic based on the $PSF$ sidelobe: When we deconvolve using only a fraction of the full $PSF$, we leave sidelobes in the residual image. In each major cycle, we can only run the deconvolution algorithm up to a certain point, before we include $PSF$ sidelobes in the reconstructed image. 
+The question that remains is when to use a Major cycle or a 'Minor' cycle to reset the residuals. Remember from Section \ref{gradients}, we introduced a heuristic based on the $PSF$ side lobe: When we deconvolve using only a fraction of the full $PSF$, we leave side lobes in the residual image. In each major cycle, we can only run the deconvolution algorithm up to a certain point, before we include $PSF$ side lobes in the reconstructed image. In Section \ref{gradients} we created a path regularization, which estimates a $\lambda_{cycle}$ for each Major cycle. We used the largest $PSF$ side lobe (largest value not included in the $PSF$ window around the center) to estimate the minimum regularization $\lambda_{cycle}$ for each Major cycle.
 
-In Section \ref{gradients} solved this by estimating a minimum regularization parameter $\lambda$ for each major cycle. Now with the addition of a 'minor' cycle, we use the same heuristic twice: We have two minimum regularization parameters, $\lambda_{minor}$ and $\lambda_{major}$. We use the minor cycle, as long as  $\lambda_{minor}$ is larger than  $\lambda_{major}$. Otherwise, we start a new major cycle. In total, the major and 'minor' cycle for our parallel coordinate descent algorithm is implemented as follows:
+Now with the addition of a 'Minor' cycle, we use the same path regularization twice: We have two minimum regularization parameters, $\lambda^{minor}_{cycle}$ and $\lambda^{major}_{cycle}$. The parameter $\lambda^{minor}_{cycle}$ decreases for each 'Minor' cycle, $\lambda^{major}_{cycle}$ decreases for each Major cycle. We  the 'Minor' cycle as long as $\lambda^{minor}_{cycle}$ is larger than $\lambda^{major}_{cycle}$. Otherwise, we start a new major cycle. We use the largest $PSF$ side lobe to estimate $\lambda^{minor}_{cycle}$ (the same as for the $\lambda_{cycle}$ before). For the second regularization parameter $\lambda^{major}_{cycle}$, we do not have a natural $PSF$ side lobe left in our approximation method. We chose to use the $PSF$ side lobe, which is outside the $\frac{1}{2}$ center window of the $PSF$ to estimate $\lambda^{major}_{cycle}$. 
 
+In total, the major and 'Minor' cycle for our parallel coordinate descent algorithm is implemented as follows:
 \begin{lstlisting}
 residualVis = visibilities
 x = new Array[,]
@@ -296,13 +295,14 @@ for each cycle in Range(0, maxMajorCycles)
 	residualsMinor = residuas
 	
 	lambdaMajor = Estimate(residuals, PSF, 2)
+	lambdaMajor = Max(lambdaMajor, lambda)
 	lambdaMinor = 0
 	
 	do
 		lambdaMinor = Estimate(residualsMinor, PSF, psfFraction)
 		lambdaMinor = Max(lambdaMinor, lambdaMajor)
 		
-		x_current = DeconvolveParallel(residuals, Cut(PSF, psfFraction))
+		x_current = DeconvolveParallel(residuals, Cut(PSF, psfFraction), lambdaMinor)
 		x + = x_current
 		residuals_minor = residuals - iFFT(FFT(x) * FFT(PSF))
 	while(lambdaMajor < lambdaMinor)
@@ -311,259 +311,7 @@ for each cycle in Range(0, maxMajorCycles)
 	residualVis = visibilities - modelVis
 \end{lstlisting}
 
-Estimating $\lambda_{minor}$ is identical to the heuristic developed in Section \ref{gradients}. We use the maximum sidelobe of the $PSF$ which is not contained in the cutout used for deconvolution. Estimating $\lambda_{major}$ is more difficult: In theory, we use the full $PSF$, and do not have a sidelobe outside the cutout. However, we also know that the full $PSF$ is only an approximation (remember: the $w$-term changes the $PSF$ slightly for all pixels in the image). For the parameter $\lambda_{major}$, we simply use the maximum sidelobe outside of the $\frac{1}{2}$ cutout.
+In each 'Minor' cycle, we estimate the current $\lambda^{minor}_{cycle}$ regularization. We start the parallel coordinate descent algorithm with an approximate $PSF$ and the current $\lambda^{minor}_{cycle}$ regularization parameter. When the parallel algorithm has finished, we use the full $PSF$ to update the residuals. We restart the 'Minor' cycle if  $\lambda^{major}_{cycle} < \lambda^{minor}_{cycle}$.
 
+An aggressive $PSF$ approximation leads to a sharp increase in the number of necessary Major cycles. With the re-introduction of 'Minor' cycles, we keep the total number of Major cycles comparable to other deconvolution algorithms like serial coordinate descent or CLEAN.
 
-\subsection{Tests on the LMC Observation}\label{pcdm:results}
-We have shown the parallel coordinate descent algorithm in two variants: With gradient acceleration and without. We developed several heuristics, which includes a set of tuning parameters. In this section, we test our parallel coordinate descent algorithm on the MeerKAT LMC observation. We test the tuning parameters, and show how much our algorithm benefits from the $PSF$ approximation method.
-
-In this test, we measure the wall-clock time of only the deconvolution. The wall-clock time of the Major- and 'Minor' cycle are excluded. Again, we calculate the value of the objective function. We compare different parameters of our parallel coordinate descent algorithm, trying to get the shortest convergence time.
-
-\subsubsection{$PSF$ approximation}
-First, we test the effect of our $PSF$ approximation method. We test different $PSF$ cutouts of our parallel coordinate descent algorithm with gradient acceleration. We use $\tau = 8$ processors with our asynchronous implementation.
-
-Figure \ref{pcdm:results:psf} shows the result of our parallel coordinate descent algorithm with different $PSF$ fractions, combined with the ESO and the total seconds needed to converge. The $y$-axis shows the objective value, and the $x$-axis shows the elapsed seconds. Note that the axis of the figure are logarithmic. The 'kinks' in the lines are due to either the Major or the 'Minor' cycle resetting the residuals (remember: we do not include the wall-clock time of the Major or 'Minor' cycle in this test).
-
-\begin{figure}[h]
-	\centering
-	\begin{subfigure}{0.6\linewidth}
-		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/parameters/psfSize.png}
-	\end{subfigure}
-	\begin{subfigure}{0.35\linewidth}
-		\begin{tabular}{c | r | r}
-			PSF & ESO & Total seconds \\ \hline
-			1 / 4 & 2.750 & 4941 \\
-			1 / 8 & 1.437 & 1433 \\
-			1 / 16 & 1.109 & 390 \\
-			1 / 32 & 1.027 & 108 \\
-			1 / 64 & 1.001 & 61 \\
-		\end{tabular}
-	\end{subfigure}
-	\caption{Convergence times with $PSF$ approximation}
-	\label{pcdm:results:psf}
-\end{figure}
-
-Clearly, the parallel coordinate descent algorithm benefits from our $PSF$ approximation method. If we use $\frac{1}{32}$ of the full $PSF$, the parallel coordinate descent algorithm spends a total of 108 seconds in to deconvolve the image. For comparison, the serial coordinate descent algorithm with $PSF$ approximation takes roughly 1400 seconds, or 23 minutes.
-
-As expected, with increasing $PSF$ approximation, we get an ESO which is ever closer to 1. Remember: An ESO of 1 means that each processor in the parallel coordinate descent algorithm can has the same step size as the serial coordinate descent algorithm. With an approximation of $\frac{1}{32}$ and 8 parallel processors, the ESO is only marginally larger than 1. This suggests that the parallel coordinate descent algorithm may be sped up further with additional processors.
-
-Note that the speedup from fraction $\frac{1}{4}$ to $\frac{1}{8}$ is roughly a factor of $3.5$. The same holds true for the speedup of $\frac{1}{8}$ to $\frac{1}{16}$, and $\frac{1}{16}$ to $\frac{1}{32}$. The $PSF$ cutout from  $\frac{1}{8}$ to  $\frac{1}{16}$ four times fewer pixels. This suggest the speedup may be due to the reduced conflicts in the asynchronous update of the gradient map. With a smaller $PSF$ we reduce the change of several threads updating the same location in the gradient map, and we spend more time in the deconvolution itself.
-
-For the rest of this project, we will use a $PSF$ approximation of $\frac{1}{32}$ for the parallel coordinate descent algorithm. The $\frac{1}{64}$ approximation is faster in this tests, but needs more 'Minor' cycles (Which were excluded from the wall-clock time). Including the time spent in the 'Minor' cycle, the $\frac{1}{32}$ approximation is the fastest overall.
-
-
-\subsubsection{Block size}
-The parallel coordinate descent algorithm can group several pixels in blocks, and optimize the blocks of pixels in parallel. It is not clear if grouping the pixels in blocks results in shorter convergence times. We test different block sizes in Figure \ref{pcdm:results:block}, all using the same $PSF$ approximation of $\frac{1}{32}$. We tested out block size of $1^2$ (every block contains a single pixel) up to a block size of $8^2$:
-
-\begin{figure}[h]
-	\centering
-	\begin{subfigure}{0.6\linewidth}
-		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/parameters/blockSize.png}
-	\end{subfigure}
-	\begin{subfigure}{0.35\linewidth}
-		\begin{tabular}{c | r}
-			Block Size & Total seconds \\ \hline
-			$1^2$ & 108 \\
-			$2^2$ & 103 \\
-			$4^2$ & 248 \\
-			$8^2$ & 905 \\
-		\end{tabular}
-	\end{subfigure}
-	\caption{Convergence times with different block sizes}
-	\label{pcdm:results:block}
-\end{figure}
-
-The larger block sizes of $4^2$ and $8^2$ are significantly slower to converge than a block size of $1^2$. Only a block size of $2^2$ is slightly faster. Interestingly though, the parallel coordinate descent algorithm is faster to arrive at intermediate results with the block sizes $2^2$ and $4^2$. This suggests that the parallel coordinate descent algorithm may benefit starting out from larger block sizes, and gradually reducing the block size over several major cycle iterations.
-
-However, two factors lead to the decision to simply use a block size of $1^2$ for all major cycle iterations: First, the block size is likely connected to the image resolution. An effective heuristic that starts with larger blocks may become difficult to develop for general observations. Secondly, the parallel coordinate descent implementation becomes more complicated when it has to account for different block sizes. An implementation with a block size of only $1^2$ is shorter and simpler.
-
-For the rest of this project, we use a block size of $1$, meaning every thread is minimizing a single pixel.
-
-
-\subsubsection{Pseudo-random strategy}
-We discussed in Section \ref{pcdm:adaption}, a random block selection strategy seems to perform badly on the deconvolution problem. We created the pseudo-random strategy, which selects a block at random, but searches in it's neighborhood for the optimal block to optimize. It is a mixture between a random and a greedy selection strategy.
-
-But the pseudo-random strategy introduces a new tuning parameter, which we call the 'search factor'. A search factor of 0 says that after a random block has been selected, we search 0\% of the neighboring blocks in the active set. It is identical to a pure random selection strategy. A search factor of 1.0 says that after a random block has been selected, we search 100\% of its neighbors in the active set. For example, if we have 256 blocks with 8 threads, a search percentage of 1.0 selects a random block and looks at 32 blocks in its neighborhood. A search percentage of 100\% is identical to a greedy strategy, where each thread searches its part of the active set.
-
-Our parallel coordinate descent algorithm needs a search percentage larger than 0. We compare different search percentages in Figure \ref{pcdm:results:search}.
-
-\begin{figure}[h]
-	\centering
-	\begin{subfigure}{0.6\linewidth}
-		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/parameters/searchPercent.png}
-	\end{subfigure}
-	\begin{subfigure}{0.35\linewidth}
-		\begin{tabular}{c | r}
-			Search Factor & Total seconds \\ \hline
-			0.01 & 110 \\
-			0.1 & 106 \\
-			0.2 & 104 \\
-			0.4 & 112 \\
-			0.8 & 134 \\
-		\end{tabular}
-	\end{subfigure}
-	\caption{Convergence times with different search percentages.}
-	\label{pcdm:results:search}
-\end{figure}
-
-According to this test, the search factor tuning parameter influences the convergence speed, but tuning it does not lead to a significant speedup. A value between 0.01 and 0.4 leads to a similar wall-clock time. It is only when the parameter is set close to 1 (close to fully greedy) where we see a significant increase in wall-clock time.
-
-Based on this test, we fixed the search percentage tuning parameter to a value of 0.1 for all tests in this project. It was enough to alleviate the problems a pure random strategy introduces in the deconvolution problem (discussed previously in Section \ref{pcdm:adaption}).
-
-However, we do not know whether this parameter generally has a small influence on convergence speed, or if it is merely due to the LMC observation we used for this project. To answer this question, we need further tests on diverse observations.
-
-
-\subsubsection{Acceleration}
-Lastly, we test whether the parallel coordinate descent algorithm is faster with or without gradient acceleration. The accelerated variant needs two versions of the gradient map, which get updated asynchronously with compare-exchange operations. Figure \ref{pcdm:results:acc} compares the accelerated and non-accelerated parallel coordinate descent algorithm.
-
-\begin{figure}[h]
-	\centering
-	\begin{subfigure}{0.6\linewidth}
-		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/parameters/acceleration.png}
-	\end{subfigure}
-	\begin{subfigure}{0.35\linewidth}
-		\begin{tabular}{c | c}
-			Method & Total seconds \\ \hline
-			With Acceleration & 108 \\
-			Without Acceleration & 84 \\
-		\end{tabular}
-	\end{subfigure}
-	\caption{Convergence time with or without gradient acceleration.}
-	\label{pcdm:results:acc}
-\end{figure}
-
-The accelerated variant is significantly slower in every part of the algorithm. Our hypothesis is that the two gradient maps necessary for the acceleration also increase the cost of synchronization.
-
-Furthermore the accelerated variant has additional run time costs which were not measured in this test: It has to create a copy of the gradient map and the reconstructed image for the acceleration. Meaning this test shown in Figure \ref{pcdm:results:acc} is biased in favor of the accelerated variant, yet it is still slower.
-
-
-\subsection{Comparison to the serial coordinate descent algorithm}
-In the previous section, we tested various tuning parameters of the parallel coordinate descent algorithm. In this section, we compare the serial coordinate descent algorithm with the final, simplified parallel coordinate descent algorithm.
-
-We took the lessons from the tests and implemented a simplified parallel coordinate descent algorithm. It does not use gradient acceleration, and cannot group pixels into blocks. Each thread can only minimize a single pixel in parallel in each iteration. As we will see shortly, the simplified parallel coordinate descent implementation is significantly faster than the previous implementation.
-
-In this test, we compare the wall-clock time spent on the deconvolution algorithm. The time we measure here does not include the Major cycle. For the parallel coordinate descent algorithm, this means we also measure the time spent in the 'Minor' cycle for the parallel coordinate descent algorithm (which was excluded in the previous tests).
-
-We use the same hardware as in the tests of Section \ref{results:LMC}. The table \ref{pcdm:comp:table} shows the comparison between the serial and parallel coordinate descent algorithm. The parallel coordinate descent algorithm achieved a speedup factor of roughly $20$. While the serial coordinate descent algorithm takes over 20 minutes to deconvolve the image, the parallel coordinate descent algorithm takes less than two minutes in total.
-%hardware
-
-\begin{table} [h]
-	\centering
-	\begin{tabular}{c | c | r | r | c}
-		Algorithm &  $PSF$  & Major Cycles & Total Seconds in Deconvolution & Speedup factor\\ \hline
-		Serial CD & $\frac{1}{16}$ & 4 & 1486 & --\\
-		Parallel CD & $\frac{1}{32}$ & 5 & 75 & $\approx 20$ \\
-	\end{tabular}
-	\caption{Speedup comparison of the serial and parallel coordinate descent algorithm. Both algorithms were compared on an Intel Xeon E3-1505M with 8 logical cores.}
-	\label{pcdm:comp:table}
-\end{table}
-
-This parallel coordinate descent implementation is even faster than the implementation tested in the previous Section \ref{pcdm:results}. This implementation is simpler because it does not account for different block sizes. Each processor deconvolves a single pixel in parallel. The simplification leads to another decrease in wall-clock time.
-
-The total deconvolution time of the parallel coordinate descent algorithm is in the range of the CLEAN algorithm. An exact comparison was not possible in this project. We did not implement the CLEAN algorithm in our .Net Core pipeline. However, the serial coordinate descent algorithm has an almost identical structure to the standard CLEAN algorithm, and we use this fact to get a rough comparison to CLEAN: The multi-scale CLEAN algorithm required 15'000 iterations to converge on the LMC observation. 15'000 serial coordinate descent iterations on the same hardware take approximately 230 seconds, which is more than the parallel coordinate descent algorithm needed.
-
-The serial coordinate descent algorithm is significantly slower than the parallel algorithm. However, it requires one major cycle less than the parallel algorithm to arrive at a similar reconstruction. The Figure \ref{pcdm:comparison:figure} compares the reconstruction of the two algorithms of the LMC observation.
-
-\begin{figure}[h]
-	\centering
-	\begin{subfigure}{0.45\linewidth}
-		\centering
-		Serial CD
-		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/comparison/SerialCD-N132.png}
-	\end{subfigure}
-	\begin{subfigure}{0.45\linewidth}
-		\centering
-		Parallel CD
-		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/comparison/SerialCD-N132.png}
-	\end{subfigure}
-	\\
-	\begin{subfigure}{0.45\linewidth}
-		\centering
-		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/comparison/SerialCD-Calibration2.png}
-	\end{subfigure}
-	\begin{subfigure}{0.45\linewidth}
-		\centering
-		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/comparison/PCDM-Calibration.png}
-	\end{subfigure}
-
-	\caption{Comparison of the serial and parallel coordinate descent reconstruction of the LMC observation.}
-	\label{pcdm:comparison:figure}
-\end{figure}
-
-Both algorithms arrive at the same reconstruction. Both can super-resolve the N132D supernova-remnant, and have artifacts due to calibration errors. But the serial coordinate descent algorithm has left artifacts from the previous major cycles in the reconstruction: The red rectangle highlights a structure, which was added in a previous major cycle with the implicit path regularization. In a previous major cycle, only the highlighted structure was added. The next major cycle then added all the surrounding structure, including the "waves" from the calibration error. But the serial coordinate descent algorithm did not have enough iterations to properly integrate the old structure from the previous major cycle, leaving a "ghost" structure behind.
-
-The serial coordinate descent can correct the artifact, but it either needs more iterations, or even another major cycle. In either case the serial coordinate descent algorithm needs more computing resources.
-
-The parallel coordinate descent algorithm on the other hand does not contain the "ghost" structure. In a previous major cycle, the parallel algorithm has added a similar structure, but it was able to properly integrate it in the final reconstruction. We suspect this difference is due to the different number of pixels minimized: The reconstruction of the parallel algorithm is the result of roughly half a million single pixel minimizations, while the serial algorithm was had performed roughly 100 thousand single pixel minimizations. The parallel algorithm had more iterations to integrate the structures detected from previous cycles.
-
-Overall the reconstruction of the serial and parallel coordinate descent algorithms are similar. On the LMC dataset, the parallel algorithm was able to reconstruct a slightly superior reconstruction within a fraction of the total run time of the serial algorithm.
-
-
-\subsection{Scalability of the parallel coordinate descent algorithm}\label{pcdm:scale}
-The parallel coordinate descent algorithm out-performs the serial algorithm significantly on personal computing hardware. Lastly, we want to investigate how the parallel algorithm behaves when we increase the number of asynchronous processors.
-
-Our parallel coordinate descent algorithm is based on PCDM\cite{richtarik2016parallel}. PCDM has been extended for the distributed setting as Hydra\cite{richtarik2016distributed}, and in its accelerated variant as Hydra$^2$\cite{fercoq2014fast}. Extending our parallel coordinate descent algorithm to the distributed setting was not possible in the time frame of this project. But if the parallel algorithm should be distributed in the future, we can apply the methods developed for Hydra and Hydra$^2$.
-
-We test the parallel coordinate descent algorithm on a shared memory system (all processors have access to the same main memory), and test how the algorithm behaves for larger number of processors. Figure \ref{pcdm:scalability:proc} shows the results. The first graph shows the total speedup, the second plot shows the total number of iterations needed, and the last plot shows the ESO for increasing number of processors.
-
-\begin{figure}
-	\centering
-	\begin{subfigure}{0.30\linewidth}
-		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/scalability/speedup_pcdm_time.png}
-	\end{subfigure}
-	\begin{subfigure}{0.30\linewidth}
-		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/scalability/speedup_pcdm_iter.png}
-	\end{subfigure}
-	\begin{subfigure}{0.30\linewidth}
-		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/scalability/speedup_pcdm_eso.png}
-	\end{subfigure}
-	\caption{Speedup comparison with increasing number of asynchronous processors.}
-	\label{pcdm:scalability:proc}
-\end{figure}
-
-We see a linear speedup up to 8 processors. But afterwards, the speedup we receive diminishes quickly. After 16 processors, the parallel coordinate descent algorithm even becomes slower when more processors are added. The reason for this behavior lies in the total number of iterations the parallel algorithm needs to reconstruct a solution. As we see in Figure \ref{pcdm:scalability:proc} needs over 3 million parallel iterations to converge with 32 asynchronous processors. With 8 processors, it about half a million iterations to converge.
-
-This drastic increase in total iterations quickly diminishes the speedup we receive by adding more asynchronous processors. This is partly due to the increase in the ESO: Adding more asynchronous processors increases the ESO, which in turn reduces the step size by which we can minimize a pixel in each iteration. However, we suspect there are more effects at play than just the ESO. The ESO for the number of processors is also shown in Figure \ref{pcdm:scalability:proc} does not increase as drastic as the total number of iterations needed. 
-
-\begin{table} [h]
-	\centering
-		\begin{tabular}{c | r }
-			Processors & Iterations per second \\ \hline
-			1 & 1061.7 \\
-			4 & 3849.7 \\
-			8 & 9254.9 \\
-			16 & 16'721.9 \\
-			32 & 32'794.6 \\
-		\end{tabular}
-	\caption{Throughput of the parallel coordinate descent algorithms with additional processors.}
-	\label{pcdm:scalability:throughput}
-\end{table}
-
-When we look at the throughput of the parallel coordinate descent algorithm in table \ref{pcdm:scalability:throughput}, we see that the number of iterations per second still increases roughly linearly with the number of asynchronous processors. If the parallel algorithm gets slowed down because of communication costs between processors (for example: multiple compare-exchange operations on the same entry in the gradient map), we would see a less-than-linear increase in throughput per added processor. Meaning the slowdown we see in Figure \ref{pcdm:scalability:proc} is likely not due to communication costs, but due to the drastic increase in total number of iterations.
-
-Remember that the parallel coordinate descent algorithm uses active set iterations: Each asynchronous processor chooses pixels from the active set for a given number of iterations. When we measure the absolute maximum pixel difference (the maximum step a serial greedy coordinate descent algorithm can take in one iteration) for 8 processors, we observe that it steadily decreases from one active set iteration to the next. At 32 processors, the absolute maximum pixel difference fluctuates from one active set iteration to the next.
-
-This observation leads us to the ESO and our pseudo-random selection strategy: We may see the fluctuation, because we do not choose pixels uniformly at random, and their $PSF$s overlap more than we estimated with the ESO. In that case, the algorithm is in the danger of diverging, which would explain the fluctuation. The solution in that case would be to increase the ESO.
-
-On the other hand, this fluctuation can also be observed with a proper random selection strategy. The second explanation is that with increasing number of processors, a single processor is simply too close to a random selection strategy. Remember: Our pseudo-random strategy greedily searches a fraction of the active set. With an active set of 1024 entries, 32 processors and a search fraction of 0.1, each processor searches 10\% of $\frac{1024}{32}$ entries. By adding more processors, each processor searches through fewer entries, although the total number of entries searched stays the same. The solution in that case would be to increase the Search Fraction.
-
-We tested these two explanations: We ran the parallel coordinate descent algorithm once with an increased ESO (the ESO which arises from 64 processors) and once with an increased Search Fraction. The results are summarized in Table \ref{pcdm:scalability:table}.
-
-\begin{table} [h]
-	\centering
-	\begin{tabular}{c | r | r | r | r | r | c}
-		Test & Processors &  ESO & Search Fraction & \# Iterations & Total Seconds & Speedup\\ \hline \hline
-		Standard & 16 & 1.058 & 0.1 &  868k & 51 & 4.5\\\hline
-		Standard & 32 & 1.121 & 0.1 & 3'213k & 98 & 2.4\\
-		Larger ESO & 32 &  1.246 & 0.1 & 4'220k & 130 & 1.8 \\
-		Larger Search & 32 &  1.121 & 0.4 & 1'171k & 47 & \textbf{5.0} \\
-	\end{tabular}
-	\caption{Speedup comparison for the parallel coordinate descent algorithm, once with increased ESO and once with increased Search Fraction.}
-	\label{pcdm:scalability:table}
-\end{table}
-
-Increasing the Search Fraction lead to a significant decrease in total iterations, which in turn leads to a significant decrease in the wall-clock time, leading to a speedup factor of 5. This means, with a larger Search Factor, the parallel coordinate descent algorithm is again faster with 32 processors instead of 16, and it would remove the 'dip' in Figure \ref{pcdm:scalability:proc}. Noteworthy is that increasing the ESO in our parallel algorithm again lead to an increase in total number of iterations. This result suggests the ESO was not too low, and was not at fault for the slowdown we measured in Figure \ref{pcdm:scalability:proc}. 
-
-Nevertheless, these results are still surprising to us. As we mentioned before, whether we use 1 processor or 16 in our parallel coordinate descent algorithm, we still search the same number of elements in the active set. For a Search Fraction of 0.1, the algorithm always searches 10\% for every parallel iteration. Adding more processors simply reduces the number of elements each processor checks. The results from Table \ref{pcdm:scalability:table} suggests that each processor in our parallel algorithm has to search through a minimum number of elements in the active set to run efficiently. But this view does not agree with our results from Figure \ref{pcdm:results:search}, where we used 8 processors and a Search Fraction of 0.01. Each of the 8 processors searched through fewer elements than in this test with 32 processors and a Search Fraction of 0.1. But with 8 processors, it did not lead to a large increase in wall-clock time.
-
-It is not clear why exactly our parallel coordinate descent algorithm needs so many more iterations to converge with 32 processors, or why increasing the Search Fraction can remedy the problem. But the total number of iterations needed to converge seem to be the bottleneck for this algorithm. A thorough analysis may lead to a variant of our algorithm which needs fewer iterations to converge and therefore may be even faster. In the time frame of this project, it was not possible to further analyze the behavior.

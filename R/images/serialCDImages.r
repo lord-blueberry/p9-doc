@@ -43,6 +43,7 @@ data <- read.table(paste(inputFolder, "CD-Calibration.csv", sep=""), sep=";", he
 data$x <- (data$x - min(data$x)) * 1.5 / 60.0
 data$y <- (data$y - min(data$y)) * 1.5 / 60.0
 limit <- 0.0005
+negLimit <- -0.00001
 data$intensity[data$intensity > limit] = limit
 png(paste(outputfolder, "CD-Calibration.png", sep=""),
     width = 6.0,
@@ -51,7 +52,7 @@ png(paste(outputfolder, "CD-Calibration.png", sep=""),
     res = 200)
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
-  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.5), name="Jansky/Beam") +
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.5), name="Jansky/Beam", limits=c(negLimit, limit)) +
   xlab("Ascension (arc seconds)") +
   ylab("Declination (arc seconds)")
 dev.off()

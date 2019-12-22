@@ -106,8 +106,8 @@ dev.off()
 data <- read.table(paste(inputFolder, "Natural-N132.csv", sep=""), sep=";", header=TRUE, dec=",")
 data$x <- (data$x - min(data$x)) * 1.5 / 60.0
 data$y <- (data$y - min(data$y)) * 1.5 / 60.0
-negLimit <- -0.00001
-data$intensity[data$intensity < negLimit] = negLimit
+#negLimit <- -0.00001
+#data$intensity[data$intensity < negLimit] = negLimit
 png(paste(outputfolder, "Natural-N132.png", sep=""),
     width = 6.0,
     height = 4.50,
