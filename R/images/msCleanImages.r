@@ -159,8 +159,8 @@ data <- read.table(paste(inputFolder, "Natural-image-Calibration.csv", sep=""), 
 data$x <- (data$x - min(data$x)) * 1.5 / 60.0
 data$y <- (data$y - min(data$y)) * 1.5 / 60.0
 maximum <- 0.3406
-negLimit <- -0.00001
-data$intensity[data$intensity < negLimit] = negLimit
+minimum <- -0.001588
+#data$intensity[data$intensity < negLimit] = negLimit
 png(paste(outputfolder, "Natural-image-Calibration.png", sep=""),
     width = 6.0,
     height = 4.50,
@@ -168,7 +168,7 @@ png(paste(outputfolder, "Natural-image-Calibration.png", sep=""),
     res = 200)
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
-  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.50, hue = 1.0, gamma = 0.5), name="Jansky/Beam", limit = c(negLimit, maximum)) +
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.50, hue = 1.0, gamma = 0.5), name="Jansky/Beam", limit = c(minimum, maximum)) +
   xlab("Ascension (arc seconds)") +
   ylab("Declination (arc seconds)")
 dev.off()

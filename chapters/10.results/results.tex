@@ -178,15 +178,23 @@ The model image of the coordinate descent reconstruction closely resembles the s
 	\centering
 	\begin{subfigure}[b]{1.0\linewidth}
 		\centering
-		\includegraphics[width=0.45\linewidth]{./chapters/10.results/MSClean/Natural-Calibration.png}
-		\includegraphics[width=0.45\linewidth]{./chapters/10.results/MSClean/Natural-image-Calibration.png}
+		\begin{subfigure}{0.45\linewidth}
+			\centering
+			\textbf{Model image}
+			\includegraphics[width=1.00\linewidth]{./chapters/10.results/MSClean/Natural-Calibration.png}
+		\end{subfigure}
+		\begin{subfigure}{0.45\linewidth}
+			\centering
+			\textbf{Restored image}
+			\includegraphics[width=1.00\linewidth]{./chapters/10.results/MSClean/Natural-image-Calibration.png}
+		\end{subfigure}
 		\caption{Multi-scale CLEAN}
 	\end{subfigure}
 	\begin{subfigure}[b]{1.0\linewidth}
 		\centering
 		\includegraphics[width=0.45\linewidth]{./chapters/10.results/SerialCD/CD-Calibration.png}
 		\includegraphics[width=0.45\linewidth]{./chapters/10.results/SerialCD/CD-image-Calibration.png}
-		\caption{Coordinate Descent}
+		\caption{Coordinate Descent with elastic net.}
 	\end{subfigure}
 	\begin{subfigure}[b]{1.0\linewidth}
 		\centering
@@ -202,57 +210,47 @@ In this section, we compare the model and restored images of an area influenced 
 
 The multi-scale CLEAN and MORESANE model images contain significant negative pixel values in this section of the reconstruction. For a reasonable comparison, we had to clip the negative values, which are now shown as black pixels in the model images. Due to the bright point source in the image, we also clipped the maximum positive value for all model images.
 
-For this section, the restored images
+The model image of Multi-scale CLEAN contains a straight-forward representation of the two extended emissions. Significant negative pixels are placed around the extended emissions. The point source contains several 'rings' of negative and positive pixels, related to the calibration errors. The serial coordinate descent algorithm is forbidden to use negative pixels. The calibration errors result in a 'smearing' of the point source in the horizontal directions. The two extended emissions also get influenced by the calibration errors with coordinate descent. MORESANE on the other hand misses large parts of the left-hand-side extended emission. The point source in the image is reconstructed similar to multi-scale CLEAN, containing rings of significant negative pixels.
 
-The model image of Multi-scale CLEAN contains a straight-forward representation of the two extended emissions. Significant negative pixels are placed around the extended emissions. The point source contains several 'rings' of negative and positive pixels, related to the calibration
+These differences in the model images also result in variations of the restored image. The multi-scale CLEAN restored image contains several areas of negative emission. The coordinate descent restored image does not contain any negative pixels. The two extended emissions are also similar in shape and pixel value to multi-scale CLEAN. The restored image of MORESANE is missing parts of the extended emission.
 
-T
-
-
-We now compare sections of the briggs-weighted multi-scale CLEAN with our naturally weighted serial coordinate descent algorithm. We compare the reconstruction of the N132D supernova-remnant in Figure \ref{results:cleancomp::N132:figure}. For comparison, we also included the naturally weighted mutli-scale CLEAN reconstruction in Figure \ref{results:N132:clean}. With natural weighting, multi-scale CLEAN reconstructs N132D as a Gaussian blob. Serial coordinate descent on the other hand is able to find structures inside the remnant with the same $PSF$, shown in Figure \ref{results:comp:N132:cd}. These are plausible super-resolved structures. They are also detected with briggs-weighted multi-scale CLEAN, shown in Figure \ref{results:N132:cleanbriggs}. But mutli-scale CLEAN needs briggs-weighting to reconstruct the smaller structures. As we mentioned, briggs-weighting leads to a more concentrated $PSF$.
-
-
+\newpage
 
 \begin{figure}[h]
 	\centering
-	\begin{subfigure}[b]{0.45\linewidth}
-		\includegraphics[width=1.00\linewidth]{./chapters/10.results/MSClean/Briggs-Calibration.png}
-		\caption{Briggs CLEAN}
-	\end{subfigure}
-	\begin{subfigure}[b]{0.45\linewidth}
+	\begin{subfigure}[b]{0.3\linewidth}
 		\includegraphics[width=1.00\linewidth]{./chapters/10.results/SerialCD/CD-Calibration.png}
 		\caption{Coordinate Descent}
 	\end{subfigure}
-	\caption{Influence of calibration errors}
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=1.00\linewidth]{./chapters/10.results/iuwt/iuwt-Calibration.png}
+		\caption{IUWT}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.3\linewidth}
+		\includegraphics[width=1.00\linewidth]{./chapters/10.results/MSClean/Briggs-Calibration.png}
+		\caption{Briggs CLEAN}
+	\end{subfigure}
+
+	\caption{Comparison to briggs-weighted multi-scale CLEAN as Ground Truth.}
 	\label{results:cleancomp::calib:figure}
 \end{figure}
 
-If we compare the reconstruction algorithm on areas with calibration errors, we clearly see that it negatively influences the reconstruction of serial coordinate descent. Figure \ref{results:cleancomp::calib:figure} shows a cutout of the right hand section of the reconstruction, where a faint extended emission is next to a point source with calibration errors. Multi-scale CLEAN is able to differentiate between the 'ripples' from the calibration error, and the extended emission. Coordinate descent with the elastic net regularization includes the ripples into the reconstructed image. 
+Lastly, we again compare the model images of coordinate descent and MORESANE (IUWT) with the restored image of briggs-weighted multi-scale CLEAN. The briggs-weighted restored image has reconstructed more details in the two extended emissions. The left-hand-side emission contains two point sources at its border, while the right-hand-side emission contains a crescent. The model image of the coordinate descent algorithm has detected structures of the crescent, but has missed the two point sources. MORESANE did detected the point sources and the crescent in the extended emission, but did miss large parts of the actual emission.
 
-The easiest way to exclude the calibration ripples from the reconstruction is to increase the regularization parameter $\lambda$, such as no pixel gets included which is not above the noise level + calibration error in the image. However, that would lead to other sources being "regularized away" in other regions of the image, which do not have a severe calibration error close by. 
+Overall, serial coordinate descent with elastic net regularization has produced a restored image with similar structures to multi-scale CLEAN on the same observation. Coordinate descent has left a residual image with a higher pixel magnitudes than CLEAN. This can be improved by adding a similar auto-masking strategy to serial coordinate descent. The model images resulting from the elastic net regularization is more plausible than multi-scale CLEAN on this observation. It has produced a plausible super-resolution of the N132D supernova-remnant, and has found other plausible structures in extended emissions. However, its model image also seems to be more susceptible to calibration errors. 
 
+The MORESANE algorithm was reported to generally produce higher-quality reconstructions than multi-scale CLEAN, while also needing more computing resources \cite{dabbech2015moresane, offringa2017optimized}. In our test, multi-scale CLEAN has produced a higher quality reconstruction. MORESANE has various tuning parameters which influence the reconstruction quality. It is possible that we used sub-optimal parameters for the reconstruction. We modified several parameters of the MORESANE algorithm, but could not improve the results reported here.
 
-T
+The WSCLEAN software package has an option for multi-scale CLEAN, which forces the model image to be non-negative. However, we have not compared those results to the serial coordinate descent reconstruction. This option has lead multi-scale CLEAN to an overall worse reconstruction, with higher pixel magnitudes in the residual image, and longer wall-clock time. With our tuning parameter setting, it required more than twice the number of Major cycles than previous (14 Major cycles compared to 6).
 
-We use the WSCLEAN \cite{offringa2014wsclean} implementation of multi-scale CLEAN algorithm. We compare our coordinate descent reconstruction with two CLEAN reconstructions, oe with naturally weighted visibilities and one with briggs-weighted visibilities.
+The serial coordinate descent algorithm needed more computing resources than multi-scale CLEAN. The main difference is in the number of Minor cycles: Multi-scale CLEAN needed overall 14 thousand iterations, while serial coordinate descent needed 100 thousand iterations. The number of Major cycles was similar for both algorithms: Multi-scale CLEAN converged within 6 Major cycles, and serial coordinate descent within 5. Note that the number of Major cycles of the two algorithms is only roughly comparable. In this project, we use a different gridder than WSCLEAN, and we have not ensured our stopping criterion is identical to WSCLEAN. 
 
+We now test how we can speed-up first serial coordinate descent, and then parallel coordinate descent to beat multi-scale CLEAN in terms of reconstruction time.
 
+%Figure \ref{results:cleancomp:figure} shows the reconstruction of both briggs-weighted multi-scale CLEAN and the naturally weighted coordinate descent reconstruction. We used a regularization parameter of $\lambda = 1.0 * Lipschitz$ and $\alpha = 0.01$. The elastic net regularization is biased heavily towards the L2 norm. We stopped the serial coordinate descent if every possible pixel change is below $\epsilon = 1e^{-5}$. We use these parameters for the whole project unless we specify otherwise.
 
-Figure \ref{results:cleancomp:figure} shows the reconstruction of both briggs-weighted multi-scale CLEAN and the naturally weighted coordinate descent reconstruction. We used a regularization parameter of $\lambda = 1.0 * Lipschitz$ and $\alpha = 0.01$. The elastic net regularization is biased heavily towards the L2 norm. We stopped the serial coordinate descent if every possible pixel change is below $\epsilon = 1e^{-5}$. We use these parameters for the whole project unless we specify otherwise.
+%Multi-scale reconstructed its image within 6 Major and 14 thousand Minor cycle iterations. Our serial coordinate descent algorithm converged after 5 Major cycles and used 100 thousand iterations to converge. Our algorithm required roughly 8 times more iterations. It took a total of 35 minutes to reconstruct an image on an Intel Xeon E3-1505M with 8 logical cores. On this data set, our algorithm used one Major cycle less than multi-scale CLEAN. However, the number of Major cycles is not directly comparable. We do not use the identical criteria to initiate another Major cycle: At the beginning of each deconvolution, we check the maximum pixel difference. If it is below $\epsilon_{major} = 1e^{-4}$, we stop the reconstruction. We have not compared our stopping criterion to WSCLEAN. As such, the number of Major cycles are only a rough comparison. Our serial coordinate descent uses a similar number of Major cycles as multi-scale CLEAN.
 
-Multi-scale reconstructed its image within 6 Major and 14 thousand Minor cycle iterations. Our serial coordinate descent algorithm converged after 5 Major cycles and used 100 thousand iterations to converge. Our algorithm required roughly 8 times more iterations. It took a total of 35 minutes to reconstruct an image on an Intel Xeon E3-1505M with 8 logical cores. On this data set, our algorithm used one Major cycle less than multi-scale CLEAN. However, the number of Major cycles is not directly comparable. We do not use the identical criteria to initiate another Major cycle: At the beginning of each deconvolution, we check the maximum pixel difference. If it is below $\epsilon_{major} = 1e^{-4}$, we stop the reconstruction. We have not compared our stopping criterion to WSCLEAN. As such, the number of Major cycles are only a rough comparison. Our serial coordinate descent uses a similar number of Major cycles as multi-scale CLEAN.
-
-Both algorithms detect the three extended emissions at the right side of the image. They detect various point sources at the same location. Coordinate descent and multi-scale CLEAN arrive at a roughly similar result. Coordinate descent detects similar structures in the N132D supernova remnant, as the briggs-weighted CLEAN, but also includes calibration errors in its reconstruction of the faint extended emissions.
-
-
-
-
-T
-
-Coordinate descent restored image between MSCLEAN and moresane. Could be improved with auto-masking strategy just like the other two.
-More plausible model image than ms-CLEAN. currently needs more computing resources. Comparison of Major cycle and minor cycles.
-
-Multi-scale CLEAN can also be reconstructed with no-negative entries in the model image. But is vastly more expensive in computing resources. 16 Major cycles.
 
 
 \subsection{Serial coordinate descent speedup with MPI or GPU}\label{results:speedup}
@@ -283,7 +281,7 @@ We do not have a CLEAN implementation in our .Net Core pipeline. However, we men
 Overall the serial coordinate descent algorithm with GPU acceleration is still several factors slower than CLEAN. The speedup we achieve with MPI is significant. But because serial coordinate descent and CLEAN have such a similar structure, we can expect a similar speedup with a CLEAN-MPI implementation. We need another method to speed up our deconvolution algorithm.
 
 
-\subsection{Serial coordinate descent with an approximate $PSF$} \label{results:gradients}
+\subsection{$PSF$ approximation with serial coordinate descent} \label{results:gradients}
 In this section, we test our main hypothesis on the MeerKAT LMC data: The Major cycle allows us to use an approximation of the true $PSF$ in Minor cycle. We believe this can be exploited. We may be able to use a fraction of the true $PSF$ in the serial coordinate descent algorithm, potentially speeding up the deconvolution and simplifying distribution.
 
 An example of the $PSF$ approximation is shown Figure \ref{results:gradients:clark}. Instead of the full $PSF$, we use a window around the center of the $PSF$. The sides of the window are a fraction of the full $PSF$.
@@ -321,7 +319,7 @@ To test the convergence behaviour, we calculate the objective value of the curre
 		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/ApproxUpdate/speedup_total.png}
 	\end{subfigure}
 	
-	\caption{Convergence of the approx. update.}
+	\caption{Convergence of the approximate update method.}
 	\label{results:gradients:update}
 \end{figure}
 
@@ -345,7 +343,7 @@ As described in Section \ref{gradients:methods:deconv}, this approximation metho
 		\includegraphics[width=\linewidth]{./chapters/10.results/gradient/ApproxDeconv/speedup_total.png}
 	\end{subfigure}
 	
-	\caption{Effect of the L1 and L2 Norm separately.}
+	\caption{Convergence of the approximate deconvolution method.}
 	\label{results:gradients:aproxDeconv}
 \end{figure}
 
@@ -378,26 +376,6 @@ The approximation method 2, approximate deconvolution, leads to a systematic und
 Combining the two approximation methods leads to a total speedup with a $PSF$ window of $\frac{1}{16}$. The combined approximation method achieves a larger speedup than method 1 or method 2 on the same $PSF$ window size. We suspect the error each approximation method introduces is uncorrelated. Meaning the error we introduce with approximation method 2 can be efficiently corrected with approximation method 1, which leads to a higher total speedup.
 
 
-\begin{figure}[h]
-	\centering
-	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=1.00\linewidth]{./chapters/10.results/cleancomp/n132_cd.png}
-		\\
-		\includegraphics[width=1.00\linewidth]{./chapters/10.results/cleancomp/cd_calibration.png}
-		\caption{Original CD}
-	\end{subfigure}
-	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=1.00\linewidth]{./chapters/10.results/gradient/combined/combined_n132d.png}
-		\\
-		\includegraphics[width=1.00\linewidth]{./chapters/10.results/gradient/combined/combined_calibration.png}
-		\caption{Combined approximation}
-	\end{subfigure}
-
-	\caption{Image comparison to approximation}
-	\label{results:gradients:comparison:image}
-\end{figure}
-
-Figure \ref{results:gradients:comparison:image} compares the original result with the result of the combined approximation. Virtually identical. Same problem with calibration. Only visual difference in the extended emission with calibration errors. 
 
 
 
@@ -425,12 +403,7 @@ Figure \ref{results:gradients:comparison:image} compares the original result wit
 
 
 
-
-
-
-
-
-\subsection{Tests on the LMC Observation}\label{pcdm:results}
+\subsection{Approximate gradient method with parallel coordinate descent}\label{pcdm:results}
 We have shown the parallel coordinate descent algorithm in two variants: With gradient acceleration and without. We developed several heuristics, which includes a set of tuning parameters. In this section, we test our parallel coordinate descent algorithm on the MeerKAT LMC observation. We test the tuning parameters, and show how much our algorithm benefits from the $PSF$ approximation method.
 
 In this test, we measure the wall-clock time of only the deconvolution. The wall-clock time of the Major- and 'Minor' cycle are excluded. Again, we calculate the value of the objective function. We compare different parameters of our parallel coordinate descent algorithm, trying to get the shortest convergence time.
