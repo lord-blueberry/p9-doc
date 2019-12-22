@@ -52,7 +52,7 @@
 \BOOKMARK [3][-]{subsubsection.7.3.1}{Method 1: Approximate update}{subsection.7.3}% 52
 \BOOKMARK [3][-]{subsubsection.7.3.2}{Method 2: Approximate deconvolution}{subsection.7.3}% 53
 \BOOKMARK [3][-]{subsubsection.7.3.3}{Combination of Method 1 and 2}{subsection.7.3}% 54
-\BOOKMARK [2][-]{subsection.7.4}{Approximate gradient method with parallel coordinate descent}{section.7}% 55
+\BOOKMARK [2][-]{subsection.7.4}{PSF approimation with parallel coordinate descent}{section.7}% 55
 \BOOKMARK [3][-]{subsubsection.7.4.1}{PSF approximation}{subsection.7.4}% 56
 \BOOKMARK [3][-]{subsubsection.7.4.2}{Block size}{subsection.7.4}% 57
 \BOOKMARK [3][-]{subsubsection.7.4.3}{Pseudo-random strategy and the Search Fraction}{subsection.7.4}% 58
