@@ -1,18 +1,37 @@
 \section{Discussion}\label{discussion}
-In this project, we developed a novel $PSF$ approximation scheme. It leverages the fact that large parts of the $PSF$ from modern interferometers are close to zero, and we can approximate the true $PSF$ with a sparse approximation. We then developed a parallel coordinate descent deconvolution algorithm that benefits from a sparse $PSF$. In our test, it achieved a speedup factor of 20 compared to the serial coordinate descent deconvolution algorithm.
+In this project, we developed a novel $PSF$ approximation scheme. It leverages the fact that large parts of the $PSF$ from modern interferometers are close to zero, and we can use a sparse approximation of the true $PSF$. We then developed a parallel coordinate descent deconvolution algorithm that benefits from a sparse $PSF$. In our test, it achieved a speedup factor of 20 compared to the serial coordinate descent deconvolution algorithm, and an estimated speedup of factor 3 to CLEAN.
 
 T
 
-Faster than CLEAN. And it scales. Minimum $PSF$ size is based on the resolution, and we can add more processors efficiently for a larger field of view.
-Question whether this is necessary.
-Self-calibration regime: The ionosphere influences different parts of the image. This naturally splits a wide-field of view image into facets. How large are the images.
-The parallel coordinate descent algorithm is based on PCDM \cite{richtarik2016parallel}. Adaptions necessary to make the algorithm efficient on the deconvolution problem. Our implemenmtation is not distributed. PCDM can be extended to the distributed setting with Hydra. We can use the same extension to distribute our algorithm.
-Our parallel algorithm is competitive, if the $PSF$ is concentrated around the center. This is true for MeerKAT. Maybe not for LOFAR.
+Our parallel coordinate descent algorithm is based on the APPROX\cite{fercoq2015accelerated}, which was extended to a distributed setting developed in \cite{fercoqfast}. In our project, we created a shared-memory implementation of the parallel coordinate descent algorithm. The same extension can be used to extend our parallel coordinate descent algorithm to a distributed setting. Distributing the parallel deconvolution algorithm is useful, if the whole image cannot be kept within the main memory of a single machine. However, it is not clear whether this is necessary.
 
-ElasticNEt
-Our serial and parallel coordinate descent algorithms use the elastic net regularization.
-Similar behavior, our algorithms created plausible super-resolved structures. However, they also were more susceptible to calibration errors.
-This is what we expected \cite{offringa2017optimized}. Same behavior as other deconvolution algorithm based on convex optimization, which use different regularizations.
+In the self-calibration setting, intermediate solutions of the deconvolution are used to improve the calibration of the visibility measurements. New self-calibration methods account for distortions introduced by the Ionosphere, which change over the the image. This naturally splits the image into smaller facets, where each facet is deconvolved independently\cite{van2016lofar}. The total number and size of each facet depends on the objects in the observation, the science target and the radio interferometer itself. To our knowledge, it is currently not clear how large one can expect a facet to be.
+
+The wall-clock time of our parallel coordinate descent algorithm scales with the size difference of the approximate $PSF$ and the total image size. In our tests, the parallel algorithm converged with an approximate $PSF$ which was $\frac{1}{32}$ of the total image size. If the image is split into smaller facets, then the size difference between the approximate $PSF$ and the facet is significantly smaller. Our parallel coordinate descent algorithm can still be used. If the approximate $PSF$ is larger than the facet, it may not be able to use all available processors effectively.
+
+More effective with more concentrated $PSF$s.
+With more data and larger baselines, we arrive at a $PSF$ which approximately Gaussian.
+Works well for instruments like MeerKAT. also possible for future expansions, SKA-MID. 
+
+
+
+%Our approximation used a window in the center of the $PSF$. Our parallel coordinate descent algorithm benefits from a smaller $PSF$ window. In our tests on a real-world MeerKAT observations, the parallel coordinate descent algorithm converged with window, where each side was $\frac{1}{32}$ of the total $PSF$ size. The $PSF$ window size is likely independent of the total image size. Meaning if we increase the field-of-view of the reconstruction, the approximated $PSF$ stays the same size. This in turn leads to faster parallel iterations, and can use more processors more efficiently.
+
+Our serial and parallel coordinate descent algorithms used the elastic net regularization. It is a mixture between the L1- and L2-norms. On our test, the elastic net regularization lead to restored images which were comparable to state-of-the-art deconvolution algorithms like multi-scale CLEAN and MORESANE. The model images of the serial and parallel coordinate descent algorithms contained plausible structures, potentially super-resolving the N132D supernova-remnant. However, the model images of serial and parallel coordinate descent algorithms also seemed more susceptible towards calibration errors. This seems to be a general behavior of deconvolution algorithms based on convex optimization\footnote{In this project, we optimized a convex objective function ($\underset{x}{minimize} \: \frac{1}{2} \left \| I_{dirty} - x * PSF \right \|_2^2 + \lambda ElasticNet(x)$). CLEAN does optimizes a non-convex objective function, and is a is a non-convex optimization method.} \cite{offringa2017optimized}.
+
+To our knowledge, there is currently little interest in elastic net as a regularization for radio interferometric imaging. Our results suggests elastic net may be an alternative to multi-scale CLEAN in terms of reconstruction quality, and for our parallel coordinate descent algorithm, also in terms of wall-clock time. Currently, the multi-scale CLEAN algorithm produces a residual image with lower pixel magnitudes, than our serial or parallel coordinate descent algorithm. Our algorithms leave a part of the true emission inside the residual image. This is at least in part due to the auto-masking strategies used in multi-scale CLEAN: After a certain number of iterations, multi-scale CLEAN is only allowed to change non-zero pixels in the model image. It is forbidden to add new sources to the model. An auto-masking strategy can also be implemented for serial and parallel coordinate descent.
+
+%$\lambda$ parameter so far was leftto the user. Auto-thresholding may be used to estimate it.
+
+
+May be improved with more strategies often used in Radio Interferometric imaging, like auto-masking.
+
+First to use elastic net regularization. Simple model for extended emissions which has worked for a real-world MeerKAT observation.
+Doe not need multi-scale stuff from CLEAN. 
+Multi-scale CLEAN is slower than CLEAN.
+
+
+
 
 Comparison of elasticNEt
 Two regularizations are often used in radio astronomy: Starlets \cite{starck2015starlet} and Daubechies wavelets\cite{carrillo2014purify}. Both have been shown to produce super-resolved reconstruction in radio astronomy\cite{dabbech2015moresane, dabbech2018cygnus}. Elastic net is fairly simple. It is not known how elastic net now compares to the more complex regularization.

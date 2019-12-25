@@ -150,7 +150,7 @@ png(paste(outputfolder, "Natural-Calibration.png", sep=""),
     res = 200)
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
-  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.50, hue = 1.0, gamma = 0.5), name="Jansky/Beam") +
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.50, hue = 1.0, gamma = 0.5), limits=c(negLimit, limit), name="Jansky/Beam") +
   xlab("Ascension (arc seconds)") +
   ylab("Declination (arc seconds)")
 dev.off()

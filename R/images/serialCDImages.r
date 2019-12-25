@@ -13,6 +13,7 @@ outputfolder <- "./images/output/SerialCD/"
 
 data <- read.table(paste(inputFolder, "CD-reference.csv", sep=""), sep=";", header=TRUE, dec=",")
 limit <- 0.0005
+negLimit <- -0.00001
 data$intensity[data$intensity > limit] = limit
 png(paste(outputfolder, "CD-reference.png", sep=""),
     width = 16.0,
@@ -21,7 +22,7 @@ png(paste(outputfolder, "CD-reference.png", sep=""),
     res = 200)
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
-  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.5), guide=FALSE) + 
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.5), limits=c(negLimit, limit), guide=FALSE) + 
   theme_void()
 dev.off()
 
@@ -77,6 +78,7 @@ dev.off()
 data <- read.table(paste(inputFolder, "CD-N132.csv", sep=""), sep=";", header=TRUE, dec=",")
 data$x <- (data$x - min(data$x)) * 1.5 / 60.0
 data$y <- (data$y - min(data$y)) * 1.5 / 60.0
+maximum <- 0.003016856
 png(paste(outputfolder, "CD-N132.png", sep=""),
     width = 6.0,
     height = 4.5,
@@ -84,7 +86,7 @@ png(paste(outputfolder, "CD-N132.png", sep=""),
     res = 200)
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
-  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.9), name="Jansky/Beam") +
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.9), name="Jansky/Pixel", limits=c(NA, maximum),) +
   xlab("Ascension (arc seconds)") +
   ylab("Declination (arc seconds)")
 dev.off()

@@ -222,6 +222,10 @@ After a number of CLEAN iterations, the model image contains a number of non-zer
 
 The CLEAN algorithm assumes the image contains point sources. In each iteration, it essentially adds the most-likely point source. It is a greedy algorithm, because it searches the most-likely point source in each iteration. It approximately minimizes the deconvolution objective of \eqref{radio:rec:objective}, and uses a similar regularization to the L1 norm. The regularization in CLEAN is implicit in the algorithm. In practice, CLEAN implementations use several heuristics, which makes an exact analysis of the regularization difficult.
 
+T
+
+CLEAN is a non-convex optimization
+
 \subsubsection{The Major/Minor cycle}\label{intro2:opt:cycle}
 During CLEAN deconvolutions, the algorithm assumes that the $PSF$ is constant over the image. However, this is not the case for wide field-of-view observations. The $w$-term changes the $PSF$ depending on the location in the image. CLEAN deconvolutions only approximate the true $PSF$. With more CLEAN iterations the residuals image becomes less accurate. To solve this issue, a deconvolution algorithm is used inside the Major/Minor cycle framework. 
 
