@@ -1,8 +1,41 @@
 \section{Conclusion}
 In this project, we developed our own image reconstruction pipeline in .Net Core. We implemented the Image Domain Gridder\cite{veenboer2017image} and developed two deconvolution algorithms: A serial and a parallel coordinate descent algorithm.
 
-Hypothesis
-Whether we can do an approximation and simplify the deconvolution problem.
+T
+
+A reconstruction algorithm in the Major/Minor cycle architecture is using an approximation of the true $PSF$ for deconvolution. Our hypothesis is that we can introduce further approximations for the $PSF$, which simplifies the deconvolution problem for parallel and distributed reconstruction. We created a novel $PSF$ approximation scheme for the Major/Minor cycle architecture, and implemented a parallel coordinate descent algorithm which can exploit the approximated  $PSF$ for a significant speedup. On our test, the parallel coordinate descent algorithm even outperformed standard CLEAN in convergence speed. Standard CLEAN is to this day one of the fastest reconstruction algorithms in radio astronomy.
+
+$PSF$ approximation can be more extreme with future radio interferometers. Potentially leading to an even faster parallel coordinate descent algorithm.
+
+The $PSF$ approximation does not speed up any algorithm. For the serial coordinate descent algorithm, the $PSF$ approximation did result in speedup, but not enough to compete with CLEAN on convergence speed. One needs specialized reconstruction algorithms to exploit the $PSF$ approximation we developed in this project. The parallel coordinate descent algorithm can exploit the approximate $PSF$ for a significant speedup, and can be easily extended to a distributed setting if necessary.
+
+We used the elastic net regularization. To our knowledge, it is not widely used in the radio astronomy community. On our test, it produced comparable reconstructions to multi-scale CLEAN. Reconstruction quality, comparable to multi-scale CLEAN. But also leading to more plausible structures in the model image. 
+Potentially super-resolution.
+But more problems when the image contains calibration errors.
+Elastic net has a similar behavior to other over-complete representations. But the elastic net regularization is significantly simpler, only affecting a single pixel independently of its neighbors. This simplifies parallelization and distribution of the reconstruction. 
+The parallel coordinate descent algorithm we developed can efficiently reconstruct an elastic net regularized image.
+
+How useful our parallel coordinate descent algorithm is kinda depends on the usefulness of elastic net. Its with the elastic net regularization that the parallel algorithm is as fast as standard CLEAN. In this project, we tested the elastic net regularization only on a single real-world observation.
+Elastic net has to be compared on more observations to make sure it is a useful regularization.
+
+
+Results on narrow-band imaging only. Speedup is significant, but the more difficult question is how it compares in the wide-band imaging case.
+
+
+
+
+Also, elastic net has more problems with calibration errors. 
+
+But so far it is not known how useful the elastic net regularization is on a wider range of observations.
+
+
+
+
+The parallel coordinate descent algorithm is implemented asynchronously
+
+
+ElasticNEt
+We created good results with elastic net, which is currently not really used in radio astronomy. Future task is to test it on more observations, and see if it still produces comparable reconstructions to multi-scale CLEAN
 
 It works, we developed a $PSF$ approximation scheme which introduces sparsity in the $PSF$. The parallel deconvolution algorithm can exploit the sparsity to achieve a major speedup.
 First deconvolution algorithm based on convex optimization algorithm, that is comparable to CLEAN speed.
@@ -10,8 +43,6 @@ First deconvolution algorithm based on convex optimization algorithm, that is co
 Sparsity can speed up the deconvolution problem, but it does not work for any problem. Our tests show that we need specialized algorithms that exploit sparsity. And, our results suggests, if the sparsity is not there the specialized algorithm may in fact be slower. No free lunch theorem.
 
 Very wide field of view and self calibration re-introduce facets. CLEAN is not run on the whole image, but on facets. When this is possible with CLEAN, it is certainly possible with our reconstruction algorithms.
-
-So how big the problem is is not clear. It is not CLEAR whether we actually need a distributed deconvolution algorithm, or whether large problems come with a natural way to distribute the problem.
 
 The algorithm developed here can work in both settings. Developed for a shared-memory system, and achieved a competitive runtime. It is asynchronous, and may benefit further from a GPU-accelerated implementation. Can be easily extended for the distributed setting.
 
