@@ -1,7 +1,17 @@
 \section{Discussion}\label{discussion}
-In this project, we developed a novel $PSF$ approximation scheme. It leverages the fact that large parts of the $PSF$ from modern interferometers are close to zero, and we can use a sparse approximation of the true $PSF$. We then developed a parallel coordinate descent deconvolution algorithm that benefits from a sparse $PSF$. In our test, it achieved a speedup factor of 20 compared to the serial coordinate descent deconvolution algorithm, and an estimated speedup of factor 3 to CLEAN.
+In this project, we developed a novel $PSF$ approximation scheme. It leverages the fact that large parts of the $PSF$ from modern interferometers are close to zero, and we can use a sparse approximation of the true $PSF$. We then developed a parallel coordinate descent deconvolution algorithm that benefits from a sparse $PSF$.  We were able to create a non-blocking parallel implementation, which achieved a speedup factor of 20 compared to the serial coordinate descent deconvolution algorithm, and an estimated speedup of factor 3 to CLEAN.
 
 T
+
+High throughput of parallel deconvolutions.
+The degree of parallelism, the number of parallel deconvolutions which can be used efficiently, scales with both the field-of-view of the observation, and the approximate $PSF$. With larger field of views, and with smaller approximated $PSF$s, the parallel coordinate descent algorithm can efficiently use a larger number of processors. 
+
+Scales with the problem size.
+GPU acceleration
+This algorithm has the potential to scale with the planned expansion of MeerKAT to SKA-Mid.
+Has some unclear behaviour
+
+SKA-Mid
 
 In our project, we created a shared-memory implementation of the parallel coordinate descent algorithm. Our parallel algorithm is based on the APPROX\cite{fercoq2015accelerated}, which was extended to a distributed setting developed in \cite{fercoqfast}. The same extension can be used to extend our parallel coordinate descent algorithm to a distributed setting. Distributing the parallel deconvolution algorithm is useful, if the whole image cannot be kept within the main memory of a single machine. However, it is not clear whether this is necessary.
 
@@ -10,6 +20,11 @@ In the self-calibration setting, intermediate solutions of the deconvolution are
 Our parallel coordinate descent algorithm scales with the amount of sparsity our approximation method can introduce. In our tests, the parallel algorithm converged with an approximate $PSF$ which was $\frac{1}{32}$ of the total image size. If the image is split into smaller facets, then the size difference between the approximate $PSF$ and the facet is significantly smaller. If the approximate $PSF$ is larger than the facet, the parallel algorithm may not be able to use all available processors effectively. On the other hand, if the approximate $PSF$ is smaller than the facet, our parallel algorithm can significantly speed up the deconvolution. The smaller the approximate $PSF$ is compared to the facet, the more processors can be used efficiently, and our parallel coordinate descent algorithm can be faster to converge than multi-scale CLEAN.
 
 The speedup achieved by the parallel coordinate descent method depends on the size of the image to deconvolve, and the size of the approximate $PSF$. Self-calibration with facets may effectively reduce the image size. But observations which need self-calibration tend to have a large amount of visibility measurements, which in turn may also lead to a smaller approximate $PSF$. The $PSF$ approaches a 2d Gaussian with increasing number of visibility measurements. This reduces the error our $PSF$ approximation introduces. With more visibility measurements, it may produce a smaller approximate $PSF$ with a similar error. The parallel coordinate descent algorithm in turn can achieve higher speedups with a smaller approximate $PSF$. If the parallel coordinate descent algorithm can beat multi-scale CLEAN in a self-calibration task has to be evaluated in the future.
+
+Different instruments
+Lower speedup for instruments like LOFAR. 
+Our approximation scheme exploits the fact that instruments are often nearly a gaussian function. This may not work for instruments with lower frequencies, like LOFAR.
+
 
 %Our approximation used a window in the center of the $PSF$. Our parallel coordinate descent algorithm benefits from a smaller $PSF$ window. In our tests on a real-world MeerKAT observations, the parallel coordinate descent algorithm converged with window, where each side was $\frac{1}{32}$ of the total $PSF$ size. The $PSF$ window size is likely independent of the total image size. Meaning if we increase the field-of-view of the reconstruction, the approximated $PSF$ stays the same size. This in turn leads to faster parallel iterations, and can use more processors more efficiently.
 

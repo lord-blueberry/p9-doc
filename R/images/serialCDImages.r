@@ -16,14 +16,15 @@ limit <- 0.0005
 negLimit <- -0.00001
 data$intensity[data$intensity > limit] = limit
 png(paste(outputfolder, "CD-reference.png", sep=""),
-    width = 16.0,
-    height = 16.0,
+    width = 8.0,
+    height = 8.0,
     units = "in",
     res = 200)
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
   scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.5), limits=c(negLimit, limit), guide=FALSE) + 
-  theme_void()
+  xlab("x (arc seconds)") +
+  ylab("y (arc seconds)")
 dev.off()
 
 data <- read.table(paste(inputFolder, "CD-reference-residuals.csv", sep=""), sep=";", header=TRUE, dec=",")
@@ -36,8 +37,10 @@ png(paste(outputfolder, "CD-reference-residuals.png", sep=""),
     res = 200)
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
-  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.5), name="Jansky/Beam", limit = c(minimum, maximum)) +
-  theme_void()
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.5), name="Jsk/PSF", limit = c(minimum, maximum)) +
+  xlab("x (arc seconds)") +
+  ylab("y (arc seconds)") +
+  theme(legend.position = c(1.0, 0.15))
 dev.off()
 
 data <- read.table(paste(inputFolder, "CD-Calibration.csv", sep=""), sep=";", header=TRUE, dec=",")
@@ -46,6 +49,7 @@ data$y <- (data$y - min(data$y)) * 1.5 / 60.0
 limit <- 0.0005
 negLimit <- -0.00001
 data$intensity[data$intensity > limit] = limit
+data$intensity = data$intensity * 1000
 png(paste(outputfolder, "CD-Calibration.png", sep=""),
     width = 6.0,
     height = 4.5,
@@ -53,9 +57,10 @@ png(paste(outputfolder, "CD-Calibration.png", sep=""),
     res = 200)
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
-  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.5), name="Jansky/Beam", limits=c(negLimit, limit)) +
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.5), name="mJsky/Pixel", limits=c(negLimit * 1000, limit * 1000)) +
   xlab("Ascension (arc seconds)") +
-  ylab("Declination (arc seconds)")
+  ylab("Declination (arc seconds)") +
+  theme(legend.position = c(0.15, 0.8))
 dev.off()
 
 data <- read.table(paste(inputFolder, "CD-image-Calibration.csv", sep=""), sep=";", header=TRUE, dec=",")
@@ -117,7 +122,7 @@ png(paste(outputfolder, "CD-N132-naked.png", sep=""),
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
   scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.9), guide=FALSE) +
-  theme_void()
+  theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 dev.off()
 
 
@@ -159,5 +164,7 @@ min(ftData)
 ggplot(dfN132, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
   scale_fill_gradientn(colors= cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.9), guide=FALSE) +
-  theme_void()
+  xlab("u") +
+  ylab("v") +
+  theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 dev.off()
