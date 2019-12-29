@@ -11,23 +11,9 @@ We tested our $PSF$ approximation scheme and parallel coordinate descent algorit
 
 %The $PSF$ approximation scheme does not speed up any algorithm. For the serial coordinate descent algorithm, the $PSF$ approximation did result in speedup, but not enough to compete with CLEAN on convergence speed. One needs specialized reconstruction algorithms to exploit the $PSF$ approximation we developed in this project. The parallel coordinate descent algorithm can exploit the approximate $PSF$ for a significant speedup.
 
-We used the elastic net regularization. To our knowledge, it is not widely used in the radio astronomy community. On our test, the elastic net regularization created more plausible reconstructions of radio sources than multi-scale CLEAN. The elastic net was also more sensitive to calibration errors in the image. This is a similar behavior to over-complete regularizations, which are often used for radio interferometric image reconstructions. However, elastic net is a significantly simpler regularization. Leading to a simpler reconstruction algorithm in a parallel or distributed setting. We demonstrated with the parallel coordinate descent algorithm that an elastic net regularized image can be reconstructed efficiently. These results suggests the elastic net regularization may be a viable alternative for radio interferometric image reconstruction.
+We used the elastic net regularization. To our knowledge, it is not widely used in the radio astronomy community. On our test, the elastic net regularization created more plausible reconstructions of radio sources than multi-scale CLEAN. The elastic net was also more sensitive to calibration errors in the image. This is a similar behavior to over-complete regularizations, which are often used for radio interferometric image reconstructions. However, elastic net is a significantly simpler regularization. Leading to a simpler reconstruction algorithm in a parallel or distributed setting. 
 
+We demonstrated with the parallel coordinate descent algorithm that an elastic net regularized image can be reconstructed efficiently. These results suggests the elastic net regularization may be a viable alternative for radio interferometric image reconstruction. We tested the elastic net regularization on a single real-world observation. The question, whether elastic net is a viable alternative for image reconstruction, has to explored on multiple observations in the future.
 
-
-T
-
-  Reconstruction quality, comparable to multi-scale CLEAN. But also leading to more plausible structures in the model image. 
-Potentially super-resolution.
-But more problems when the image contains calibration errors.
-Elastic net has a similar behavior to other over-complete representations. But the elastic net regularization is significantly simpler, only affecting a single pixel independently of its neighbors. This simplifies parallelization and distribution of the reconstruction. 
-The parallel coordinate descent algorithm we developed can efficiently reconstruct an elastic net regularized image.
-
-How useful our parallel coordinate descent algorithm is kinda depends on the usefulness of elastic net. Its with the elastic net regularization that the parallel algorithm is as fast as standard CLEAN. In this project, we tested the elastic net regularization only on a single real-world observation.
-Elastic net has to be compared on more observations to make sure it is a useful regularization.
-
-
-Results on narrow-band imaging only. Speedup is significant, but the more difficult question is how it compares in the wide-band imaging case.
-
-
+We limited this project to the narrow-band image reconstruction only. This is the main limitation of this work. Wide-band imaging introduces new challenges for an image reconstruction algorithm. However, the parallel coordinate descent algorithm also has the potential to benefit from it. We may increase the degree of parallelism further in the wide-band imaging case. It is unknown how our parallel coordinate descent algorithm compares to multi-scale CLEAN in the wide-band case. The next step is extending the parallel coordinate descent algorithm to the wide-band imaging case.
  
