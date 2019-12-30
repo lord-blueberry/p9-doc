@@ -261,34 +261,6 @@ We now test how we can speed-up first serial coordinate descent, and then parall
 
 
 
-\subsection{Serial coordinate descent speedup with MPI or GPU}\label{results:speedup}
-In this section we test how much we can speed-up our serial coordinate descent algorithm by using distributed computing with MPI, or GPU acceleration.
-
-We test the distributed serial coordinate descent on a shared memory system(Meaning all CPUs have access to the same main memory) with 32 CPUs. This is a best-case scenario for our implementation, because each node runs on the same physical machine: Our implementation needs a communication step between the nodes for each serial coordinate descent iteration. It needs a low-latency connection between each node to run as efficient as possible. Since each node runs on the same physical machine, it has a low latency times and therefore a low communication time. In this implementation, each node uses a single processor. We compare the speedup the algorithm achieves by adding more nodes/processors.
-
-For the GPU we used personal computer level hardware, and tested on a nVidia Quadro M1200. We compare the speedup we achieve to the on-board CPU, which is an Intel Xeon E3-1505M with 8 logical processors at different image sizes. The speedup is shown in Figure \ref{results:speedup:figure}.
-
-\begin{figure}[h]
-	\centering
-		\begin{subfigure}[b]{0.45\linewidth}
-		\includegraphics[width=1.00\linewidth]{./chapters/10.results/speedup/dist-speedup.png}
-	\end{subfigure}
-	\begin{subfigure}[b]{0.45\linewidth}
-		\includegraphics[width=1.00\linewidth]{./chapters/10.results/speedup/gpu.png}
-	\end{subfigure}
-	\caption{Speedup by using MPI or GPU acceleration}
-	\label{results:speedup:figure}
-\end{figure}
-
-As we mentioned before, the speedup we achieve by using nodes/processors in MPI is the best-case scenario. As the best case scenario, we achieve a significant performance increase by using more nodes/processors. Up to 16 processors, the speedup we achieve is at least linear. Afterwards however the speedup diminishes. With 32 processors, we are only marginally faster than with 16. If the nodes would run two different physical machines, the speedup we achieve would depend mainly on the latency of the connection. 
-
-The speedup we achieve by using GPU acceleration is fairly constant over the image size. The speedup factor varies around 2.5. Ideally, we would like to combine the distributed and the GPU implementation. However, this is not useful with the current implementation: The main bottleneck in the MPI implementation is the communication step in each iteration. 
-
-We do not have a CLEAN implementation in our .Net Core pipeline. However, we mentioned the similarities between the serial coordinate descent and CLEAN in Section \ref{cd:similarities}. A single serial coordinate descent iteration is roughly equivalent to a standard CLEAN iteration. If we assume we need 14'000 CLEAN iterations to reconstruct an image, we can get a rough estimate by comparing the wall-clock time of 14'000 serial coordinate descent iterations. In this case, CLEAN is roughly 7 times faster than the current serial coordinate descent iteration.
-
-Overall the serial coordinate descent algorithm with GPU acceleration is still several factors slower than CLEAN. The speedup we achieve with MPI is significant. But because serial coordinate descent and CLEAN have such a similar structure, we can expect a similar speedup with a CLEAN-MPI implementation. We need another method to speed up our deconvolution algorithm.
-
-
 \subsection{$PSF$ approximation with serial coordinate descent} \label{results:gradients}
 In this section, we test our main hypothesis on the MeerKAT LMC data: The Major cycle allows us to use an approximation of the true $PSF$ in Minor cycle. We believe this can be exploited. We may be able to use a fraction of the true $PSF$ in the serial coordinate descent algorithm, potentially speeding up the deconvolution and simplifying distribution.
 
@@ -440,34 +412,6 @@ Note that the speedup from fraction $\frac{1}{4}$ to $\frac{1}{8}$ is roughly a 
 For the rest of this project, we will use a $PSF$ approximation of $\frac{1}{32}$ for the parallel coordinate descent algorithm. The $\frac{1}{64}$ approximation is faster in this tests, but needs more 'Minor' cycles (Which were excluded from the wall-clock time). Including the time spent in the 'Minor' cycle, the $\frac{1}{32}$ approximation is the fastest overall.
 
 
-\subsubsection{Block size}
-The parallel coordinate descent algorithm can group several pixels in blocks, and optimize the blocks of pixels in parallel. It is not clear if grouping the pixels in blocks results in shorter convergence times. We test different block sizes in Figure \ref{pcdm:results:block}, all using the same $PSF$ approximation of $\frac{1}{32}$. We tested out block size of $1^2$ (every block contains a single pixel) up to a block size of $8^2$:
-
-\begin{figure}[h]
-	\centering
-	\begin{subfigure}{0.6\linewidth}
-		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/parameters/blockSize.png}
-	\end{subfigure}
-	\begin{subfigure}{0.35\linewidth}
-		\begin{tabular}{c | r}
-			Block Size & Total seconds \\ \hline
-			$1^2$ & 108 \\
-			$2^2$ & 103 \\
-			$4^2$ & 248 \\
-			$8^2$ & 905 \\
-		\end{tabular}
-	\end{subfigure}
-	\caption{Convergence times with different block sizes}
-	\label{pcdm:results:block}
-\end{figure}
-
-The larger block sizes of $4^2$ and $8^2$ are significantly slower to converge than a block size of $1^2$. Only a block size of $2^2$ is slightly faster. Interestingly though, the parallel coordinate descent algorithm is faster to arrive at intermediate results with the block sizes $2^2$ and $4^2$. This suggests that the parallel coordinate descent algorithm may benefit starting out from larger block sizes, and gradually reducing the block size over several major cycle iterations.
-
-However, two factors lead to the decision to simply use a block size of $1^2$ for all major cycle iterations: First, the block size is likely connected to the image resolution. An effective heuristic that starts with larger blocks may become difficult to develop for general observations. Secondly, the parallel coordinate descent implementation becomes more complicated when it has to account for different block sizes. An implementation with a block size of only $1^2$ is shorter and simpler.
-
-For the rest of this project, we use a block size of $1$, meaning every thread is minimizing a single pixel.
-
-
 \subsubsection{Pseudo-random strategy and the Search Fraction}\label{pcdm:results:fraction}
 We discussed in Section \ref{pcdm:adaption}, a random block selection strategy seems to perform badly on the deconvolution problem. We created the pseudo-random strategy, which selects a block at random, but searches in it's neighborhood for the optimal block to optimize. It is a mixture between a random and a greedy selection strategy.
 
@@ -499,30 +443,6 @@ According to this test, the search factor tuning parameter influences the conver
 Based on this test, we fixed the search percentage tuning parameter to a value of 0.1 for all tests in this project. It was enough to alleviate the problems a pure random strategy introduces in the deconvolution problem (discussed previously in Section \ref{pcdm:adaption}).
 
 However, we do not know whether this parameter generally has a small influence on convergence speed, or if it is merely due to the LMC observation we used for this project. To answer this question, we need further tests on diverse observations.
-
-
-\subsubsection{Acceleration}
-Lastly, we test whether the parallel coordinate descent algorithm is faster with or without gradient acceleration. The accelerated variant needs two versions of the gradient map, which get updated asynchronously with compare-exchange operations. Figure \ref{pcdm:results:acc} compares the accelerated and non-accelerated parallel coordinate descent algorithm.
-
-\begin{figure}[h]
-	\centering
-	\begin{subfigure}{0.6\linewidth}
-		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/parameters/acceleration.png}
-	\end{subfigure}
-	\begin{subfigure}{0.35\linewidth}
-		\begin{tabular}{c | c}
-			Method & Total seconds \\ \hline
-			With Acceleration & 108 \\
-			Without Acceleration & 84 \\
-		\end{tabular}
-	\end{subfigure}
-	\caption{Convergence time with or without gradient acceleration.}
-	\label{pcdm:results:acc}
-\end{figure}
-
-The accelerated variant is significantly slower in every part of the algorithm. Our hypothesis is that the two gradient maps necessary for the acceleration also increase the cost of synchronization.
-
-Furthermore the accelerated variant has additional run time costs which were not measured in this test: It has to create a copy of the gradient map and the reconstructed image for the acceleration. Meaning this test shown in Figure \ref{pcdm:results:acc} is biased in favor of the accelerated variant, yet it is still slower.
 
 
 \subsection{Comparison to the serial coordinate descent algorithm}

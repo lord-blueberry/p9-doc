@@ -160,6 +160,12 @@ Image reconstruction algorithms for radio interferometers generally use the deco
 
 In radio astronomy, image reconstruction is split into two separate algorithms. The first algorithm is responsible for transforming the measurements from Fourier to image space. The second algorithm is responsible for deconvolution. The first algorithm is referred as the Major cycle in radio astronomy, and the deconvolution algorithm as the minor cycle in radio astronomy literature. The reason why they are referred to as "cycles" will become clear in Section \ref{intro2:opt:cycle}. In short: The whole process, transforming the measurements to image space and calculating the deconvolution has to be repeated several times to correct for DDE's like the $w$-term. First, we will take a closer look to the most commonly used deconvolution algorithm, CLEAN.
 
+T
+
+gridding
+
+
+
 
 \subsubsection{CLEAN deconvolution algorithm} \label{intro2:CLEAN}
 CLEAN\cite{hogbom1974aperture} is the basic deconvolution algorithm in radio astronomy. It has been extended over the years, and in its more sophisticated form as multi-scale multi-frequency CLEAN \cite{offringa2017optimized} is still used today. We introduce the basic CLEAN algorithm in this section.
@@ -224,6 +230,7 @@ The CLEAN algorithm assumes the image contains point sources. In each iteration,
 
 T
 
+Gridding can be faster than CLEAN
 CLEAN is a non-convex optimization
 
 \subsubsection{The Major/Minor cycle}\label{intro2:opt:cycle}

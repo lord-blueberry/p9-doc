@@ -213,42 +213,6 @@ Zero padding assumes that after the edge, the image is zero. Non-zero pixels at 
 In designing a deconvolution algorithm, we have the choice between the circular and the zero-padded convolution scheme. Circular convolution is more efficient to calculate, while zero-padded convolution is closer to the reality. Both choices are possible. Some implementations leave this choice to the user \cite{kenyon2019pymoresane}. We decide on using the zero-padded convolution. This choice influences how we calculate the Lipschitz and gradients efficiently.
 
 
-\subsubsection{Efficient calculation of the Lipschitz constants}
-In each iteration, we need the Lipschitz constant of the current pixel. I.e. we need the inner product $\langle PSF_{location}, PSF_{location} \rangle$ for every pixel. We can pre-calculate the Lipschitz constant before we run the serial coordinate descent algorithm. The naive way to calculate the Lipschitz constant for every pixel results in quadratic runtime(each inner product costs us $O(n)$ operations, and we do it for all $n$ pixels). But this is not necessary. We can pre-calculate the Lipschitz constant for every pixel in linear time.
-
-Figure \ref{cd:efficient:lipschitz:padded} shows the $PSF$ shifted to a pixel location. The Lipschitz constant is by squaring all values of Figure \ref{cd:efficient:lipschitz:padded} and summing up the values. Or in another way: We sum up all the squared values of the $PSF$ inside a specific rectangle. All that changes for a Lipschitz calculation between different pixels is the specific rectangle.
-
-\begin{figure}[h]
-	\centering
-	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=\linewidth, clip, trim= 0.25in 0.25in 0.25in 0.25in]{./chapters/03.cd/simulated/psfZeroPadding.png}
-		\caption{Shifted $PSF$.}
-		\label{cd:efficient:lipschitz:padded}
-	\end{subfigure}
-	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=\linewidth, clip, trim= 0.25in 0.25in 0.25in 0.25in]{./chapters/03.cd/simulated/psf.png}
-		\caption{Sum of squared values.}
-		\label{cd:efficient:lipschitz:rectangle}
-	\end{subfigure}
-	\caption{Sum of squared values for the Lipschitz constant.}
-	\label{cd:efficient:lipschitz:figure}
-\end{figure}
-
-This can be exploited with a scan algorithm: We first calculate the result of every rectangle we can draw from the origin, up to some pixel value. We end up with an array we call $scan[,]$. It is the same size as the $PSF$, but contains the sum of squares inside a specific rectangle.
-
-\begin{lstlisting}
-var scan = new double[,];
-for (i in (0, PSF.Length(0))
-	for (j in (0, PSF.Length(1))
-		var iBefore = scan[i - 1, j];
-		var jBefore = scan[i, j - 1];
-		var ijBefore = scan[i - 1, j - 1];
-		var current = PSF[i, j] * PSF[i, j];
-		scan[i, j] = current + iBefore + jBefore - ijBefore;
-\end{lstlisting}
-
-Every Lipschitz constant can be now calculated by combining the sums of different rectangles. Our example is shown in Figure \ref{cd:efficient:lipschitz:rectangle}. We start with the total sum of all values, and subtract two rectangles. Because the subtractions overlap, we need to add the third rectangle again. we take the total value. In short, we can calculate each Lipschitz constant by at most 4 lookups in the $scan[,]$ array.
-
 
 \subsubsection{Using a map of gradients}
 For an efficient greedy strategy, we need to know the gradient for each pixel.  We show how to calculate the initial map of gradients in linearithmic time($O(n log n)$ and how to update it directly after a change in the reconstructed image $x$. As we will see, we can use a map of gradients and drop the residual calculation from the algorithm. The gradient map implicitly contains the information of the residuals.
@@ -370,88 +334,6 @@ In step 1, we replaced the gradient and Lipschitz calculation with lookups, redu
 The two most time consuming parts of this implementation are step 1, and updating the gradient map. Our implementation in .Net Core uses parallel computing for both parts. We search for the maximum pixel in parallel, and update the gradient map in parallel.
 
 
-\subsection{GPU implementation}
-We implemented the serial coordinate descent algorithm on the GPU. It is implemented in .Net Core with ILGPU\cite{ilgpu}. ILGPU is a Just-In-Time compiler for high performance GPU programs written in .Net Core.
-
-GPU programs are split into kernels. Each kernel consists of a single routine optimized for executing on the GPU. Our serial coordinate descent algorithm consists of Step 1, find the best pixel to optimize, step 2, optimize pixel and then updating the gradient map. The GPU implementation of the Serial coordinate descent algorithm uses three kernels: Kernel 1 is equivalent to step 1. Kernel 2 updates the reconstruction $x$ and kernel 3 updates the gradient map.
-
-Kernel 2 and 3 are straight forward to implement. The implementation of kernel 1, searching for the best pixel, is more interesting. Essentially, this step is a max reduce operation: We want to find the pixel with the maximum absolute step. We implemented the step 1 kernel with an atomic-max instruction:
-\begin{lstlisting}
-MaxPixelKernel(x, gradienstMap, lipschitz, location, maxPixel)
-	oldValue = x[location]
-	tmp = gradientsMap[location] + oldValue * lipschitzMap[location]
-	optimalValue = Max(tmp - lambda*alpha) / (lipschitz[location] + (1 - alpha)*lambda)
-	diff = optimalValue - oldValue
-	currentPixel = (absDiff = Abs(diff), diff = diff, location = location)
-	AtomicMax(maxPixel, currentPixel)
-\end{lstlisting}
-
-The kernel is executed on multiple processors in parallel on the GPU. Each processor is checking a single pixel. Communication is done with the atomic-max instruction. The atomic-max writes on a global variable, which keeps track of the current maximum pixel. This implementation turned out to be the fastest for the MaxPixelKernel. Warp shuffle\cite{keplerShuffle} was also tested, but resulted in a slower kernel.
-
-Now to put the serial coordinate descent implementation on the GPU together, all we need to do is call the kernels, which perform the minimization on the GPU:
-
-
-\begin{lstlisting}
-do 
-	//Step 1: Search pixel
-	maxPixel = (absDiff = 0, diff = 0, location = (-1, -1))
-	ExecuteMaxPixelKernel(x, gradienstMap, lipschitz, maxPixel)
-	SynchronizeKernels()
-	
-	//Step 2: Optimize
-	ExecuteUpdateXKernel(x, maxPixel.diff, maxPixel.location)
-	ExecuteUpdateGradientsKernel(gradientsMap, gradientUpdate, maxPixel.diff, maxPixel.location)
-	SynchronizeKernels()
-	
-while maxPixel.absDiff  < epsilon
-\end{lstlisting}
-
-Note that after each kernel call, we synchronize the program. We wait for all kernels on the GPU to be finished, before we continue with the next step. As we mentioned before, this is the core behind the serial coordinate descent algorithm. We have to wait for each step to finish before we can continue with the next. 
-
-
-\subsection{Distributed implementation MPI}
-We created a distributed implementation of our serial coordinate descent algorithm using the Message Passing Interface (MPI). In MPI, we use several nodes of computers to solve the problem. Each node has its own processors an main memory, and we use MPI to communicate betweeen the nodes. 
-
-We split the reconstructed image, and the gradient map into facets of equal size, and use one node for each facet. For example, our image is $1024^2$ pixels in size and we use 4 nodes. This means each node reconstructs a $512^2$ facet of the image, and has the matching $512^2$ entries of the gradient map locally. 
-
-The distributed serial coordinate descent algorithm now searches the maximum pixel locally in each node. Then, all node agree on the best global pixel to optimize, which is an MPI\_ALLREDUCE operation. After MPI\_ALLREDUCE, each node knows the global pixel which gets minimized in this iteration. Then, each node updates its part of the gradient map locally.
-
-This leads to the following pseudo-code algorithm:
-\begin{lstlisting}
-...
-do 
-	oldObjectiveValue = objectiveValue
-	
-	//Step 1: Search pixel
-	maxAbsDiff = 0
-	maxDiff = 0
-	pixelLocation = (-1, -1)
-	for(i in Range(0, dirty.Length(0))
-		for(j in Range(0, dirty.Length(1))
-			oldValue = x[i, j]
-			tmp = gradientsMap[i, j] + oldValue * lipschitzMap[i, j]
-			optimalValue = Max(tmp - lambda*alpha) / (lipschitz[i, j] + (1 - alpha)*lambda)
-			diff = optimalValue - oldValue
-			
-			if(maxAbsDiff < Abs(diff))
-				maxAbsDiff = Abs(diff)
-				maxDiff = diff
-				pixelLocation = (i, j)
-	
-	//communicate location with nodes
-	globalMaxAbsDiff, globalMaxDiff, globalLocation = MPI_ALLREDUCE(maxAbsDiff, maxDiff, pixelLocation)
-	
-	//Step 2: Optimize pixel.
-	if(globalLocation == pixelLocation)
-		x[globalLocation] += globalMaxDiff
-	
-	//housekeeping
-	shiftedUpdate = Shift(gradientUpdate, globalLocation)
-	gradientMap = gradientMap - shiftedUpdate * globalMaxDiff
-while epsilon < maxAbsDiff
-\end{lstlisting}
-
-Each node in the distributed serial coordinate descent algorithm communicates its local pixel in each iteration. Meaning the distributed algorithm has a communication step in each serial coordinate descent iteration. The distributed algorithm only has to communicate a single pixel, but has to communicate often. This is a potential down-side of the implementation. Usually, distributed systems can speed up algorithms which communicate a large chunk of data rarely.
 
 
 \subsection{Serial coordinate descent and similarities to the CLEAN algorithm}\label{cd:similarities}
