@@ -38,7 +38,7 @@ maxVal <- max(frequencies[,"u"], timesteps[,"u"],frequencies[,"v"], timesteps[,"
 
 
 png("./uvPlots/plots/snapshot.png",
-    width = 7.0,
+    width = 6.0,
     height = 6.0,
     units = "in",
     res = 200)
@@ -49,33 +49,35 @@ ggplot(data = ToWavenumer(uv, 1e9), mapping = aes(x = u, y = v)) +
 dev.off()
 
 png("./uvPlots/plots/frequencies.png",
-    width = 7.0,
+    width = 6.0,
     height = 6.0,
     units = "in",
     res = 200)
 ggplot(data = frequencies, mapping = aes(x = u, y = v, color= frequency)) +
   geom_point(alpha = 0.4) + 
   scale_y_continuous(labels = scales::unit_format(unit = "k", scale=1e-3), limits=c(minVal, maxVal)) +
-  scale_x_continuous(labels = scales::unit_format(unit = "k", scale=1e-3), limits=c(minVal, maxVal))
+  scale_x_continuous(labels = scales::unit_format(unit = "k", scale=1e-3), limits=c(minVal, maxVal)) +
+  theme(legend.position = c(0.92, 0.12))
 dev.off()
 
 
 png("./uvPlots/plots/timesteps.png",
-    width = 7.0,
+    width = 6.0,
     height = 6.0,
     units = "in",
     res = 200)
 ggplot(data = timesteps, mapping = aes(x = u, y = v, color=timestep)) +
   geom_point(alpha = 0.4) +
   scale_y_continuous(labels = scales::unit_format(unit = "k", scale=1e-3), limits=c(minVal, maxVal)) +
-  scale_x_continuous(labels = scales::unit_format(unit = "k", scale=1e-3), limits=c(minVal, maxVal))
+  scale_x_continuous(labels = scales::unit_format(unit = "k", scale=1e-3), limits=c(minVal, maxVal)) +
+  theme(legend.position = c(0.92, 0.12))
 dev.off()
 
 
 ants <- read.table("uvPlots/ants_hand.csv", sep=";", dec=".", header=TRUE)
 maxVal <- max(abs(ants$x), abs(ants$y))
 png("./uvPlots/plots/ants.png",
-    width = 7.0,
+    width = 6.0,
     height = 6.0,
     units = "in",
     res = 200)

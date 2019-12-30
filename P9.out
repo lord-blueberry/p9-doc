@@ -9,7 +9,7 @@
 \BOOKMARK [1][-]{section.3}{State of the Art image reconstruction}{}% 9
 \BOOKMARK [2][-]{subsection.3.1}{Multi-scale CLEAN}{section.3}% 10
 \BOOKMARK [2][-]{subsection.3.2}{MORESANE}{section.3}% 11
-\BOOKMARK [1][-]{section.4}{Coordinate descent deconvolution}{}% 12
+\BOOKMARK [1][-]{section.4}{Serial coordinate descent deconvolution}{}% 12
 \BOOKMARK [2][-]{subsection.4.1}{Elastic net regularization}{section.4}% 13
 \BOOKMARK [2][-]{subsection.4.2}{Serial coordinate descent algorithm}{section.4}% 14
 \BOOKMARK [3][-]{subsubsection.4.2.1}{Step 1: Choosing single a pixel}{subsection.4.2}% 15
