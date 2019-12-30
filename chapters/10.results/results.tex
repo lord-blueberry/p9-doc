@@ -36,7 +36,7 @@ Wide band imaging is not possible within the time frame of this project. We take
 		\includegraphics[width=1.0\linewidth]{./chapters/10.results/LMC/meerkat_cutout.png}
 	\end{subfigure}
 	\begin{subfigure}[b]{0.28\linewidth}
-		\adjincludegraphics[width=1.0\linewidth, clip, trim={0.72in 0.72in 0.72in 0.72in}]{./chapters/10.results/MSClean/Natural-CLEAN.png}
+		\includegraphics[width=1.0\linewidth, clip, trim={0.72in 0.72in 0.72in 0.72in}]{./chapters/10.results/MSClean/Natural-CLEAN_naked.png}
 	\end{subfigure}
 	\caption{Narrow band image section used.}
 	\label{results:cutout}
@@ -61,24 +61,32 @@ We first compare the model and the residual images of the three algorithms. The 
 
 \begin{figure}[!htp]
 	\centering
-	\begin{subfigure}[b]{0.98\linewidth}
+	\begin{subfigure}[b]{0.82\linewidth}
 		\centering
-		\includegraphics[width=0.412\linewidth, clip, trim={0.72in 0.72in 0.72in 0.72in}]{./chapters/10.results/MSClean/Natural-CLEAN.png}
-		\includegraphics[width=0.490\linewidth, clip, trim={0.36in 0.36in 0.0in 0.36in}]{./chapters/10.results/MSClean/Natural-CLEAN-residuals.png}
+		\begin{subfigure}{0.49\linewidth}
+			\centering
+			\textbf{Model image}
+			\includegraphics[width=1.0\linewidth]{./chapters/10.results/MSClean/Natural-CLEAN.png}
+		\end{subfigure}
+		\begin{subfigure}{0.49\linewidth}
+			\centering
+			\textbf{Residual image}
+			\includegraphics[width=1.0\linewidth]{./chapters/10.results/MSClean/Natural-CLEAN-residuals.png}
+		\end{subfigure}
 		\caption{Multi-scale CLEAN.}
 		\label{results:comp:clean}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.98\linewidth}
+	\begin{subfigure}[b]{0.82\linewidth}
 		\centering
-		\includegraphics[width=0.412\linewidth, clip, trim={0.72in 0.72in 0.72in 0.72in}]{./chapters/10.results/SerialCD/CD-reference.png}
-		\includegraphics[width=0.490\linewidth, clip, trim={0.36in 0.36in 0.0in 0.36in}]{./chapters/10.results/SerialCD/CD-reference-residuals.png}
+		\includegraphics[width=0.490\linewidth]{./chapters/10.results/SerialCD/CD-reference.png}
+		\includegraphics[width=0.490\linewidth]{./chapters/10.results/SerialCD/CD-reference-residuals.png}
 		\caption{Coordinate descent with elastic net.}
 		\label{results:comp:clean}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.98\linewidth}
+	\begin{subfigure}[b]{0.82\linewidth}
 		\centering
-		\includegraphics[width=0.412\linewidth, clip, trim={0.72in 0.72in 0.72in 0.72in}]{./chapters/10.results/iuwt/iuwt-model.png}
-		\includegraphics[width=0.490\linewidth, clip, trim={0.36in 0.36in 0.0in 0.36in}]{./chapters/10.results/iuwt/iuwt-residuals.png}
+		\includegraphics[width=0.490\linewidth]{./chapters/10.results/iuwt/iuwt-model.png}
+		\includegraphics[width=0.490\linewidth]{./chapters/10.results/iuwt/iuwt-residuals.png}
 		\caption{MORESANE (IUWT).}
 		\label{results:comp:clean}
 	\end{subfigure}
@@ -176,7 +184,7 @@ The model image of the coordinate descent reconstruction closely resembles the s
 
 \begin{figure}[!ht]
 	\centering
-	\begin{subfigure}[b]{1.0\linewidth}
+	\begin{subfigure}[b]{0.82\linewidth}
 		\centering
 		\begin{subfigure}{0.45\linewidth}
 			\centering
@@ -190,13 +198,13 @@ The model image of the coordinate descent reconstruction closely resembles the s
 		\end{subfigure}
 		\caption{Multi-scale CLEAN}
 	\end{subfigure}
-	\begin{subfigure}[b]{1.0\linewidth}
+	\begin{subfigure}[b]{0.82\linewidth}
 		\centering
 		\includegraphics[width=0.45\linewidth]{./chapters/10.results/SerialCD/CD-Calibration.png}
 		\includegraphics[width=0.45\linewidth]{./chapters/10.results/SerialCD/CD-image-Calibration.png}
 		\caption{Coordinate Descent with elastic net.}
 	\end{subfigure}
-	\begin{subfigure}[b]{1.0\linewidth}
+	\begin{subfigure}[b]{0.82\linewidth}
 		\centering
 		\includegraphics[width=0.45\linewidth]{./chapters/10.results/iuwt/iuwt-Calibration.png}
 		\includegraphics[width=0.45\linewidth]{./chapters/10.results/iuwt/iuwt-image-Calibration.png}

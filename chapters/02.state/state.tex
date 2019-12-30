@@ -39,9 +39,8 @@ while
 
 Note the scale-bias function: Modern multi-scale CLEAN implementations prioritize the scales, which improves the reconstruction quality \cite{offringa2017optimized}. Usually, the larger scales are prioritized before the lowest scale, where the algorithm is adding point-sources to the model image. 
 
-This is the multi-scale CLEAN algorithm widely used for radio interferometric reconstructions.
-Non-zero pixels
-Various Improvements and speedups, but the core algorithm is still this.
+This is the multi-scale CLEAN algorithm widely used for radio interferometric reconstructions. Any real-world implementation uses various strategies that improve the convergence speed or the reconstruction quality of multi-scale CLEAN algorithm. They are too numerous to list them in this work, and we refer the reader to the CLEAN literature \cite{hogbom1974aperture, clark1980efficient, schwab1984relaxing}.
+
 
 \subsection{MORESANE}
 MOdel REconstruction by Synthesis ANalasys Estimators (MORESANE) is another multi-scale deconvolution algorithm used in radio astronomy. Instead of deconvolving the image at different scales like multi-scale CLEAN, MORESANE uses a regularization with multi-scale built into it. It uses the starlet transform \cite{starck2015starlet} as regularization.
@@ -49,7 +48,7 @@ MOdel REconstruction by Synthesis ANalasys Estimators (MORESANE) is another mult
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.3\linewidth]{./chapters/02.state/wavelet.png}
-	\caption{The starlet wavelet in one dimension}
+	\caption{The starlet wavelet in one dimension. Source: \cite{starck2015starlet}}
 	\label{state:moresane:starlet}
 \end{figure}
 
@@ -59,38 +58,38 @@ Normally, we can only retrieve the image from the over-complete representation a
 
 \begin{lstlisting}
 dirtyImage = iFFT(Gridding(visibilities))
-starlets = new Array[x, y, scale]
+model = new Array[,]
 
 do
-	//estimate starlet components,
+	//estimate starlet components, dimensions: [x, y, scale]
 	estimates = StarletTransform(dirtyImage, PSF)
 	maxIndex = ArgMax(estimates)
 	
 	//find connected starlet components. Flood fill over the image(x, y) and over scales. Now we should have all starlets belonging to a single object (e.g. a hydrogen cloud or a single galaxy in the image)
 	connectedStarlets = FloodFill(starlets, maxIndex)
 	
-	optimizedStarlets = ConjugateGradients(dirtyImage, connectedStarlets)
+	optimizedPixels = ConjugateGradients(connectedStarlets)
 	
-	//update dirty image and our starlet model
-	starlets = starlets + optimizedStarlets
-	standardModel = Sum(optimizedStarlets, axis=scale)
-	dirtyImage = dirtyImage - Convolve(standardModel, 
+	//update dirty and model image
+	model += optimizedPixels
+	dirtyImage = dirtyImage - Convolve(optimizedPixels, PSF)
 while
-
-model = Sum(starlets, axis=scale)
 \end{lstlisting}
 
 First, it uses the starlet transform on the dirty image, and search for the largest starlet component at a certain scale. The largest starlet component explains part of a single object emitting radio waves, like a hydrogen cloud or a galaxy. Next, we use the flood-fill algorithm to find all starlet components at all scales which describe this object.
 
-The next step is the actual minimization step in the MORESANE algorithm: We use the conjugate gradient method and find 
+The next step is the actual minimization step in the MORESANE algorithm: We use the conjugate gradient method and find the pixel patch, which explains the estimated starlet components. It is a convex optimization problem, similar to what we described in Section \ref{radio:cs}. But instead of searching for a whole image, we only minimize over a subset of the pixels:
 
-Starlets 
+\begin{equation}\label{state:moresane::cs:l2}
+\underset{\bar{x}}{minimize} \: \left \| s_{estimate} - NS^\intercal(\bar{x} \star PSF) \right \|_2^2 \quad \bar{x} \geq 0
+\end{equation}
 
-Uses the starlet wavelet 
+Where $\bar{x}$ is the subset of the image we minimize, $S^\intercal$ is the starlet transform which transforms an image to starlet space, $N$ is a diagonal matrix which masks all non-zero starlets from the starlet transform, and $s_{estimate}$ are the connected starlet components we estimated. MORESANE reconstructs an image patch which most closely resembles the estimated starlet components.
 
-Generally produces better results than multi-scale CLEAN, but is less robust versus calibration errors.
+Non-zero pixels, often used in radio interferometric image reconstruction. The MORESANE algorithm presented here is not the truth. \eqref{state:moresane::cs:l2} is taken from the original paper \cite{dabbech2015moresane}, which is already an "approximation". 
 
-The basic algorithm is??
+We know the implementation in the WSCLEAN package leaves non-zero pixels in the model image.
+
 
 
 
