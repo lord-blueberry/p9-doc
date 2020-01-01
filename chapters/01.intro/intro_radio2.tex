@@ -8,11 +8,9 @@ In radio astronomy, there are two classes of radio sources: Point sources and ex
 	\label{intro:system}
 \end{figure}
 
-The electromagnetic waves arrive at each antenna of the interferometer. The Correlator then takes the measurement of each antenna pair. Each antenna pair is called a baseline. The correlator creates a complex visibility measurement for each baseline, consisting of amplitude and phase. After this step, the visibilities are saved for later reconstruction.
+The electromagnetic waves arrive at the multiple antennas of the interferometer. The antennas are spaced apart from each other. Each antenna pair forms a 'baseline', which is the distance between the two antennas. Each antenna measures the electromagnetic waves independently of each other. The Correlator then takes the signal from each antenna pair (for each baseline), and correlates the signals. The correlator creates the complex visibility measurement for each baseline, consisting of an amplitude and phase measurement. After this step, the visibilities are saved for later reconstruction.
 
-Before the visibilities can be reconstructed into an image, they need to be calibrated. Each antenna has a different sensitivity which drifts over time. Also,  the distortion by Earths Ionosphere can be approximated and removed, depending on the observation. 
-
-The calibration process is imperfect. The visibility measurements are still noisy, meaning their true amplitude and phase may differ from what was measured. The image reconstruction step is tasked to find the most likely image from noisy and incomplete visibilities.
+Before the visibilities can be reconstructed into an image, they need to be calibrated. Each antenna has a different sensitivity, which influences the amplitude and phase of the visibility measurements. Also, Earths Ionosphere can introduce noise to the amplitude and phase of each visibility measurement. In the calibration step, we estimate the different antenna gains, and influence by the Ionosphere and correct the visibility measurements. However, the calibration is imperfect. The image reconstruction step is tasked to find the most likely image from noisy and incomplete visibilities.
 
 This project is focused on the image reconstruction step. We will develop our own image reconstruction algorithm that finds the most-likely image given the calibrated visibility measurements. However, the specifics of radio interferometric measurements influence every part of the image reconstruction algorithm. Efficient reconstruction algorithms have to deal with the specifics of radio interferometry. 
 
@@ -22,7 +20,7 @@ This section first introduces how image reconstruction works in theory. Then, we
 \subsection{Introduction to the ill-posed inverse problem}\label{radio:cs}
 Radio interferometers like MeerKAT generally produce more visibility measurements than pixels in the reconstruction. Still, the measurements are incomplete, and from the measurements alone, we cannot reconstruct the observed image. In the literature this is known as an ill-posed inverse problem. We wish to find the observed image from measurements in the Fourier space, but the measurements alone do not contain all the relevant information. 
 
-However, we can include prior information about the image, we can reconstruct the most-likely image given the measurements. Here we introduce how a reconstruction can find the most-likely image given the measurements. First, we formulate the image reconstruction as a minimization problem with the following objective function:
+First, we formulate the image reconstruction as a minimization problem with the following objective function:
 
 \begin{equation}\label{radio:cs:l2}
 \underset{x}{minimize} \: \left \| V - MFx \right \|_2^2
@@ -34,15 +32,25 @@ We can reconstruct the image by finding the optimum of the objective function \e
 
 A side note: We are guaranteed to find the observed image at the minimum of \eqref{radio:cs:l2} is when the measurements fulfill the Nyquist-Shannon sampling theorem. In that case, we can find the minimum by calculating the inverse Fourier transform: $x = F^{-1}V$. We can still calculate the inverse Fourier transform when we are dealing with incomplete measurements, but it does not result in the observed image.
 
-The objective \eqref{radio:cs:l2} only includes information about the measurements. As we have mentioned before, we have prior knowledge about the image. We know for exampe it is likely to contain point sources. In that case, most pixels of the image will be zero, except for the locations where the interferometer has located the point sources. In other words, we know that the image is sparse. We can add a regularization to the objective function \eqref{radio:cs:l2} and force the reconstructed image to be sparse. This results in the modified objective function:
+The objective \eqref{radio:cs:l2} only includes information about the measurements. As we have mentioned before, we have prior knowledge about the image. We know for example it is likely to contain point sources. In that case, most pixels of the image will be zero, except for the locations where the interferometer has located the point sources. In other words, we know that the image is sparse. We can add a regularization to the objective function \eqref{radio:cs:l2}, which models this prior information and forces the reconstructed image to be sparse (contain as few non-zero pixels as possible ). This results in the modified objective function:
 
 \begin{equation}\label{radio:cs:lasso}
 \underset{x}{minimize} \: \left \| V - MFx \right \|_2^2 + \lambda \left \| x \right \|_1
 \end{equation}
 
-Note the two terms in the objective \eqref{radio:cs:lasso}: We have the same term from our measurements, which we call the "data term". But we also have an additional "regularization term", which is the L1 norm\footnote{Sum of absolute values of the pixels, $\sum_i \sum_j \left \| x_{ij} \right \|$} and forces our reconstruction to be sparse. The parameter $\lambda$ represents how much emphasis we put on the regularization. The new objective function is still convex, it still has a global minimum. The regularization term simply shifted the global minimum to a different location when compared to the first objective \eqref{radio:cs:l2}. Now the question is: Does it point to the observed image? In practice, if the regularization is a good model for the image content, the image we retrieve at the minimum of the objective \eqref{radio:cs:lasso} is indistinguishable from the observed image.
+Note the two terms in the objective \eqref{radio:cs:lasso}: We have the same term from our measurements, which we call the "data term". But we also have an additional "regularization term", which is the L1 norm\footnote{Sum of absolute values of the pixels, $\sum_i \sum_j \left \| x_{ij} \right \|$} and forces our reconstruction to be sparse. The parameter $\lambda$ represents how much emphasis we put on the regularization. The new objective function is still convex, it still has a global minimum. The regularization term simply shifted the global minimum to a different location when compared to the first objective \eqref{radio:cs:l2}. Now the question is: Does it point to the observed image? In practice, if the regularization is a good model for the image content, the image we retrieve at the minimum of the objective \eqref{radio:cs:lasso}.
 
-The reconstruction quality also depends on how well the regularization models the observed image. In our example the L1 norm is a good model for images only consisting of stars. It penalizes images that have a large number of non-zero pixels. But radio interferometer also measure extended emissions like gas-clouds. Those images lead to a large number of non-zero pixels and by extent a large regularization penalty. The L1 regularization may force non-zero pixels of the extended emission to zero.
+T
+
+In reality, we also have extended emissions. The L1 regularization does not model reality perfectly. 
+The optimum of the objective function \eqref{radio:cs:lasso} still points to an image, but not necessarily to the truly observed image.
+The reconstructed image by a specific regularization.
+This is what we call image quality. How close is the reconstructed image to the truly observed one. 
+Knowing the observed image is only possible in simulations.
+
+T
+
+The reconstruction quality depends on how well the regularization models the observed image. In our example the L1 norm is a good model for images only consisting of stars. It penalizes images that have a large number of non-zero pixels. But radio interferometer also measure extended emissions like gas-clouds. Those images lead to a large number of non-zero pixels and by extent a large regularization penalty. The L1 regularization may force non-zero pixels of the extended emission to zero.
 
 In a sense there is data modeling task involved in the image reconstruction. The better we understand what a plausible image looks like, the higher the reconstruction quality. Recent work managed to reconstruct super-resolved images for the VLA interferometer\cite{dabbech2018cygnus}, where the reconstruction achieved a resolution higher than the limit of the instrument itself.
 
@@ -81,8 +89,7 @@ So far, we looked at how image reconstruction works in theory. We need a regular
 \end{figure}
 
 
-The MeerKAT radio interferometer consists of 64 antennas. Each antenna pair creates a single baseline, and each baseline results in a single visibility. This results in 2016 visibilities for the MeerKAT interferometer. The distance between the antennas of each pair is important: The distance defines what point in the Fourier space gets sampled. A short baseline samples close to the origin of the Fourier space, and contain low-frequency Fourier components of the sky image. Long baselines measure points further away from the origin. They sample the high-frequency Fourier components, and contain information about sharp edges in the image. Figure \ref{radio:sampling:ants} shows the 64 antennas of MeerKAT, while the Figure \ref{radio:sampling:pattern} shows the 2016 visibility samples in the Fourier space.
-
+The MeerKAT radio interferometer consists of 64 antennas. Each antenna pair is a single baseline of the interferometer, which results in a single visibility measurement. This leads to 2016 visibilities for the MeerKAT interferometer. The distance between the antennas of each pair is important: The distance defines what point in the Fourier space gets sampled. A short baseline samples close to the origin of the Fourier space, and contain low-frequency Fourier components of the sky image. Long baselines measure points further away from the origin. They sample the high-frequency Fourier components, and contain information about sharp edges in the image. Figure \ref{radio:sampling:ants} shows the 64 antennas of MeerKAT, while the Figure \ref{radio:sampling:pattern} shows the 2016 visibility samples in the Fourier space.
 
 The sampling pattern of the MeerKAT interferometer is not uniform in the Fourier space. We have areas which are densely sampled, and areas which are sparsely sampled. Note that we only have a few samples of the high-frequency Fourier components. We are missing measurements from a large portion of the Fourier space. Modern radio interferometers use two tricks to fill up the Fourier space with more visibility samples: Adding visiblities from different channels, and from different timesteps.
 
