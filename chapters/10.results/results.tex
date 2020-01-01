@@ -387,16 +387,16 @@ Figure \ref{pcdm:results:psf} shows the result of our parallel coordinate descen
 \begin{figure}[h]
 	\centering
 	\begin{subfigure}{0.6\linewidth}
-		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/parameters/psfSize.png}
+		\includegraphics[width=1.0\linewidth]{./chapters/10.results/approx2/psfSize.png}
 	\end{subfigure}
 	\begin{subfigure}{0.35\linewidth}
 		\begin{tabular}{c | r | r}
 			PSF & ESO & Total seconds \\ \hline
-			1 / 4 & 2.750 & 4941 \\
-			1 / 8 & 1.437 & 1433 \\
-			1 / 16 & 1.109 & 390 \\
-			1 / 32 & 1.027 & 108 \\
-			1 / 64 & 1.001 & 61 \\
+			1 / 4 & 2.750 & 4094 \\
+			1 / 8 & 1.437 & 1148 \\
+			1 / 16 & 1.109 & 339 \\
+			1 / 32 & 1.027 & 81 \\
+			1 / 64 & 1.001 & 42 \\
 		\end{tabular}
 	\end{subfigure}
 	\caption{Convergence times with $PSF$ approximation}
@@ -422,16 +422,16 @@ Our parallel coordinate descent algorithm needs a search percentage larger than 
 \begin{figure}[h]
 	\centering
 	\begin{subfigure}{0.6\linewidth}
-		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/parameters/searchPercent.png}
+		\includegraphics[width=1.0\linewidth]{./chapters/10.results/approx2/searchPercent.png}
 	\end{subfigure}
 	\begin{subfigure}{0.35\linewidth}
 		\begin{tabular}{c | r}
 			Search Factor & Total seconds \\ \hline
-			0.01 & 110 \\
-			0.1 & 106 \\
-			0.2 & 104 \\
-			0.4 & 112 \\
-			0.8 & 134 \\
+			0.01 & 83 \\
+			0.1 & 81 \\
+			0.2 & 83 \\
+			0.4 & 89 \\
+			0.8 & 106 \\
 		\end{tabular}
 	\end{subfigure}
 	\caption{Convergence times with different search percentages.}
