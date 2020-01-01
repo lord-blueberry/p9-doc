@@ -44,23 +44,11 @@ The question remains is: How close is the most likely image to the observed one?
 
 No reconstruction algorithm performs equally well on all three goals. One of the most widely used reconstruction algorithms is CLEAN \cite{hogbom1974aperture, rau2011multi} and its extensions. It has shown to be robust against noise in the reconstruction problem, and can be one of the fastest reconstruction algorithms on a shared memory system \cite{offringa2017optimized}. CLEAN is one of the oldest algorithms still in use today. As such, it was developed before the advent of distributed and GPU-accelerated computing. Today's new radio interferometers produce ever more measurements. The recently finished MeerKAT radio interferometer produces roughly 80 million Fourier measurements each second. Astronomers wish to reconstruct an image from several hours worth of measurement data. Reconstructing an image from this data volume requires GPU and distributed computation. But how to use GPU and distributed computing effectively is still an open problem.
 
-To our knowledge, coordinate descent methods have not been explored for the image reconstruction problem in Radio Astronomy. Coordinate descent methods have been successfully applied in other inverse problems, such as reconstruction of CT scans\cite{bouman1996unified}, or X-Ray imaging\cite{felix2017compressed}. GPU accelerated\cite{mcgaffin2015edge} and distributed\cite{fercoq2014fast} variants have been studied. 
+To our knowledge, coordinate descent methods have not been explored for the image reconstruction problem in Radio Astronomy. Coordinate descent methods have been successfully applied to similar image reconstruction problems, such as reconstruction of CT scans\cite{bouman1996unified}, or X-Ray imaging\cite{felix2017compressed}. Parallel \cite{richtarik2016parallel} GPU accelerated\cite{mcgaffin2015edge} and distributed\cite{fercoq2014fast} coordinate descent methods have been studied in the literature. 
 
-T
+In this project, we developed two coordinate descent based reconstruction algorithms: A serial and a parallel coordinate descent algorithm. We implemented the algorithms in a platform-independent proof-of-concept pipeline in .Net Core. We compared the image reconstruction quality to state-of-the-art algorithms on a real-world MeerKAT observation of the LMC (Large Magellanic Cloud). The data was provided by SARAO for algorithmic testing purposes. Our goal was to develop a coordinate descent based algorithm which creates comparable reconstructions to state-of-the-art algorithms, but has shorter reconstruction times and extends easily to distributed computing.
 
-We correct this, we study coordinate descent methods on the image reconstruction problem in Radio Astronomy.
-Develop our own reconstruction pipeline in .Net Core.
-The algorithm is implemented platform independent 
-We created two reconstruction algorithms, a serial and a parallel coordinate descent algorithm. We developed a novel approximation scheme, which simplifies the distribution of the image reconstruction problem.
-
-Hypothesis is: We can exploit approximations in the image reconstruction, and create a new algorithm which simplifies the distribution and is faster.
-
-We use the parallel coordinate descent algorithm together with the approximation scheme for a significant speedup.
-Factor 20 compared to the serial coordinate descent algorithm.
-An estimated speedup of factor 3 compared to CLEAN variants.
-
-We compare the reconstruction on a real world MeerKAT observation provided by SARAO.
-
+Our hypothesis was that we may find ways to approximate the image reconstruction, and simplify the distribution. CLEAN \cite{clark1980efficient} has been using an approximation scheme to speed up the reconstruction. We expanded on the ideas in \cite{clark1980efficient} and created a new approximation scheme for coordinate descent methods. Together with our approximation scheme, the parallel coordinate descent algorithm was able to achieve significant speedup. We achieved a speedup of factor 20 compared to the serial coordinate descent algorithm, and an estimated speedup of factor 3 to CLEAN based algorithms. Our approximation scheme simplifies the distribution of the image reconstruction, and has the potential to scale up with the planned expansions of the MeerKAT interferometer.
 
 The rest of this work is structured as follows: First in section \ref{radio}, we give an introduction to radio interferometric imaging, and give the theoretical background to why a reconstruction can even achieve a higher resolution than the instrument. Next we present the current state-of-the-art in image reconstruction for radio interferometers in section \ref{state}. Then, we introduce the serial coordinate descent algorithm in Section \ref{cd}, which introduces how a coordinate descent reconstruction algorithm works in detail. The core of our contribution are the following two sections: The approximation scheme in Section \ref{gradients}, and the parallel coordinate descent algorithm in Section \ref{pcdm}, which exploits the approximation scheme for a significant speedup. We compare our serial and parallel coordinate descent algorithms with state-of-the-art reconstructions on a real-world MeerKAT observation in Section \ref{results}. 
 
