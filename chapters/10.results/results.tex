@@ -357,32 +357,16 @@ Combining the two approximation methods leads to a total speedup with a $PSF$ wi
 
 Although the serial coordinate descent algorithm can be sped-up with the $PSF$ approximation, it does not lead to an algorithm with a comparable wall-clock time to CLEAN or multi-scale CLEAN. The speedup it achieves per iteration is limited by synchronization overhead: The serial coordinate descent algorithm uses all available processors to update the gradient map. With our approximation method, the serial algorithm can update an increasingly smaller facet of the gradient map. If we use a $PSF$ window which is $\frac{1}{16}$ of the total $3072^2$ size, the serial coordinate descent updates $384^2$ elements of the gradient map in each iteration. Utilizing all processors effectively with ever smaller $PSF$s becomes difficult.
 
-
-
+T
 
 
 
 \subsection{$PSF$ approximation with parallel coordinate descent}\label{pcdm:results}
-T
+First, we test the effect of our $PSF$ approximation method on the parallel coordinate descent algorithm. We test the deconvolution with increasingly smaller windows around the center of the full $PSF$. We measure the wall-clock time of the asynchronous iterations with $\tau = 8$ processors. We measure the value of the objective function after a batch $8 * 1000$ asynchronous iterations.
 
-We have
+Note that the tests in this section are performed using the parallel block coordinate descent algorithm. It is able to group pixels into blocks, and minimize several blocks in parallel in each iteration. But grouping pixels into blocks slowed down the performance of the parallel block coordinate algorithm. The results of these tests can be found in the attachments.
 
-Re-introduce parallel
-
-Re-introduce the ESO.
-
-Various tuning parameters.
-
-
-
-We have shown the parallel coordinate descent algorithm in two variants: With gradient acceleration and without. We developed several heuristics, which includes a set of tuning parameters. In this section, we test our parallel coordinate descent algorithm on the MeerKAT LMC observation. We test the tuning parameters, and show how much our algorithm benefits from the $PSF$ approximation method.
-
-In this test, we measure the wall-clock time of only the deconvolution. The wall-clock time of the Major- and 'Minor' cycle are excluded. Again, we calculate the value of the objective function. We compare different parameters of our parallel coordinate descent algorithm, trying to get the shortest convergence time.
-
-\subsubsection{$PSF$ approximation}
-First, we test the effect of our $PSF$ approximation method. We test different $PSF$ cutouts of our parallel coordinate descent algorithm with gradient acceleration. We use $\tau = 8$ processors with our asynchronous implementation.
-
-Figure \ref{pcdm:results:psf} shows the result of our parallel coordinate descent algorithm with different $PSF$ fractions, combined with the ESO and the total seconds needed to converge. The $y$-axis shows the objective value, and the $x$-axis shows the elapsed seconds. Note that the axis of the figure are logarithmic. The 'kinks' in the lines are due to either the Major or the 'Minor' cycle resetting the residuals (remember: we do not include the wall-clock time of the Major or 'Minor' cycle in this test).
+Figure \ref{pcdm:results:psf} shows the result of our parallel coordinate descent algorithm with different $PSF$ fractions, combined with the ESO and the total seconds needed to converge. The $y$-axis shows the objective value, and the $x$-axis shows the elapsed seconds. Note that the axis of the figure are logarithmic. The 'kinks' in the lines are due to either the Major or the 'Minor' cycle resetting the residuals (remember: we excluded the time spent in the gridder or FFT, and only measured the time a batch of $8 * 1000$ asynchronous iterations).
 
 \begin{figure}[h]
 	\centering
@@ -403,21 +387,21 @@ Figure \ref{pcdm:results:psf} shows the result of our parallel coordinate descen
 	\label{pcdm:results:psf}
 \end{figure}
 
-Clearly, the parallel coordinate descent algorithm benefits from our $PSF$ approximation method. If we use $\frac{1}{32}$ of the full $PSF$, the parallel coordinate descent algorithm spends a total of 108 seconds in to deconvolve the image. For comparison, the serial coordinate descent algorithm with $PSF$ approximation takes roughly 1400 seconds, or 23 minutes.
+The Figure \ref{pcdm:results:psf} shows one line representing the value of the objective function after each batch of asynchronous iterations. Each line contains discontinuities, which represents a Major cycle which was performed in-between the batch iterations. Clearly, the parallel coordinate descent algorithm benefits from our $PSF$ approximation method. If we use $\frac{1}{32}$ of the full $PSF$, the parallel coordinate descent algorithm spends a total of 81 seconds in to deconvolve the image. For comparison, the serial coordinate descent algorithm with $PSF$ approximation takes roughly 1400 seconds, or 23 minutes.
 
-As expected, with increasing $PSF$ approximation, we get an ESO which is ever closer to 1. Remember: An ESO of 1 means that each processor in the parallel coordinate descent algorithm can has the same step size as the serial coordinate descent algorithm. With an approximation of $\frac{1}{32}$ and 8 parallel processors, the ESO is only marginally larger than 1. This suggests that the parallel coordinate descent algorithm may be sped up further with additional processors.
+As expected, with increasing $PSF$ approximation, we get an ESO which is ever closer to 1. Remember: An ESO of 1 means that each processor in the parallel coordinate descent algorithm can has the same step size as the serial coordinate descent algorithm. With an approximation of $\frac{1}{32}$ and 8 parallel processors, the ESO is only marginally larger than 1.
 
 Note that the speedup from fraction $\frac{1}{4}$ to $\frac{1}{8}$ is roughly a factor of $3.5$. The same holds true for the speedup of $\frac{1}{8}$ to $\frac{1}{16}$, and $\frac{1}{16}$ to $\frac{1}{32}$. The $PSF$ cutout from  $\frac{1}{8}$ to  $\frac{1}{16}$ four times fewer pixels. This suggest the speedup may be due to the reduced conflicts in the asynchronous update of the gradient map. With a smaller $PSF$ we reduce the change of several threads updating the same location in the gradient map, and we spend more time in the deconvolution itself.
 
-For the rest of this project, we will use a $PSF$ approximation of $\frac{1}{32}$ for the parallel coordinate descent algorithm. The $\frac{1}{64}$ approximation is faster in this tests, but needs more 'Minor' cycles (Which were excluded from the wall-clock time). Including the time spent in the 'Minor' cycle, the $\frac{1}{32}$ approximation is the fastest overall.
+For the rest of this project, we will use a $PSF$ approximation of $\frac{1}{32}$ for the parallel coordinate descent algorithm. The $\frac{1}{64}$ approximation is faster in this tests, but spends more time outside the asynchronous batch iterations(we excluded everything but the time spent in the asynchronous batch iterations) than with $\frac{1}{32}$.
 
 
 \subsubsection{Pseudo-random strategy and the Search Fraction}\label{pcdm:results:fraction}
-We discussed in Section \ref{pcdm:adaption}, a random block selection strategy seems to perform badly on the deconvolution problem. We created the pseudo-random strategy, which selects a block at random, but searches in it's neighborhood for the optimal block to optimize. It is a mixture between a random and a greedy selection strategy.
+We discussed in Section \ref{pcdm:adaption}, a random pixel selection strategy seems to perform badly on the deconvolution problem. We created the pseudo-random strategy, which selects a pixel at random, but searches in it's neighborhood for the optimal pixel to optimize. It is a mixture between a random and a greedy selection strategy.
 
-But the pseudo-random strategy introduces a new tuning parameter, which we call the 'search factor'. A search factor of 0 says that after a random block has been selected, we search 0\% of the neighboring blocks in the active set. It is identical to a pure random selection strategy. A search factor of 1.0 says that after a random block has been selected, we search 100\% of its neighbors in the active set. For example, if we have 256 blocks with 8 threads, a search percentage of 1.0 selects a random block and looks at 32 blocks in its neighborhood. A search percentage of 100\% is identical to a greedy strategy, where each thread searches its part of the active set.
+But the pseudo-random strategy introduces a new tuning parameter, which we call the 'search factor'. A search factor of 0 says that after a random pixel has been selected, we search 0\% of the neighboring pixels in the active set. It is identical to a pure random selection strategy. A search factor of 1.0 says that after a random pixel has been selected, we search 100\% of its neighbors in the image. For example, if we have 256 pixel with 8 threads, a search percentage of 1.0 selects a random pixel and looks at 32 pixel in its neighborhood. A search percentage of 100\% is identical to a greedy strategy, where each thread searches its partition of the entire image.
 
-Our parallel coordinate descent algorithm needs a search percentage larger than 0. We compare different search percentages in Figure \ref{pcdm:results:search}.
+Our parallel coordinate descent algorithm needs a search factor larger than 0. We compare different search factors in Figure \ref{pcdm:results:search}.
 
 \begin{figure}[h]
 	\centering
@@ -440,12 +424,12 @@ Our parallel coordinate descent algorithm needs a search percentage larger than 
 
 According to this test, the search factor tuning parameter influences the convergence speed, but tuning it does not lead to a significant speedup. A value between 0.01 and 0.4 leads to a similar wall-clock time. It is only when the parameter is set close to 1 (close to fully greedy) where we see a significant increase in wall-clock time.
 
-Based on this test, we fixed the search percentage tuning parameter to a value of 0.1 for all tests in this project. It was enough to alleviate the problems a pure random strategy introduces in the deconvolution problem (discussed previously in Section \ref{pcdm:adaption}).
-
-However, we do not know whether this parameter generally has a small influence on convergence speed, or if it is merely due to the LMC observation we used for this project. To answer this question, we need further tests on diverse observations.
+Based on this test, we fixed the search percentage tuning parameter to a value of 0.1 for all tests in this project. It was enough to alleviate the problems a pure random strategy introduces in the deconvolution problem (discussed previously in Section \ref{pcdm:adaption}). However, we do not know whether this parameter generally has a small influence on convergence speed, or if it is merely due to the LMC observation we used for this project. To answer this question, we need further tests on different observations.
 
 
 \subsection{Comparison to the serial coordinate descent algorithm}
+T
+
 In the previous section, we tested various tuning parameters of the parallel coordinate descent algorithm. In this section, we compare the serial coordinate descent algorithm with the final, simplified parallel coordinate descent algorithm.
 
 We took the lessons from the tests and implemented a simplified parallel coordinate descent algorithm. It does not use gradient acceleration, and cannot group pixels into blocks. Each thread can only minimize a single pixel in parallel in each iteration. As we will see shortly, the simplified parallel coordinate descent implementation is significantly faster than the previous implementation.

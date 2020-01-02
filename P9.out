@@ -27,7 +27,7 @@
 \BOOKMARK [3][-]{subsubsection.5.1.3}{Combining the two approximation methods}{subsection.5.1}% 27
 \BOOKMARK [2][-]{subsection.5.2}{Major Cycle convergence and implicit path regularization}{section.5}% 28
 \BOOKMARK [1][-]{section.6}{Parallel coordinate descent methods}{}% 29
-\BOOKMARK [2][-]{subsection.6.1}{From serial to parallel block coordinate descent}{section.6}% 30
+\BOOKMARK [2][-]{subsection.6.1}{From serial to parallel coordinate descent}{section.6}% 30
 \BOOKMARK [3][-]{subsubsection.6.1.1}{Estimated Separability Overapproximation \(ESO\)}{subsection.6.1}% 31
 \BOOKMARK [3][-]{subsubsection.6.1.2}{Accelerated parallel block coordinate descent}{subsection.6.1}% 32
 \BOOKMARK [2][-]{subsection.6.2}{Asynchronous implementation}{section.6}% 33
@@ -41,11 +41,10 @@
 \BOOKMARK [3][-]{subsubsection.7.2.2}{Method 2: Approximate deconvolution}{subsection.7.2}% 41
 \BOOKMARK [3][-]{subsubsection.7.2.3}{Combination of Method 1 and 2}{subsection.7.2}% 42
 \BOOKMARK [2][-]{subsection.7.3}{PSF approximation with parallel coordinate descent}{section.7}% 43
-\BOOKMARK [3][-]{subsubsection.7.3.1}{PSF approximation}{subsection.7.3}% 44
-\BOOKMARK [3][-]{subsubsection.7.3.2}{Pseudo-random strategy and the Search Fraction}{subsection.7.3}% 45
-\BOOKMARK [2][-]{subsection.7.4}{Comparison to the serial coordinate descent algorithm}{section.7}% 46
-\BOOKMARK [2][-]{subsection.7.5}{Scalability of the parallel coordinate descent algorithm}{section.7}% 47
-\BOOKMARK [1][-]{section.8}{Discussion}{}% 48
-\BOOKMARK [1][-]{section.9}{Conclusion}{}% 49
-\BOOKMARK [1][-]{section.10}{Ehrlichkeitserkl\344rung}{}% 50
-\BOOKMARK [1][-]{section.11}{Attachment}{}% 51
+\BOOKMARK [3][-]{subsubsection.7.3.1}{Pseudo-random strategy and the Search Fraction}{subsection.7.3}% 44
+\BOOKMARK [2][-]{subsection.7.4}{Comparison to the serial coordinate descent algorithm}{section.7}% 45
+\BOOKMARK [2][-]{subsection.7.5}{Scalability of the parallel coordinate descent algorithm}{section.7}% 46
+\BOOKMARK [1][-]{section.8}{Discussion}{}% 47
+\BOOKMARK [1][-]{section.9}{Conclusion}{}% 48
+\BOOKMARK [1][-]{section.10}{Ehrlichkeitserkl\344rung}{}% 49
+\BOOKMARK [1][-]{section.11}{Attachment}{}% 50
