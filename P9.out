@@ -14,37 +14,36 @@
 \BOOKMARK [2][-]{subsection.4.2}{Serial coordinate descent algorithm}{section.4}% 14
 \BOOKMARK [3][-]{subsubsection.4.2.1}{Step 1: Choosing single a pixel}{subsection.4.2}% 15
 \BOOKMARK [3][-]{subsubsection.4.2.2}{Step 2: Optimizing a single pixel}{subsection.4.2}% 16
-\BOOKMARK [3][-]{subsubsection.4.2.3}{Inefficient implementation pseudo-code}{subsection.4.2}% 17
-\BOOKMARK [2][-]{subsection.4.3}{Efficient implementation}{section.4}% 18
-\BOOKMARK [3][-]{subsubsection.4.3.1}{Edge handling of the convolution}{subsection.4.3}% 19
-\BOOKMARK [3][-]{subsubsection.4.3.2}{Using a map of gradients}{subsection.4.3}% 20
-\BOOKMARK [2][-]{subsection.4.4}{Efficient implementation pseudo-code}{section.4}% 21
-\BOOKMARK [2][-]{subsection.4.5}{Serial coordinate descent and similarities to the CLEAN algorithm}{section.4}% 22
-\BOOKMARK [1][-]{section.5}{PSF approximation for fast and distributed deconvolution}{}% 23
-\BOOKMARK [2][-]{subsection.5.1}{PSF approximation for the serial coordinate descent algorithm}{section.5}% 24
-\BOOKMARK [3][-]{subsubsection.5.1.1}{Method 1: Approximate update}{subsection.5.1}% 25
-\BOOKMARK [3][-]{subsubsection.5.1.2}{Method 2: Approximate deconvolution}{subsection.5.1}% 26
-\BOOKMARK [3][-]{subsubsection.5.1.3}{Combining the two approximation methods}{subsection.5.1}% 27
-\BOOKMARK [2][-]{subsection.5.2}{Major Cycle convergence and implicit path regularization}{section.5}% 28
-\BOOKMARK [1][-]{section.6}{Parallel coordinate descent methods}{}% 29
-\BOOKMARK [2][-]{subsection.6.1}{From serial to parallel coordinate descent}{section.6}% 30
-\BOOKMARK [3][-]{subsubsection.6.1.1}{Estimated Separability Overapproximation \(ESO\)}{subsection.6.1}% 31
-\BOOKMARK [3][-]{subsubsection.6.1.2}{Accelerated parallel block coordinate descent}{subsection.6.1}% 32
-\BOOKMARK [2][-]{subsection.6.2}{Asynchronous implementation}{section.6}% 33
-\BOOKMARK [2][-]{subsection.6.3}{The problem with random selection for deconvolution}{section.6}% 34
-\BOOKMARK [1][-]{section.7}{Tests on MeerKAT LMC observation}{}% 35
-\BOOKMARK [2][-]{subsection.7.1}{Comparison with state-of-the-art reconstruction algorithms}{section.7}% 36
-\BOOKMARK [3][-]{subsubsection.7.1.1}{Super-resolution of the N132D supernova-remnant}{subsection.7.1}% 37
-\BOOKMARK [3][-]{subsubsection.7.1.2}{Influence of calibration errors}{subsection.7.1}% 38
-\BOOKMARK [2][-]{subsection.7.2}{PSF approximation with serial coordinate descent}{section.7}% 39
-\BOOKMARK [3][-]{subsubsection.7.2.1}{Method 1: Approximate update}{subsection.7.2}% 40
-\BOOKMARK [3][-]{subsubsection.7.2.2}{Method 2: Approximate deconvolution}{subsection.7.2}% 41
-\BOOKMARK [3][-]{subsubsection.7.2.3}{Combination of Method 1 and 2}{subsection.7.2}% 42
-\BOOKMARK [2][-]{subsection.7.3}{PSF approximation with parallel coordinate descent}{section.7}% 43
-\BOOKMARK [3][-]{subsubsection.7.3.1}{Pseudo-random strategy and the Search Factor}{subsection.7.3}% 44
-\BOOKMARK [2][-]{subsection.7.4}{Comparison to the serial coordinate descent algorithm}{section.7}% 45
-\BOOKMARK [2][-]{subsection.7.5}{Scalability of the parallel coordinate descent algorithm}{section.7}% 46
-\BOOKMARK [1][-]{section.8}{Discussion}{}% 47
-\BOOKMARK [1][-]{section.9}{Conclusion}{}% 48
-\BOOKMARK [1][-]{section.10}{Ehrlichkeitserkl\344rung}{}% 49
-\BOOKMARK [1][-]{section.11}{Attachment}{}% 50
+\BOOKMARK [2][-]{subsection.4.3}{Efficient implementation}{section.4}% 17
+\BOOKMARK [3][-]{subsubsection.4.3.1}{Edge handling of the convolution}{subsection.4.3}% 18
+\BOOKMARK [3][-]{subsubsection.4.3.2}{Using a map of gradients}{subsection.4.3}% 19
+\BOOKMARK [2][-]{subsection.4.4}{Efficient implementation pseudo-code}{section.4}% 20
+\BOOKMARK [2][-]{subsection.4.5}{Serial coordinate descent and similarities to the CLEAN algorithm}{section.4}% 21
+\BOOKMARK [1][-]{section.5}{PSF approximation for fast and distributed deconvolution}{}% 22
+\BOOKMARK [2][-]{subsection.5.1}{PSF approximation for the serial coordinate descent algorithm}{section.5}% 23
+\BOOKMARK [3][-]{subsubsection.5.1.1}{Method 1: Approximate update}{subsection.5.1}% 24
+\BOOKMARK [3][-]{subsubsection.5.1.2}{Method 2: Approximate deconvolution}{subsection.5.1}% 25
+\BOOKMARK [3][-]{subsubsection.5.1.3}{Combining the two approximation methods}{subsection.5.1}% 26
+\BOOKMARK [2][-]{subsection.5.2}{Major Cycle convergence and implicit path regularization}{section.5}% 27
+\BOOKMARK [1][-]{section.6}{Parallel coordinate descent methods}{}% 28
+\BOOKMARK [2][-]{subsection.6.1}{From serial to parallel coordinate descent}{section.6}% 29
+\BOOKMARK [3][-]{subsubsection.6.1.1}{Estimated Separability Overapproximation \(ESO\)}{subsection.6.1}% 30
+\BOOKMARK [3][-]{subsubsection.6.1.2}{Accelerated parallel block coordinate descent}{subsection.6.1}% 31
+\BOOKMARK [2][-]{subsection.6.2}{Asynchronous implementation}{section.6}% 32
+\BOOKMARK [2][-]{subsection.6.3}{The problem with random selection for deconvolution}{section.6}% 33
+\BOOKMARK [1][-]{section.7}{Tests on MeerKAT LMC observation}{}% 34
+\BOOKMARK [2][-]{subsection.7.1}{Comparison with state-of-the-art reconstruction algorithms}{section.7}% 35
+\BOOKMARK [3][-]{subsubsection.7.1.1}{Super-resolution of the N132D supernova-remnant}{subsection.7.1}% 36
+\BOOKMARK [3][-]{subsubsection.7.1.2}{Influence of calibration errors}{subsection.7.1}% 37
+\BOOKMARK [2][-]{subsection.7.2}{PSF approximation with serial coordinate descent}{section.7}% 38
+\BOOKMARK [3][-]{subsubsection.7.2.1}{Method 1: Approximate update}{subsection.7.2}% 39
+\BOOKMARK [3][-]{subsubsection.7.2.2}{Method 2: Approximate deconvolution}{subsection.7.2}% 40
+\BOOKMARK [3][-]{subsubsection.7.2.3}{Combination of Method 1 and 2}{subsection.7.2}% 41
+\BOOKMARK [2][-]{subsection.7.3}{PSF approximation with parallel coordinate descent}{section.7}% 42
+\BOOKMARK [3][-]{subsubsection.7.3.1}{Pseudo-random strategy and the Search Factor}{subsection.7.3}% 43
+\BOOKMARK [2][-]{subsection.7.4}{Comparison to the serial coordinate descent algorithm}{section.7}% 44
+\BOOKMARK [2][-]{subsection.7.5}{Scalability of the parallel coordinate descent algorithm}{section.7}% 45
+\BOOKMARK [1][-]{section.8}{Discussion}{}% 46
+\BOOKMARK [1][-]{section.9}{Conclusion}{}% 47
+\BOOKMARK [1][-]{section.10}{Ehrlichkeitserkl\344rung}{}% 48
+\BOOKMARK [1][-]{section.11}{Attachment}{}% 49
