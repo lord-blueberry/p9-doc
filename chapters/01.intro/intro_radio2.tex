@@ -38,19 +38,9 @@ The objective \eqref{radio:cs:l2} only includes information about the measuremen
 \underset{x}{minimize} \: \left \| V - MFx \right \|_2^2 + \lambda \left \| x \right \|_1
 \end{equation}
 
-Note the two terms in the objective \eqref{radio:cs:lasso}: We have the same term from our measurements, which we call the "data term". But we also have an additional "regularization term", which is the L1 norm\footnote{Sum of absolute values of the pixels, $\sum_i \sum_j \left \| x_{ij} \right \|$} and forces our reconstruction to be sparse. The parameter $\lambda$ represents how much emphasis we put on the regularization. The new objective function is still convex, it still has a global minimum. The regularization term simply shifted the global minimum to a different location when compared to the first objective \eqref{radio:cs:l2}. Now the question is: Does it point to the observed image? In practice, if the regularization is a good model for the image content, the image we retrieve at the minimum of the objective \eqref{radio:cs:lasso}.
+Note the two terms in the objective \eqref{radio:cs:lasso}: We have the same term from our measurements, which we call the "data term". But we also have an additional "regularization term", which is the L1 norm\footnote{Sum of absolute values of the pixels, $\sum_i \sum_j \left \| x_{ij} \right \|$} and forces our reconstruction to be sparse. The parameter $\lambda$ represents how much emphasis we put on the regularization. The new objective function is still convex, it still has a global minimum. The regularization term simply shifted the global minimum to a different location when compared to the first objective \eqref{radio:cs:l2}. Now the question is: Does it point to the observed image? In practice, if the regularization is a good model for the image content, the reconstructed image found at the minimum of \eqref{radio:cs:lasso} is indistinguishable from the observed image.
 
-T
-
-In reality, we also have extended emissions. The L1 regularization does not model reality perfectly. 
-The optimum of the objective function \eqref{radio:cs:lasso} still points to an image, but not necessarily to the truly observed image.
-The reconstructed image by a specific regularization.
-This is what we call image quality. How close is the reconstructed image to the truly observed one. 
-Knowing the observed image is only possible in simulations.
-
-T
-
-The reconstruction quality depends on how well the regularization models the observed image. In our example the L1 norm is a good model for images only consisting of stars. It penalizes images that have a large number of non-zero pixels. But radio interferometer also measure extended emissions like gas-clouds. Those images lead to a large number of non-zero pixels and by extent a large regularization penalty. The L1 regularization may force non-zero pixels of the extended emission to zero.
+In reality, no regularization models the image content perfectly. The L1 regularization for example does not account for extended emissions, when we have a large area of non-zero pixels. In this case, the reconstructed image found at the minimum of \eqref{radio:cs:lasso} has visible differences to the truly observed image. The regularization is responsible for the 'reconstruction quality', how close the reconstructed image is to the truly observed one.
 
 In a sense there is data modeling task involved in the image reconstruction. The better we understand what a plausible image looks like, the higher the reconstruction quality. Recent work managed to reconstruct super-resolved images for the VLA interferometer\cite{dabbech2018cygnus}, where the reconstruction achieved a resolution higher than the limit of the instrument itself.
 
@@ -93,7 +83,7 @@ The MeerKAT radio interferometer consists of 64 antennas. Each antenna pair is a
 
 The sampling pattern of the MeerKAT interferometer is not uniform in the Fourier space. We have areas which are densely sampled, and areas which are sparsely sampled. Note that we only have a few samples of the high-frequency Fourier components. We are missing measurements from a large portion of the Fourier space. Modern radio interferometers use two tricks to fill up the Fourier space with more visibility samples: Adding visiblities from different channels, and from different timesteps.
 
-The interferometer measures the sky at different radio channels simultaneously. We can add the visibilities from neighboring channels together, resulting in the visibility pattern shown in Figure \ref{radio:sampling:freq}. Each channel measures the Fourier space using the same pattern, but scaled by the radio frequency.
+The interferometer measures the sky at different wavelengths simultaneously. We can add the visibilities from neighboring channels together, resulting in the visibility pattern shown in Figure \ref{radio:sampling:freq}. Each channel measures the Fourier space using the same pattern, but scaled by the radio frequency.
 
 The interferometer observes the sky over a period of time. Depending on the observation, this can be minutes, up to several hours. During this time, the rotation of the Earth rotates the sampling pattern in Fourier space, shown in Figure \ref{radio:sampling:time}.
 
@@ -105,9 +95,7 @@ Furthermore, the reconstructed image from MeerKAT observations generally span a 
 
 
 \subsubsection{Introduction to the third visibility term}
-As we discussed so far, the radio interferometer measures visibilities of the sky image, and we wish to find the observed image from the measurements. We have ignored the fact that the visibility measurements not only have a $u-$ and $v$-, but also a third $w$-term. Visibilities are in fact three dimensional.
-
-The third $w$ component arises from the fact that the baselines (antenna pairs) are not on the same plane. The $w$-term becomes relevant for wide field-of-view imaging in radio interferometry. We will show in later sections how the $w$-term affects the design of the image reconstruction algorithm. Let us start with the measurement equation for small field-of-views:
+As we discussed so far, the radio interferometer measures visibilities of the sky image, and we wish to find the observed image from the measurements. We have ignored the fact that the visibility measurements not only have a $u-$ and $v$-, but also a third $w$-term. Visibilities are in fact three dimensional. The third $w$ component arises from the fact that the baselines (antenna pairs) are not on the same plane. The curvature of the earth, local hills and other terrain feature introduce the $w$-term. The $w$-term becomes relevant for wide field-of-view imaging in radio interferometry. Let us start with the measurement equation for small field-of-views:
 
 \begin{equation}\label{intro2:model:smallfov}
 V(u, v) = \int\int I(l, m)  e^{2 \pi i [ul+vm]} \: dl \: dm
@@ -119,9 +107,13 @@ The radio interferometer measures Visibilities $V$ from the sky image $I$. Each 
 V(u, v, w) = \int\int  \frac{I(l, m)}{c(l, m)}  e^{2 \pi i [ul+vm + w(c(l, m) - 1)]} \: dl \: dm \:,  \quad c(l,m) = \sqrt{1 - l^2 - m ^2}
 \end{equation} 
 
-We still have the Fourier transform $ e^{2 \pi i [ul+vm \ldots]}$ at the core. But now the visibilities have a third $w$-term, the image has a normalization factor of $c(l, m)$ and the Fourier transform has a phase-shift term $+ w(c(l, m) - 1)$ added to it. The phase-shift of the Fourier transform depends on the direction from which the radiation was measured. As such, the phase shift changes over the image. It is called a Directionally Dependent Effect (DDE).
+We still have the Fourier transform $ e^{2 \pi i [ul+vm \ldots]}$ at the core. But now the visibilities have a third $w$-term, the image has a normalization factor of $c(l, m)$ and the Fourier transform has a phase-shift $+ w(c(l, m) - 1)$ added to it. The phase-shift of the Fourier transform depends on the direction from which the radiation was measured. As such, the phase shift changes over the image. It is called a Directionally Dependent Effect (DDE).
 
-There exist several sources of DDE's. The Ionoshpere for example is a natural source that distorts the signal depending on the direction. From different directions, the distortion by the Ionosphere changes. The $w$-term arises from the properties of the interferometer itself. DDE's are costly in terms of computation time. The $w$-term breaks the two dimensional Fourier relationship between the image and the visibilities. We cannot use the FFT, resulting in a more expensive Fourier transformation. The difficulty lies in handling DDE's efficiently in the image reconstruction algorithm.
+There exist several sources of DDE's. The Ionoshpere for example is a natural source that distorts the signal depending on the direction. From different directions, the distortion by the Ionosphere changes. The $w$-term arises from the properties of the interferometer itself. DDE's are costly in terms of computation time. The $w$-term breaks the two dimensional Fourier relationship between the image and the visibilities. This creates a difficulty when we need to calculate the Fourier transform of the visibility measurements:  Calculating the Fourier transform for a large number of visibility measurements becomes expensive. The Fast Fourier Transform (FFT) is significantly faster. But we cannot use the FFT for the visibilities: It requires the visibilities sampled on a uniform grid, and does not expect a three dimensional Fourier space to result in a two dimensional image. 
+
+Image reconstruction pipelines in radio astronomy solve these issues by using a 'gridder'. The gridder is tasked with interpolating the non-uniformly sampled visibilities on a uniform grid, and correcting for the $w$-term. The gridder creates a uniformly sampled Fourier grid, which then can be efficiently transformed into the image space with an FFT. In this project, we do not focus on the gridding algorithm. We implemented the gridder developed by Veenboer et al. \cite{veenboer2017image}. It is responsible for interpolating the visibilities and correcting for the $w$-term in an efficient manner.
+
+The gridder lets us efficiently transform the visibility measurements into an image. But it does not shield the reconstruction algorithm from the DDE's themselves. As we will see, an image reconstruction algorithm also has to correct for DDE's during reconstruction. 
 
 
 \subsection{Introduction to image reconstruction algorithm for radio interferometer}\label{intro2:rec}
@@ -139,9 +131,9 @@ First, let us look back at the objective function. In the previous section, the 
 
 We can also reconstruct the missing visibilities directly. In that case, we solve an in-painting problem in the Fourier space. Or we can transform the measurements into image space, and solve an equivalent deconvolution problem, where the masking matrix $M$ in Fourier space becomes the convolution kernel called the Point Spread Function $PSF$ (Remember that a multiplication in Fourier space is a convolution in image space.)
 
-These three problems are equivalent in theory. The key difference between the three formulations is that the we generally have magnitudes fewer pixels than visibility measurements in the reconstruction problem. The deconvolution problem therefore consumes less memory.
+These three problems are equivalent in theory. The key difference between the three formulations is that the we generally have magnitudes fewer pixels than visibility measurements in the reconstruction problem. The deconvolution problem takes up less physical memory, and is therefore easier to handle in practice.
 
-Image reconstruction algorithms for radio interferometers generally use the deconvolution formulation. They first transform the visibility measurements to an image, called the dirty image. Then, they transform the masking matrix $M$ into the $PSF$. At this point, the algorithms reconstruct the image by calculating a deconvolution. Figure \ref{radio:alg:figure} shows a simulated example of a dirt image, $PSF$ and deconvolved image.
+Image reconstruction algorithms for radio interferometers generally use the deconvolution formulation. They first transform the visibility measurements to an image, called the dirty image. The gridder first interpolates the visibilities, and the FFT calculates the final dirty image. Then, they transform the masking matrix $M$ into the image space, which results in the $PSF$. At this point, the algorithms reconstruct the image by calculating a deconvolution. Figure \ref{radio:alg:figure} shows a simulated example of a dirt image, $PSF$ and deconvolved image.
 
 \begin{figure}[h]
 	\centering
@@ -166,12 +158,6 @@ Image reconstruction algorithms for radio interferometers generally use the deco
 \end{figure}
 
 In radio astronomy, image reconstruction is split into two separate algorithms. The first algorithm is responsible for transforming the measurements from Fourier to image space. The second algorithm is responsible for deconvolution. The first algorithm is referred as the Major cycle in radio astronomy, and the deconvolution algorithm as the minor cycle in radio astronomy literature. The reason why they are referred to as "cycles" will become clear in Section \ref{intro2:opt:cycle}. In short: The whole process, transforming the measurements to image space and calculating the deconvolution has to be repeated several times to correct for DDE's like the $w$-term. First, we will take a closer look to the most commonly used deconvolution algorithm, CLEAN.
-
-T
-
-gridding
-
-
 
 
 \subsubsection{CLEAN deconvolution algorithm} \label{intro2:CLEAN}
@@ -233,17 +219,23 @@ After a number of CLEAN iterations, the model image contains a number of non-zer
 	\label{radio:clean:beam}
 \end{figure}
 
-The CLEAN algorithm assumes the image contains point sources. In each iteration, it essentially adds the most-likely point source. It is a greedy algorithm, because it searches the most-likely point source in each iteration. It approximately minimizes the deconvolution objective of \eqref{radio:rec:objective}, and uses a similar regularization to the L1 norm. The regularization in CLEAN is implicit in the algorithm. In practice, CLEAN implementations use several heuristics, which makes an exact analysis of the regularization difficult.
+The CLEAN algorithm assumes the image contains point sources. In each iteration, it essentially adds the most-likely point source. It is a greedy algorithm, because it searches the most-likely point source in each iteration. The objective function which CLEAN is minimizing is similar to the deconvolution objective function \eqref{radio:rec:objective}: The difference is CLEAN does not use the L1 regularization, but the L0 'norm':
 
-T
+\begin{equation}\label{radio:clean:l0}
+\underset{x}{minimize} \: \left \| V - MFx \right \|_2^2 + \lambda \left \| x \right \|_0
+\end{equation}
 
-Gridding can be faster than CLEAN
-CLEAN is a non-convex optimization
+L0 'norm' in this context means the indicator function. The indicator function is 1 for every element of $x$ which is non-zero. We call it the L0 'norm', because it is used as a norm in signal processing, but does not fulfill all properties of a norm in Linear Algebra.   The L0 'norm' and the L1 are related: Both enforce sparsity in the reconstructed image $x$. But where the L1 norm results in a convex objective function with a unique optimum, the L0 'norm' results in a non-convex objective, possibly with local minima and no guaranteed unique minimum. 
+
+L1 norm is the convex relaxation of the L0 'norm'. In practice, the L0 regularized objective function \eqref{radio:clean:l0} and the L1 regularized objective function \eqref{radio:cs:lasso} almost always lead to the same reconstructed image \cite{candes2006robust}\cite{donoho2006compressed}. But for the L0 regularized objective, we need an algorithm from the class of non-convex optimization methods. Real-world CLEAN implementations use additional strategies to speed up convergence, or improve the quality of the restored image. A specific CLEAN implementation only approximately minimizes the L0 regularized objective \eqref{radio:clean:l0}. Still, the CLEAN algorithm belongs to the class of non-convex optimization algorithms.
+
+In this project, we focus on convex objective functions. We develop two coordinate descent based deconvolution algorithms, which belong to the class of convex optimization.
+
 
 \subsubsection{The Major/Minor cycle}\label{intro2:opt:cycle}
-During CLEAN deconvolutions, the algorithm assumes that the $PSF$ is constant over the image. However, this is not the case for wide field-of-view observations. The $w$-term changes the $PSF$ depending on the location in the image. CLEAN deconvolutions only approximate the true $PSF$. With more CLEAN iterations the residuals image becomes less accurate. To solve this issue, a deconvolution algorithm is used inside the Major/Minor cycle framework. 
+During CLEAN deconvolutions, the algorithm assumes that the $PSF$ is constant over the image. However, this is not the case for wide field-of-view observations. The $w$-term changes the $PSF$ depending on the location in the image. CLEAN deconvolutions only approximate the true $PSF$. With more CLEAN iterations, the residuals image becomes less accurate. To solve this issue, a deconvolution algorithm is used inside the Major/Minor cycle framework. 
 
-The Minor cycle is responsible for deconvolution. Typically, a CLEAN based algorithm is used. Every CLEAN iteration is then called a "Minor" cycle. After a number of CLEAN iterations, the residual image is too inaccurate. Then, the Major cycle takes the model image of CLEAN, and transforms it back to the original Fourier space, called the "model visibilities. It then subtracts the model visibilities from the measured visibilities, and transforms the residual visibilities back to the image space. Figure \ref{radio:major:figure} shows the Major/Minor cycle framework in more detail.
+The Minor cycle is responsible for deconvolution. Typically, a CLEAN based algorithm is used. Every CLEAN iteration is refferred to as one Minor cycle. After a number of CLEAN iterations, the residual image is too inaccurate. Then, the Major cycle takes the model image of CLEAN, and transforms it back to the original Fourier space, called the "model visibilities. It then subtracts the model visibilities from the measured visibilities, and transforms the residual visibilities back to the image space. Figure \ref{radio:major:figure} shows the Major/Minor cycle framework in more detail.
 
 \begin{figure}[h]
 	\centering
@@ -254,11 +246,9 @@ The Minor cycle is responsible for deconvolution. Typically, a CLEAN based algor
 
 The major cycle has updated the residuals, and the deconvolution algorithm can continue. The Major cycle allows us to use an approximate $PSF$ in the deconvolution algorithm. Typically, we need several thousand Minor cycles, and between three to ten major cycles to reconstruct an image. The exact numbers depend on the observation itself.
 
-We already discussed the Minor cycle algorithm in detail, now let us turn to the Major cycle algorithm. The Major cycle uses two steps to transform the visibilities to image space. It first takes the visibilities and interpolates them on a uniform Fourier grid. This step is called "Gridding". Next, the inverse Fast Fourier Transform (FFT) is applied, resulting in the residual image. The combination of gridding and FFT is faster than any direct transformation from visibility to image space. Note that in this architecture the gridding step has to handle the $w$-term.
+We already discussed the Minor cycle algorithm in detail, now let us turn to the Major cycle algorithm. The Major cycle uses two steps to transform the visibilities to image space. First the gridder takes the visibilities and interpolates them on a uniform Fourier grid. Next, the inverse FFT is applied, resulting in the residual image. 
 
-The gridding step and the Minor Cycles are the two bottlenecks in the reconstruction. The gridding step has to interpolate the visibility measurements, which generally has magnitudes more measurements than pixels, and correct for the $w$-term. The Minor Cycle can become more expensive if the image contains a large number of sources. Depending on the image, it can even become more expensive than the gridding step \cite{offringa2017optimized}.
+The gridding step and the Minor Cycles are the two bottlenecks in the reconstruction. The gridding step has to interpolate the visibility measurements, which generally has magnitudes more measurements than pixels. The Minor Cycle can become more expensive if the image contains a large number of complex radio source, for example several supernova-remnants. Depending on the image, it can even become more expensive than the gridding step \cite{offringa2017optimized}.
 
-The gridding and the Minor cycle deconvolution algorithm are an active field of research in radio astronomy. Recently, the Image Domain Gridder (IDG)\cite{veenboer2017image} has been developed. It uses GPU-acceleration to speed up the gridding step, shifting the bottleneck to the Minor cycle.
-
-Our project focuses on the Minor cycle deconvolution algorithm. The Major cycle allows us to use an approximate $PSF$ in the deconvolution. Our hypothesis is we can approximate the $PSF$ further to simplify the deconvolution problem, and facilitate a deconvolution algorithm in the Minor cycle that uses distributed and GPU-accelerated computing.
+Our project focuses on the Minor cycle deconvolution algorithm. We develop two coordinate descent based deconvolution algorithm, which are used within the Major/Minor cycle architecture. The Major cycle allows us to use an approximate $PSF$ in the deconvolution. Efficient CLEAN algorithm were already developed, which use an approximation of the constant $PSF$ during deconvolution \cite{clark1980efficient}. Our hypothesis is we can approximate the constant $PSF$ further to simplify the problem for parallel and distributed deconvolution. We will develop a parallel coordinate descent deconvolution algorithm, which achieves a significant speedup with our own $PSF$ approximation scheme.
 

@@ -86,10 +86,7 @@ The next step is the actual minimization step in the MORESANE algorithm: We use 
 
 Where $\bar{x}$ is the subset of the image we minimize, $S^\intercal$ is the starlet transform which transforms an image to starlet space, $N$ is a diagonal matrix which masks all non-zero starlets from the starlet transform, and $s_{estimate}$ are the connected starlet components we estimated. MORESANE reconstructs an image patch which most closely resembles the estimated starlet components.
 
-Non-zero pixels, often used in radio interferometric image reconstruction. The MORESANE algorithm presented here is not the truth. \eqref{state:moresane::cs:l2} is taken from the original paper \cite{dabbech2015moresane}, which is already an "approximation". 
-
-We know the implementation in the WSCLEAN package leaves non-zero pixels in the model image.
-
+Note that in this formulation, the reconstructed pixels of the object $\bar{x}$ are constrained to be non-negative. This is a common constraint in radio interferometric image reconstruction, as the radiation arriving at a pixel cannot be negative. However, we know from our tests that the WSCLEAN implementation of MORESANE does include negative pixels in the model image. The objective function \ref{state:moresane::cs:l2} shown here comes from the original MORESANE paper \eqref{state:moresane::cs:l2}, and  is not exactly used in every MORESANE implementation.
 
 
 
