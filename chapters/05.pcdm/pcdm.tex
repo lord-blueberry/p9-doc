@@ -1,9 +1,12 @@
 \section{Parallel coordinate descent methods}\label{pcdm}
+In this section, we introduce the parallel coordinate descent algorithm, which benefits significantly from our $PSF$ approximation scheme. The $PSF$ approximation we developed lets the deconvolution algorithm use an approximate $PSF$. It uses only the center window of the full $PSF$, where each side of the window is a fraction of the full $PSF$. Or in other words: The approximation method resulted in a sparse $PSF$ for the deconvolution algorithm. We use the introduced sparsity for parallel deconvolutions, resulting in the parallel coordinate descent algorithm
+
+The serial coordinate descent algorithm minimizes a single pixel in each iteration. Parallel coordinate descent methods can group several pixels into blocks, and minimize multiple blocks in parallel within a single iteration. 
+
 T
 
-We demonstrated that the true $PSF$ can be approximated with a window around the center. The window can only be a fraction of the total size of the $PSF$, and the serial coordinate descent algorithm converges to the same result. The approximation resulted in a speedup factor fo $\approx 1.7$. But this speedup is not as large as one might expect. The serial coordinate descent method deconvolve the image with a window of $\frac{1}{16}$ of the full $PSF$. Or in other words: The approximation method resulted in a sparse $PSF$ for the deconvolution algorithm, but it did not result in a large speedup. In this section, we introduce and develop a parallel coordinate descent algorithm which exploits the sparse $PSF$ to achieve significant speedup.
+We introduce the new concepts of the parallel methods in Section \ref{pcdm:pcdm}, and show synchronous implementations of the new parallel coordinate descent algorithm. We then show an efficient, and asynchronous implementation of our parallel algorithm in Section \ref{pcdm:async}, where each processor updates a block independently of the other processors.
 
-The serial coordinate descent algorithm minimizes a single pixel in each iteration. Parallel coordinate descent methods can group several pixels into blocks, and minimize multiple blocks in parallel within a single iteration. We introduce the new concepts of the parallel methods in Section \ref{pcdm:pcdm}, and show synchronous implementations of the new parallel coordinate descent algorithm. We then show an efficient, and asynchronous implementation of our parallel algorithm in Section \ref{pcdm:async}, where each processor updates a block independently of the other processors.
 
 The parallel coordinate descent algorithm from Section \ref{pcdm:async} does not run efficiently on the deconvolution problem. We discuss the problems and our extensions we developed for an efficient parallel coordinate descent deconvolution algorithm in Section \ref{pcdm:adaption}.
 
