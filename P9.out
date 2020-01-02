@@ -41,7 +41,7 @@
 \BOOKMARK [3][-]{subsubsection.7.2.2}{Method 2: Approximate deconvolution}{subsection.7.2}% 41
 \BOOKMARK [3][-]{subsubsection.7.2.3}{Combination of Method 1 and 2}{subsection.7.2}% 42
 \BOOKMARK [2][-]{subsection.7.3}{PSF approximation with parallel coordinate descent}{section.7}% 43
-\BOOKMARK [3][-]{subsubsection.7.3.1}{Pseudo-random strategy and the Search Fraction}{subsection.7.3}% 44
+\BOOKMARK [3][-]{subsubsection.7.3.1}{Pseudo-random strategy and the Search Factor}{subsection.7.3}% 44
 \BOOKMARK [2][-]{subsection.7.4}{Comparison to the serial coordinate descent algorithm}{section.7}% 45
 \BOOKMARK [2][-]{subsection.7.5}{Scalability of the parallel coordinate descent algorithm}{section.7}% 46
 \BOOKMARK [1][-]{section.8}{Discussion}{}% 47
