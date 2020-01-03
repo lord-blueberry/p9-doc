@@ -176,6 +176,78 @@ The reader might be familiar with the (F)ISTA method\cite{beck2009fista}. The bl
 
 The block update rule \eqref{pcdm:pcdm:block:block:update} allows us to minimize a single block of pixels in each iteration. But it comes with a trade-off: The bigger blocks we choose, the smaller steps we take for each individual pixel in the block. The reason why the serial block coordinate descent may be faster than the single pixel algorithm is when most pixels are correlated with their neighbors: Extended emissions have a large areas where the pixel values are correlated. Meaning if a pixel in the area is non-zero, then the neighboring pixels are also likely to be non-zero. A serial block coordinate descent algorithm can take more useful minimization steps in each iteration. We test different block sizes with our parallel algorithm in Section \ref{pcdm:results}. In our tests, different block sizes did not lead to a significant speedup.
 
+\subsubsection{Accelerated parallel block coordinate descent} \label{pcdm:pcdm:approx}
+So far, we introduced the serial block coordinate descent and the ESO. The serial block coordinate descent can update a block of pixels in a single iteration, and the ESO estimates how much $PSF$s overlap when we perform parallel update steps. In this section, we put this together in an accelerated, parallel block coordinate descent algorithm based on APPROX\cite{fercoq2015accelerated}. But first, we introduce gradient acceleration.
+
+In gradient acceleration, we use the gradient from previous iterations to speed up convergence of the current iteration. We can accelerate our serial coordinate descent algorithm by extending it with an acceleration parameter $\theta$, a copy of the gradient map and a copy of the reconstructed image $x$.  We term one couple of gradient map plus reconstructed image as 'explore', while the other couple is called 'correction'. The 'correction' gradient map and reconstructed image contain gradient information of the previous iterations. They are used to speed up the convergence of the 'explore'. In each iteration, the acceleration parameter $\theta$ decreases, and we use more information from the 'correction' gradient map and reconstruction.
+
+This leads to the following accelerated, parallel and block coordinate descent deconvolution algorithm:
+\begin{lstlisting}
+dirty = IFFT(GridVisibilities(visibilities))
+residualsPadded = ZeroPadding(dirty)
+
+psfPadded = ZeroPadding(PSF)
+psfPadded = FlipUD(FlipLR(psfPadded))
+gradientUpdate = iFFT(FFT(ZeroPadding(PSF)) * FFT(psfPadded))
+
+xExplore = new Array[,]
+xCorrection = new Array[,]
+gradientsMapExplore = iFFT(FFT(residualsPadded) * FFT(psfPadded))
+gradientMapCorrection = new Array[,]
+lipschitzMap = CalcLipschitz(PSF)
+
+eso = ESO(CountNonZero(PSF), t, x.Length / blockSize)
+theta0 = t / (x.Length / blockSize)
+theta = theta0
+
+do 
+oldObjectiveValue = objectiveValue
+
+//Step 1: select t blocks uniformly at random
+blocks = sample(t)
+
+//Step 2: update reconstruction in parallel
+diffBlocks = new Array
+parallel for each block in blocks
+//increase blockLipschitz according to the ESO
+blockLipschitz = Sum(GetBlock(LipschitzMap, block))
+blockLipschitz = blockLipschitz * eso
+
+oldBlock = GetBlock(xExplore, block)
+tmp = theta^2 * GetBlock(gradientsMapCorrection, block) 
++ GetBlock(gradientsMapExplore, block) 
++ GetBLock(xExplore, block) * blockLipschitz
+optimalBlock = Max(tmp - lambda*alpha) / (blockLipschitz + (1 - alpha)*lambda)
+diffBlock = optimalBlock - oldBlock
+
+xExplore[block] += diffBlock
+xCorrection[block] += diffBlock * (-(1.0f - theta / theta0) / theta^2)
+diffBlocks[block] = diffBlock
+
+//Step 3: Update gradients
+for each block in blocks
+diffBlock = diffBlocks[block]
+for each pixel in block
+diff = diffBlock[pixel]
+shiftedUpdate = Shift(gradientUpdate, pixelLocation)
+
+gradientsMapExplore = gradientsMapExplore - shiftedUpdate * diff
+gradientsMapCorrection = gradientsMapCorrection - shiftedUpdate * diff * (-(1.0f - theta / theta0) / theta^2)
+
+theta = (Sqrt((theta^2 * theta^2) + 4 * (theta^2)) - theta^2) / 2.0f
+while maxAbsDiff  < epsilon
+
+output = new float[,]
+for(i in in Range(0, dirty.Length(0))
+for(j in in Range(0, dirty.Length(0))
+output[i, j] = theta * xCorrection[i, j] + xExplore[i, j];
+\end{lstlisting}
+
+In each iteration, the parallel algorithm first samples $\tau$ unique blocks uniformly at random (we cannot select the same block more than in a single iteration). In the second step, we then update each block in parallel. Note that we multiply the block Lipschitz constant with the ESO, which ensures convergence for parallel updates. In the third step, we update the two gradient maps. The final image is a combination of the two reconstructed images $x$ from the 'explore' and 'correction' couple.
+
+This algorithm is parallel, but it is still synchronized: It updates each block in parallel, but waits for all updates to finish before continuing with the next iteration. In the next Section \ref{pcdm:async}, we introduce an asynchronous implementation, where the individual processors do not wait for each other.
+
+The accelerated, parallel coordinate descent algorithm reduces itself to a non-accelerated variant, if we do not modify $\theta$ in each iteration. In that case, the 'correction' gradient map and reconstruction $x$ stay zero over the course of the algorithm. Note that due to gradient acceleration, we need twice the memory (for the 'correction' maps), and twice the number of operations to update a single block. Gradient acceleration allows us to take larger steps towards the optimum in each iteration. As such, it should need fewer iterations to converge than the non-accelerated variant. But a single iteration of the accelerated variant is more expensive.
 
 \subsubsection*{Active set heuristic}
 The active set heuristic is typically used in cyclic coordinate descent: It chooses a subset of blocks, and optimizes the set until it converges. Then it chooses a  new set. We use the active set heuristic together with our pseudo-random selection strategy. A large portion of the blocks in the image will be zero. If we select blocks at pseudo-random, we are likely to select a block that will never contain non-zero values and we wasted computing resources by trying to update this block. The active set heuristic increases the likelihood that the pseudo-random strategy selects a relevant block. 
