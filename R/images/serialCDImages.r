@@ -65,6 +65,25 @@ ggplot(data, aes(x=x, y=y, fill=intensity))  +
   theme(legend.position = c(0.92, 0.2))
 dev.off()
 
+data <- read.table(paste(inputFolder, "CD-Calibration.csv", sep=""), sep=";", header=TRUE, dec=",")
+data$x <- (data$x - min(data$x)) * 1.5 / 60.0
+data$y <- (data$y - min(data$y)) * 1.5 / 60.0
+limit <- 0.0005
+data$intensity[data$intensity > limit] = limit
+data$intensity = data$intensity * 1000
+png(paste(outputfolder, "CD-Calibration-Comp.png", sep=""),
+    width = 5.0,
+    height = 5,
+    units = "in",
+    res = 200)
+ggplot(data, aes(x=x, y=y, fill=intensity))  +
+  geom_tile() +
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.5), name="mJy/Pixel", limits=c(NA, limit * 1000)) +
+  xlab("x (arc seconds)") +
+  ylab("y (arc seconds)") +
+  theme(legend.position = c(0.92, 0.2))
+dev.off()
+
 data <- read.table(paste(inputFolder, "CD-image-Calibration.csv", sep=""), sep=";", header=TRUE, dec=",")
 data$x <- (data$x - min(data$x)) * 1.5 / 60.0
 data$y <- (data$y - min(data$y)) * 1.5 / 60.0

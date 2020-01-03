@@ -357,9 +357,6 @@ Combining the two approximation methods leads to a total speedup with a $PSF$ wi
 
 Although the serial coordinate descent algorithm can be sped-up with the $PSF$ approximation, it does not lead to an algorithm with a comparable wall-clock time to CLEAN or multi-scale CLEAN. The speedup it achieves per iteration is limited by synchronization overhead: The serial coordinate descent algorithm uses all available processors to update the gradient map. With our approximation method, the serial algorithm can update an increasingly smaller facet of the gradient map. If we use a $PSF$ window which is $\frac{1}{16}$ of the total $3072^2$ size, the serial coordinate descent updates $384^2$ elements of the gradient map in each iteration. Utilizing all processors effectively with ever smaller $PSF$s becomes difficult.
 
-T
-
-
 
 \subsection{$PSF$ approximation with parallel coordinate descent}\label{pcdm:results}
 First, we test the effect of our $PSF$ approximation method on the parallel coordinate descent algorithm. We test the deconvolution with increasingly smaller windows around the center of the full $PSF$. We measure the wall-clock time of the asynchronous iterations with $\tau = 8$ processors. We measure the value of the objective function after a batch $8 * 1000$ asynchronous iterations.
@@ -371,7 +368,7 @@ Figure \ref{pcdm:results:psf} shows the result of our parallel coordinate descen
 \begin{figure}[h]
 	\centering
 	\begin{subfigure}{0.6\linewidth}
-		\includegraphics[width=1.0\linewidth]{./chapters/10.results/approx2/psfSize.png}
+		\includegraphics[width=1.0\linewidth]{./chapters/10.results/pcdm/psfSize.png}
 	\end{subfigure}
 	\begin{subfigure}{0.35\linewidth}
 		\begin{tabular}{c | r | r}
@@ -406,7 +403,7 @@ Our parallel coordinate descent algorithm needs a Search Factor larger than 0. W
 \begin{figure}[h]
 	\centering
 	\begin{subfigure}{0.6\linewidth}
-		\includegraphics[width=1.0\linewidth]{./chapters/10.results/approx2/searchPercent.png}
+		\includegraphics[width=1.0\linewidth]{./chapters/10.results/pcdm/searchPercent.png}
 	\end{subfigure}
 	\begin{subfigure}{0.35\linewidth}
 		\begin{tabular}{c | r}
@@ -458,24 +455,26 @@ The serial coordinate descent algorithm is significantly slower than the paralle
 
 \begin{figure}[h]
 	\centering
-	\begin{subfigure}{0.45\linewidth}
+	\begin{subfigure}{0.3\linewidth}
+		\centering
+		Serial CD + PSF approx
+		\includegraphics[width=1.0\linewidth]{./chapters/10.results/pcdm/SerialCD-N132.png}
+		\\
+		\includegraphics[width=1.0\linewidth]{./chapters/10.results/pcdm/SerialCD-Calibration-rec.png}
+	\end{subfigure}
+	\begin{subfigure}{0.3\linewidth}
+		\centering
+		Parallel CD + PSF approx
+		\includegraphics[width=1.0\linewidth]{./chapters/10.results/pcdm/PCDM-N132.png}
+		\\
+		\includegraphics[width=1.0\linewidth]{./chapters/10.results/pcdm/PCDM-Calibration.png}
+	\end{subfigure}
+	\begin{subfigure}{0.3\linewidth}
 		\centering
 		Serial CD
-		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/comparison/SerialCD-N132.png}
-	\end{subfigure}
-	\begin{subfigure}{0.45\linewidth}
-		\centering
-		Parallel CD
-		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/comparison/SerialCD-N132.png}
-	\end{subfigure}
-	\\
-	\begin{subfigure}{0.45\linewidth}
-		\centering
-		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/comparison/SerialCD-Calibration2.png}
-	\end{subfigure}
-	\begin{subfigure}{0.45\linewidth}
-		\centering
-		\includegraphics[width=1.0\linewidth]{./chapters/05.pcdm/comparison/PCDM-Calibration.png}
+		\includegraphics[width=1.0\linewidth]{./chapters/10.results/SerialCD/CD-N132.png}
+		\\
+		\includegraphics[width=1.0\linewidth]{./chapters/10.results/pcdm/CD-Calibration-Comp.png}
 	\end{subfigure}
 	
 	\caption{Comparison of the serial and parallel coordinate descent reconstruction of the LMC observation.}
