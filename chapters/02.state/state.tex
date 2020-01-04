@@ -1,8 +1,5 @@
 \section{State of the Art image reconstruction}\label{state}
-We present here state of the art deconvolution algorithms.
-All implemented in the WSCLEAN software package.
-The two state-of-the-art deconvolution algorithms will be compared to our serial and parallel coordinate descent algorithms later in Section \ref{results} on a real-world MeerKAT observation.
-
+We present here state of the art deconvolution algorithms, namely multi-scale CLEAN and MORESANE. We will compare our serial and parallel coordinate descent algorithms to multi-scale CLEAN and MORESANE later in Section \ref{results} on a real-world MeerKAT observation. We use the WSCLEAN \cite{offringa2014wsclean} software package, which has multi-scale CLEAN and MORESANE implemented as deconvolution algorithms in the Major/Minor cycle architecture.
 
 \subsection{Multi-scale CLEAN}
 We introduced the standard CLEAN algorithm in the previous Section \ref{intro2:CLEAN}.  Multi-scale CLEAN is an extension of the standard CLEAN algorithm. The extension allows for accurate modeling of extended emissions. The standard CLEAN algorithm has difficulties reconstructing extended emissions accurately: It assumes the image consists of point sources. When it encounters an extended emission, it simply approximates it with a cloud of point sources. 
