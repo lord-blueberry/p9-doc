@@ -9,7 +9,12 @@ asinh <- scales::trans_new(name = 'asinh', transform = function(x) asinh(x*1000)
 inputFolder <- "./images/MSClean/"
 outputfolder <- "./images/output/MSClean/"
 
+
+
+
 data <- read.table(paste(inputFolder, "Briggs-CLEAN.csv", sep=""), sep=";", header=TRUE, dec=",")
+data$x <- (data$x - min(data$x)) * 1.5 / 60.0
+data$y <- (data$y - min(data$y)) * 1.5 / 60.0
 limit <- 0.05
 data$intensity[data$intensity > limit] = limit
 png(paste(outputfolder, "Briggs-CLEAN.png", sep=""),
@@ -26,6 +31,8 @@ ggplot(data, aes(x=x, y=y, fill=intensity))  +
 dev.off()
 
 data <- read.table(paste(inputFolder, "briggs-CLEAN-residuals.csv", sep=""), sep=";", header=TRUE, dec=",")
+data$x <- (data$x - min(data$x)) * 1.5 / 60.0
+data$y <- (data$y - min(data$y)) * 1.5 / 60.0
 minimum <- -0.01279203
 maximum <- 0.05184013
 png(paste(outputfolder, "briggs-CLEAN-residuals.png", sep=""),
@@ -75,6 +82,28 @@ dev.off()
 
 
 
+
+
+
+data <- read.table(paste(inputFolder, "natclean-example.csv", sep=""), sep=";", header=TRUE, dec=",")
+data$x <- (data$x - min(data$x)) * 1.5 / 60.0
+data$y <- (data$y - min(data$y)) * 1.5 / 60.0
+limit <- 0.2
+negLimit <- -0.005
+data$intensity[data$intensity < negLimit] = negLimit
+data$intensity[data$intensity > limit] = limit
+png(paste(outputfolder, "natclean-example.png", sep=""),
+    width = 8.0,
+    height = 8.0,
+    units = "in",
+    res = 200)
+ggplot(data, aes(x=x, y=y, fill=intensity))  +
+  geom_tile() +
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.5), limits=c(negLimit, limit), name="Jy/PSF") + 
+  xlab("x (arc minutes)") +
+  ylab("y (arc minutes)") +
+  theme(legend.position = c(0.92, 0.15))
+dev.off()
 
 data <- read.table(paste(inputFolder, "Natural-CLEAN.csv", sep=""), sep=";", header=TRUE, dec=",")
 limit <- 0.0005

@@ -11,7 +11,30 @@ asinh <- scales::trans_new(name = 'asinh', transform = function(x) asinh(x*1000)
 inputFolder <- "./images/iuwt/"
 outputfolder <- "./images/output/iuwt/"
 
+
+data <- read.table(paste(inputFolder, "iuwt-example.csv", sep=""), sep=";", header=TRUE, dec=",")
+data$x <- (data$x - min(data$x)) * 1.5 / 60.0
+data$y <- (data$y - min(data$y)) * 1.5 / 60.0
+limit <- 0.2
+data$intensity[data$intensity < negLimit] = negLimit
+data$intensity[data$intensity > limit] = limit
+png(paste(outputfolder, "iuwt-example.png", sep=""),
+    width = 8.0,
+    height = 8.0,
+    units = "in",
+    res = 200)
+ggplot(data, aes(x=x, y=y, fill=intensity))  +
+  geom_tile() +
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.5), limits=c(negLimit, limit), name="Jy/PSF") + 
+  xlab("x (arc minutes)") +
+  ylab("y (arc minutes)") +
+  theme(legend.position = c(0.92, 0.15))
+dev.off()
+
+
 data <- read.table(paste(inputFolder, "iuwt-model.csv", sep=""), sep=";", header=TRUE, dec=",")
+data$x <- (data$x - min(data$x)) * 1.5 / 60.0
+data$y <- (data$y - min(data$y)) * 1.5 / 60.0
 limit <- 0.0005
 negLimit <- -0.00001
 data$intensity[data$intensity < negLimit] = negLimit
@@ -33,6 +56,8 @@ dev.off()
 minimum <- -0.01279203
 maximum <- 0.05184013
 data <- read.table(paste(inputFolder, "iuwt-residuals.csv", sep=""), sep=";", header=TRUE, dec=",")
+data$x <- (data$x - min(data$x)) * 1.5 / 60.0
+data$y <- (data$y - min(data$y)) * 1.5 / 60.0
 png(paste(outputfolder, "iuwt-residuals.png", sep=""),
     width = 8.0,
     height = 8.0,
