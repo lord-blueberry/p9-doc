@@ -1,9 +1,9 @@
 \section*{Abstract}
+Radio interferometers produce imperfect images, which have to be deconvolved by an algorithm for the highest image quality. New radio interferometers create increasingly large images, and require a deconvolution algorithm which corrects accounts for ever more physical effects in the image. State-of-the-art deconvolution algorithms like multi-scale CLEAN were developed without distributed computing in mind.
 
-New approximation method.
-Gradient approximation
-simplifies parallel and distributed reconstruction.
+In this work, we develop a parallel coordinate descent deconvolution algorithm. It can efficiently use multiple processors, and can be easily extended to a distributed setting. We developed a new approximation method inspired by Clark CLEAN, which significantly speeds up the run time of the parallel coordinate descent algorithm. We compare the run time and reconstruction quality of our parallel coordinate descent algorithm with multi-scale CLEAN on a real-world MeerKAT observation. On our test the total run time was a factor of 3 faster than multi-scale CLEAN with a comparable reconstruction quality.
 
-Developed a parallel coordinate descent algorithm, which can 
-Way for easy parallel processing and later distribution.
+%Limitations: Extension to multi-frequency, full polarization and self-calibration.
+
+
 
