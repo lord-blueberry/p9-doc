@@ -25,8 +25,8 @@ png(paste(outputfolder, "Briggs-CLEAN.png", sep=""),
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
   scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.50, hue = 1.0, gamma = 0.5), guide="mJy/Pixel") + 
-  xlab("x (arc seconds)") +
-  ylab("y (arc seconds)") +
+  xlab("x (arc minutes)") +
+  ylab("y (arc minutes)") +
   theme(legend.position = c(0.92, 0.15))
 dev.off()
 
@@ -57,8 +57,8 @@ png(paste(outputfolder, "Briggs-N132.png", sep=""),
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
   scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.00, r = -1.50, hue = 1.0, gamma = 0.9), name="Jy/PSF") +
-  xlab("x (arc seconds)") +
-  ylab("y (arc seconds)")
+  xlab("x (arc minutes)") +
+  ylab("y (arc minutes)")
 dev.off()
 
 data <- read.table(paste(inputFolder, "Briggs-Calibration.csv", sep=""), sep=";", header=TRUE, dec=",")
@@ -74,8 +74,8 @@ png(paste(outputfolder, "Briggs-Calibration.png", sep=""),
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
   scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.00, r = -1.5, hue = 1.0, gamma = 0.5), name="Jy/PSF") +
-  xlab("x (arc seconds)") +
-  ylab("y (arc seconds)") +
+  xlab("x (arc minutes)") +
+  ylab("y (arc minutes)") +
   theme(legend.position = c(0.92, 0.2))
 dev.off()
 
@@ -119,8 +119,8 @@ png(paste(outputfolder, "Natural-CLEAN.png", sep=""),
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
   scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.50, hue = 1.0, gamma = 0.5), name="mJy/Pixel") + 
-  xlab("x (arc seconds)") +
-  ylab("y (arc seconds)") +
+  xlab("x (arc minutes)") +
+  ylab("y (arc minutes)") +
   theme(legend.position = c(0.92, 0.15))
 dev.off()
 png(paste(outputfolder, "Natural-CLEAN_naked.png", sep=""),
@@ -145,8 +145,8 @@ png(paste(outputfolder, "Natural-CLEAN-residuals.png", sep=""),
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
   scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.50, hue = 1.0, gamma = 0.5), name="Jy/PSF", limit = c(minimum, maximum)) + 
-  xlab("x (arc seconds)") +
-  ylab("y (arc seconds)") +
+  xlab("x (arc minutes)") +
+  ylab("y (arc minutes)") +
   theme(legend.position = c(0.92, 0.15))
 dev.off()
 
@@ -164,8 +164,8 @@ png(paste(outputfolder, "Natural-N132.png", sep=""),
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
   scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.50, hue = 1.0, gamma = 0.5), name="mJy/Pixel") +
-  xlab("x (arc seconds)") +
-  ylab("y (arc seconds)")
+  xlab("x (arc minutes)") +
+  ylab("y (arc minutes)")
 dev.off()
 
 data <- read.table(paste(inputFolder, "Natural-image-N132.csv", sep=""), sep=";", header=TRUE, dec=",")
@@ -180,8 +180,8 @@ png(paste(outputfolder, "Natural-image-N132.png", sep=""),
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
   scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.50, hue = 1.0, gamma = 0.5), name="Jy/PSF", limit = c(0, maximum)) +
-  xlab("x (arc seconds)") +
-  ylab("y (arc seconds)")
+  xlab("x (arc minutes)") +
+  ylab("y (arc minutes)")
 dev.off()
 
 data <- read.table(paste(inputFolder, "Natural-Calibration.csv", sep=""), sep=";", header=TRUE, dec=",")
@@ -200,8 +200,8 @@ png(paste(outputfolder, "Natural-Calibration.png", sep=""),
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
   scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.50, hue = 1.0, gamma = 0.5), limits=c(negLimit*1000, limit*1000), name="mJy/Pixel") +
-  xlab("x (arc seconds)") +
-  ylab("y (arc seconds)") +
+  xlab("x (arc minutes)") +
+  ylab("y (arc minutes)") +
   theme(legend.position = c(0.92, 0.2))
 dev.off()
 
@@ -219,7 +219,7 @@ png(paste(outputfolder, "Natural-image-Calibration.png", sep=""),
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
   scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.50, hue = 1.0, gamma = 0.5), name="Jy/PSF", limit = c(minimum, maximum)) +
-  xlab("x (arc seconds)") +
-  ylab("y (arc seconds)") +
+  xlab("x (arc minutes)") +
+  ylab("y (arc minutes)") +
   theme(legend.position = c(0.92, 0.2))
 dev.off()

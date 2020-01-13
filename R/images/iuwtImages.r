@@ -48,8 +48,8 @@ png(paste(outputfolder, "iuwt-model.png", sep=""),
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
   scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.5), limits=c(negLimit*1000, limit*1000), name="mJy/Pixel") + 
-  xlab("x (arc seconds)") +
-  ylab("y (arc seconds)") +
+  xlab("x (arc minutes)") +
+  ylab("y (arc minutes)") +
   theme(legend.position = c(0.92, 0.15))
 dev.off()
 
@@ -66,8 +66,8 @@ png(paste(outputfolder, "iuwt-residuals.png", sep=""),
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
   scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.5), name="Jy/PSF", limit = c(minimum, maximum)) +
-  xlab("x (arc seconds)") +
-  ylab("y (arc seconds)") +
+  xlab("x (arc minutes)") +
+  ylab("y (arc minutes)") +
   theme(legend.position = c(0.92, 0.15))
 dev.off()
 
@@ -87,8 +87,8 @@ png(paste(outputfolder, "iuwt-Calibration.png", sep=""),
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
   scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.5), name="mJy/Pixel", limit=c(negLimit*1000, limit*1000)) +
-  xlab("x (arc seconds)") +
-  ylab("y (arc seconds)") +
+  xlab("x (arc minutes)") +
+  ylab("y (arc minutes)") +
   theme(legend.position = c(0.92, 0.2))
 dev.off()
 
@@ -106,8 +106,8 @@ png(paste(outputfolder, "iuwt-image-Calibration.png", sep=""),
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
   scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.5), name="Jy/PSF", limit = c(minimum, maximum)) +
-  xlab("x (arc seconds)") +
-  ylab("y (arc seconds)") +
+  xlab("x (arc minutes)") +
+  ylab("y (arc minutes)") +
   theme(legend.position = c(0.92, 0.2))
 dev.off()
 
@@ -125,8 +125,8 @@ png(paste(outputfolder, "iuwt-N132.png", sep=""),
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
   scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.9), limits=c(NA, maximum*1000), name="mJy/Pixel") +
-  xlab("x (arc seconds)") +
-  ylab("y (arc seconds)")
+  xlab("x (arc minutes)") +
+  ylab("y (arc minutes)")
 dev.off()
 
 data <- read.table(paste(inputFolder, "iuwt-image-N132.csv", sep=""), sep=";", header=TRUE, dec=",")
@@ -141,6 +141,6 @@ png(paste(outputfolder, "iuwt-image-N132.png", sep=""),
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
   scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.9), name="Jy/PSF", limit = c(0, maximum)) +
-  xlab("x (arc seconds)") +
-  ylab("y (arc seconds)")
+  xlab("x (arc minutes)") +
+  ylab("y (arc minutes)")
 dev.off()
