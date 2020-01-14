@@ -1,4 +1,4 @@
-\begin{thebibliography}{1}
+\begin{thebibliography}{10}
 
 \bibitem{ferrari2014distributed}
 Andr{\'e} Ferrari, David Mary, R{\'e}mi Flamary, and C{\'e}dric Richard.
@@ -38,5 +38,59 @@ Marcel Koester.
 \bibitem{keplerShuffle}
 Justin Luitjens.
 \newblock Faster parallel reductions on kepler, 2014.
+
+\bibitem{bock1999sumss}
+DC-J Bock, MI~Large, and Elaine~M Sadler.
+\newblock Sumss: A wide-field radio imaging survey of the southern sky. i.
+  science goals, survey design, and instrumentation.
+\newblock {\em The Astronomical Journal}, 117(3):1578, 1999.
+
+\bibitem{offringa2014wsclean}
+AR~Offringa, Benjamin McKinley, Natasha Hurley-Walker, FH~Briggs, RB~Wayth,
+  DL~Kaplan, ME~Bell, Lu~Feng, AR~Neben, JD~Hughes, et~al.
+\newblock Wsclean: an implementation of a fast, generic wide-field imager for
+  radio astronomy.
+\newblock {\em Monthly Notices of the Royal Astronomical Society},
+  444(1):606--619, 2014.
+
+\bibitem{dabbech2015moresane}
+Arwa Dabbech, Chiara Ferrari, David Mary, Eric Slezak, Oleg Smirnov, and
+  Jonathan~S Kenyon.
+\newblock Moresane: Model reconstruction by synthesis-analysis estimators-a
+  sparse deconvolution algorithm for radio interferometric imaging.
+\newblock {\em Astronomy \& Astrophysics}, 576:A7, 2015.
+
+\bibitem{briggsWeighting}
+Dan Briggs.
+\newblock High fidelity deconvolution of moderately resolved sources, 2019.
+
+\bibitem{offringa2017optimized}
+AR~Offringa and O~Smirnov.
+\newblock An optimized algorithm for multiscale wideband deconvolution of radio
+  astronomical images.
+\newblock {\em Monthly Notices of the Royal Astronomical Society},
+  471(1):301--316, 2017.
+
+\bibitem{fercoq2015accelerated}
+Olivier Fercoq and Peter Richt{\'a}rik.
+\newblock Accelerated, parallel, and proximal coordinate descent.
+\newblock {\em SIAM Journal on Optimization}, 25(4):1997--2023, 2015.
+
+\bibitem{richtarik2016parallel}
+Peter Richt{\'a}rik and Martin Tak{\'a}{\v{c}}.
+\newblock Parallel coordinate descent methods for big data optimization.
+\newblock {\em Mathematical Programming}, 156(1-2):433--484, 2016.
+
+\bibitem{richtarik2016distributed}
+Peter Richt{\'a}rik and Martin Tak{\'a}{\v{c}}.
+\newblock Distributed coordinate descent method for learning with big data.
+\newblock {\em The Journal of Machine Learning Research}, 17(1):2657--2681,
+  2016.
+
+\bibitem{fercoq2014fast}
+Olivier Fercoq, Zheng Qu, Peter Richt{\'a}rik, and Martin Tak{\'a}{\v{c}}.
+\newblock Fast distributed coordinate descent for non-strongly convex losses.
+\newblock In {\em 2014 IEEE International Workshop on Machine Learning for
+  Signal Processing (MLSP)}, pages 1--6. IEEE, 2014.
 
 \end{thebibliography}

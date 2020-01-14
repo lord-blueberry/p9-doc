@@ -1,7 +1,16 @@
 \pagebreak
 \section{Attachment}
 
-\subsection*{Parameters of the WSCLEAN implementations}
+\subsection*{Parameters of the WSCLEAN}
+Parameters of multi-scale CLEAN
+\begin{lstlisting}
+wsclean -multiscale -data-colun DATA --niter 34000 -padding 1.5 -size 3072 3072 -scale 1.5asec -mgain 0.8 -gain 0.1 -auto-threshold 3 -auto-mask 5
+\end{lstlisting}
+
+Parameters of MORESANE (IUWT)
+\begin{lstlisting}
+wsclean -iuwt -data-colun DATA --niter 200 -padding 1.5 -size 3072 3072 -scale 1.5asec -mgain 0.4 -gain 0.2 -auto-threshold 1.5 -auto-mask 2
+\end{lstlisting}
 
 
 \subsection*{Serial coordinate descent algorithm}
