@@ -159,8 +159,6 @@ ggplot(data, aes(x=x, y=y, fill=intensity))  +
   ylab("y (arc minutes)")
 dev.off()
 
-
-
 png(paste(outputfolder, "CD-N132-naked.png", sep=""),
     width = 4.0,
     height = 4.0,
@@ -172,8 +170,41 @@ ggplot(data, aes(x=x, y=y, fill=intensity))  +
   theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 dev.off()
 
+data <- read.table(paste(inputFolder, "CD-dirty.csv", sep=""), sep=";", header=TRUE, dec=",")
+data$x <- (data$x - min(data$x)) * 1.5 / 60.0
+data$y <- (data$y - min(data$y)) * 1.5 / 60.0
+limit <- 0.5
+negLimit <- min(data$intensity)
+data$intensity[data$intensity < negLimit] = negLimit
+data$intensity[data$intensity > limit] = limit
+png(paste(outputfolder, "CD-dirty.png", sep=""),
+    width = 8.0,
+    height = 8.0,
+    units = "in",
+    res = 256)
+ggplot(data, aes(x=x, y=y, fill=intensity))  +
+  geom_tile() +
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.5), limits=c(negLimit, limit),  guide=FALSE) + 
+  theme_void()
+dev.off()
 
-
+data <- read.table(paste(inputFolder, "CD-restored.csv", sep=""), sep=";", header=TRUE, dec=",")
+data$x <- (data$x - min(data$x)) * 1.5 / 60.0
+data$y <- (data$y - min(data$y)) * 1.5 / 60.0
+limit <- 0.5
+negLimit <- min(data$intensity)
+data$intensity[data$intensity < negLimit] = negLimit
+data$intensity[data$intensity > limit] = limit
+png(paste(outputfolder, "CD-restored.png", sep=""),
+    width = 8.0,
+    height = 8.0,
+    units = "in",
+    res = 256)
+ggplot(data, aes(x=x, y=y, fill=intensity))  +
+  geom_tile() +
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.5), limits=c(negLimit, limit),  guide=FALSE) + 
+  theme_void()
+dev.off()
 
 
 
