@@ -1,0 +1,211 @@
+\section{Introduction}
+
+\subsection{Radio interferometry system}\label{intro:sys}
+This project is focused on distributing image Reconstruction for radio interferometers, which is only one of three steps in the pipeline from measurements to the final image. We give a quick overview over the whole pipeline in figure \ref{intro:system} and how Radio Interferometers work in principle: The antennas observe the arriving electromagnetic wave, gets processed in three steps, correlation, calibration and image reconstruction. 
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.80\linewidth]{./chapters/01.intro/system.png}
+	\caption{Radio interferometer system}
+	\label{intro:system}
+\end{figure}
+
+First, the electromagnetic wave gets measured by the different antennas of the interferometer. The measurements of each antenna pair get correlated into a Fourier component (called Visibility in Radio Astronomy). Each antenna pair measures a complex-valued, noisy visibility of the sky. The distance and orientation of the antenna pair relative to the incoming signal, called the baseline, dictates which visibility gets measured. The longer the baseline the higher-order visibility gets measured, resulting in a higher angular resolution. The image \ref{intro:inversefig:uvspace} shows the sampled visibilities in the Fourier space of the MeerKAT interferometer. Every dot is a single measurement. After correlation, the visibility data is saved for later processing.
+
+The calibration step is done after all visibility data has been recorded. This step corrects the amplitude and phase of the measurements for varying antenna sensitivities, pointing errors and other effects. Also, this step removes corrupted data from the measurements. After the calibration step, the visibilities still contain noise.
+
+The last step is responsible for reconstructing an image from the calibrated, noisy visibilities. The figure \ref{intro:inversefig} shows a real-world example of a reconstruction from the MeerKAT radio interferometer. It arrives at the reconstructed image by inverting the measurement equation, and deciding which part of the visibilities is noisy, and which part is the signal. These two problems, handling the noise and inverting the measurement equation, are central to image reconstruction for radio interferometers. They influence both the quality and the runtime costs of the reconstruction.
+
+\begin{figure}[htp]
+	% preliminary
+	\sbox\twosubbox{%
+		\resizebox{\dimexpr.9\textwidth-1em}{!}{%
+			\includegraphics[height=3cm]{./chapters/01.intro/meerkat_uv2.png}%
+			\includegraphics[height=3cm]{./chapters/01.intro/mk2/clean.png}%
+		}%
+	}
+	\setlength{\twosubht}{\ht\twosubbox}
+	
+	% typeset
+	\centering
+	\subcaptionbox{Measurements in the Fourier space.\label{intro:inversefig:uvspace}}{%
+		\includegraphics[height=\twosubht]{./chapters/01.intro/meerkat_uv2.png}%
+	}\quad
+	\subcaptionbox{Reconstructed image.\label{intro:inversefig:reconstruction}}{%
+		\includegraphics[height=\twosubht]{./chapters/01.intro/mk2/clean.png}%
+	}
+	\caption{Example of an image reconstruction for visibility measurements of the MeerKAT radio interferometer}\label{intro:inversefig}
+\end{figure}
+
+
+\subsubsection{The measurement equation}
+The measurement equation models how the electromagnetic wave gets distorted on its path from the celestial source through the ionosphere and finally through the antenna of the interferometer\cite{smirnov2011revisiting1}. It abstracts all effects we wish to correct in the image reconstruction in one equation. As such, there is no single unified measurement equation for all interferometers, and generally depends on the instrument.
+
+In this project we use the measurement equation \eqref{intro:inverseproblem}. It consists of three parts: The visibility measurements $V(u,v,w)$\footnote{$V$ in the equation \eqref{intro:linear:linear} is a vector. We use the lower-case $v$ to denote the axis in the Fourier space $uvw$, and the upper-case letter to denote the visibility vector.}, the observed image with a normalization factor $\frac{I(x, y)}{c(x, y)}$ and the Fourier Transform $e^{2 \pi i [\ldots]}$. $u$ $v$ and $w$ represent the axes in the Fourier space, while the $x$ and $y$ axes represent the angles away from the image center. A pixel in $I(x,y)$ represents how much radio emission was measured from a the direction $x,y$. The image \ref{intro:inversefig:uvspace} shows an example for $V()$, while \ref{intro:inversefig:reconstruction} shows an example for $I()$.
+
+\begin{equation}\label{intro:inverseproblem}
+V(u, v, w) = \int\int  \frac{I(x, y)}{c(x, y)}  e^{2 \pi i [ux+vy+ w(c(x, y) - 1)]} \: dx \: dy \:,  \quad c(x,y) = \sqrt{1 - x^2 - y ^2}
+\end{equation}
+
+The radio interferometer essentially observes the sky in the Fourier space. If we want to retrieve the observed sky image $I()$, all we need to do in theory is calculate the inverse Fourier Transform. Note however that the visibilities $V(u,v,w)$ are three dimensional, while the image $I(x,y)$ only has two. Also note that the third component $w$ only depends on the directions $x$ and $y$. In a sense, the Visibilities $V()$ and the image $I()$ have a two dimensional Fourier relationship ($V(u,v,w) = \int\int I(x,y) e^{2 \pi i [ux+vy]} \: dx \: dy$), but with a directionally dependent correction factor $e^{2 \pi i [\ldots +w(c(x, y) - 1)]}$. 
+
+The third component $w$ is an example of a Directionally Dependent Effect (DDE) which have a tendency to increase the runtime costs of the image reconstruction. The $w$-component keeps us from using the Fast Fourier Transform (FFT) for the measurement equation \eqref{intro:inverseproblem}. Research in this area tries to use approximations which lets us use faster algorithms like the FFT, and correct for DDE's accurately enough \cite{veenboer2017image, offringa2014wsclean, pratley2018fast}. In this project, the $w$-correction is the only DDE we handle.
+
+
+\subsection{The reconstruction problem as a system of linear equations}
+Even though the Fourier Transform in the measurement equation \eqref{intro:inverseproblem} contains a $w$-correction factor, it is still linear. There exist more complex measurement equations, but the relationship often stays linear in nature \cite{smirnov2011revisiting1, smirnov2011revisiting2, smirnov2011revisiting3, smirnov2011revisiting4}. This means we can represent the measurement equation as a system of linear equations  \eqref{intro:linear:linear}, where $F$ is the Fourier Transform with $w$-correction, $x$ is the image we are searching, $V$ are the calibrated visibilities. For the sake of demonstration, we ignore the noise in the visibility measurements in \eqref{intro:linear:linear}. To reconstruct the image $x$, we simply need to search for a solution to \eqref{intro:linear:linear}.
+
+\begin{equation}\label{intro:linear:linear}
+\underset{x}{find}\quad V - Fx = 0
+\end{equation}
+
+Even though we generally have more visibilities than pixels in the reconstruction, which makes \eqref{intro:linear:linear} over-determined, there is no unique solution to it. There are potentially many candidate images that solve the equation, which makes the image reconstruction for radio interferometers an ill-posed inverse problem. The problem is considered ill-posed when it has one of the following properties:
+\begin{enumerate}
+	\item No solution exists.
+	\item There are solutions, but no unique solution exists.
+	\item The solution behaviour does not change continuously with the initial condition (For example: a small change in the measurements lead to a very different reconstructed image).
+\end{enumerate}
+The image reconstruction problem for radio interferometers is ill-posed because of the second property: There is no unique solution to \eqref{intro:linear:linear}. At first glance, this might be counter-intuitive. The issue of not having a unique solution makes sense for under-determined systems of linear equations, when there are fewer visibilities than pixels in the reconstruction, as for example in x-ray image reconstruction\cite{felix2017compressed}. Linear algebra tells us that there is a potentially infinite number of solutions to an under-determined system. However, as already mentioned, radio interferometers produce a large number of visibilities. The system \eqref{intro:linear:linear} is generally over-determined. Yet, there are still many candidate images that fit the visibility measurements.
+
+The reason why lies in the visibility measurements $V$. When we look back at figure \ref{intro:inversefig:uvspace}, it is clear to see that the interferometer does not sample the visibilities in a uniform way. There are regions with a high sample density. The density decreases when we move further away from the center. The higher mode visibilities get fewer and fewer samples. For high angular resolution images (when a pixel represents the emission from a small angle), the missing visibilities at higher mode are responsible for making the problem ill posed. For low angular resolution images on the other hand, the missing high mode visibilities become negligible and the problem is well-posed. 
+
+The ill-posed reconstruction problem arises from the high angular resolution of the reconstructed image. Or in other words, by solving the ill-posed inverse problem, we can acquire an image with higher angular resolution from the same visibility measurements.
+
+%In short, the radio interferometer measures an incomplete set of visibilities. The measurements do not contain all the data we require to reconstruct the image. There are potentially many different candidate images that solve equation \eqref{intro:linear:linear}. The observed image is among the candidates, and from the measurements alone we cannot decide which it is. 
+
+%Finding the observed image from the incomplete set of visibilities is an ill-posed inverse problem, even if the measurements are noiseless. But as we discussed, radio interferometers produce noisy visibility measurements. We require an image reconstruction algorithm which handles two problems: Finding the observed image from the incomplete measurements and deciding which part of the measurements are noise. 
+
+%Both can be handled by including prior information about the image. We know the image contains a mixture of point sources, emissions from stars and other far-away sources concentrated around a single pixel, extended emissions, clouds of hydrogen spanning an area over several arc-seconds. By including prior information, a reconstruction algorithm can find the most-likely image of equation \eqref{intro:linear:linear}. The theory of Compressed Sensing\cite{candes2006robust,donoho2006compressed} gives us a framework for how we can include prior information about the image. 
+
+\subsubsection{Adding a regularization} \label{intro:linear:regularization}
+For ill-posed inverse problems, there are two viewpoints for the same idea. From the viewpoint of optimization, we can solve the ill-posed image reconstruction problem \eqref{intro:linear:linear} by adding a regularization. The regularization creates a system of linear equations with a unique solution. From the viewpoint of Bayesian Statistics, we include prior knowledge and search for most likely image given the measurements. For this project, both terms describe the same idea and we use regularization and prior interchangeably. We know that the reconstructed image from radio interferometers contain a mixture of stars (point sources located in a single pixel) and extended emissions like hydrogen clouds. By adding this prior knowledge to the reconstruction problem, we can find the most likely image given the measurements. As we will see, under the right prior, we can create a reconstruction algorithm that is almost guaranteed to find the truly observed image in theory.
+
+There are different ways to include regularization in the reconstruction problem. In this project, we use the following method: We cast the image reconstruction problem into an optimization objective consisting of a data fidelity term and a regularization term. A reconstruction algorithm therefore consists of an optimization objective, a prior function and an optimization algorithm.
+
+\begin{equation}\label{intro:linear:compressed}
+\underset{x}{minimize} \: \left \| V - Fx \right \|_2^2 + \lambda P(x)
+\end{equation}
+
+The objective \eqref{intro:linear:compressed} has a data term $\left \| V - Fx \right \|_2^2$, which forces the most likely image to be as close to the measurements as possible, and the regularization term $P(x)$, which penalizes unlikely images according to our prior function. The parameter $\lambda$ represents how much we penalize unlikely images and by extend, much noise we expect in the reconstruction. The parameter $\lambda$ is either left to the user to define, can be estimated from the data \cite{miller1970least}. 
+
+The prior function $P()$ represents our prior knowledge about the image. It assigns a high penalty for unlikely images. In in radio interferometric image reconstructions tend to use similar prior functions as for image de-noising applications. Such as: Total Variation ($\left \| \triangledown x \right \|_1$) \cite{wiaux2009compressed}, L2 ($\left \|x \right \|_2$) \cite{ferrari2014distributed} or the L1 norm in a wavelet space ($\left \|\Psi x \right \|_1$) \cite{girard2015sparse}.
+
+Finally, an optimization algorithm is necessary which can optimize the objective function \eqref{intro:linear:compressed} with the chosen prior function $P()$. Typical choices for optimization algorithms in image reconstructions are Interior Point Methods like Simplex, Matching Pursuit \cite{hogbom1974aperture} and ADMM\cite{carrillo2014purify}. 
+
+A reconstruction algorithm for radio astronomy consists of an optimization objective, a prior function and an optimization algorithm. It is a three dimensional design space. Not every prior is suitable for every optimization algorithm. The choice of optimization objective influences both what prior and what optimization algorithm we can use. Although there are a different choices for the optimization objective, we limit ourselves to the objective \eqref{intro:linear:compressed} and explore how we can distribute the reconstruction problem.
+
+The last question that remains is, how close are the most likely image, under a given prior, to the truly observed one? Remember that the Nyquist-Shannon sampling theorem states that our uniform sampling frequency needs to be larger than twice the highest frequency in a band-limited signal\footnote{For example: if we want to record human voices with the highest frequency of 20 kHz, Nyquist-Shannon states our uniform sampling frequency has to be larger than 40 kHz to guarantee exact reconstruction}, and then the theorem guarantees exact reconstruction. For radio astronomy, we do not have uniformly sampled visibilities, and although we have a large number of samples, we are missing crucial parts of the Fourier space. Luckily, there is another sampling theorem that, under certain assumptions, guarantees exact reconstruction for the case of radio interferometers. Namely, the theory of compressed sensing.
+
+\subsubsection{Theory of compressed sensing}
+The theory of compressed sensing\cite{candes2006robust,donoho2006compressed} is a recently developed sampling theorem. It guarantees exact reconstruction even when we have fewer samples than necessary according to the Nyquist-Shannon theorem. The compressed sensing sampling theorem has wide ranging implications and was successfully applied in various signal processing tasks like de-noising\cite{metzler2016denoising}, compression\cite{mamaghanian2011compressed} and reconstruction\cite{wiaux2009compressed}.
+This part gives a short introduction on the theory of compressed sensing. It tries to give an intuition on why we it is even possible to find the truly observed image at the optimum of the function \eqref{intro:linear:compressed}, and why the image reconstruction can benefits from measuring in Fourier space.
+
+The assumption underlying compressed sensing is that most natural signal are sparse in some space, only requiring a few non-zero components for representation. Empirically, this is true for many different signals. For example natural images are sparse in a the wavelet space. We only require a few non-zero components to represent the image with wavelets. This fact can obviously be exploited for image compression, where algorithms like JPEG2000 only need to save the non-zero wavelet components instead of all the pixel values. Less obvious is the application in image de-noising. Random noise in the image tends to affect all wavelet components approximately equal. Most noisy wavelet components are close to zero except the original components, which means we can de-noise the image by finding the most significant wavelet components. This is a so called "sparse prior" for de-noising  ($\left \|\Psi x \right \|_1$)\footnote{The true sparse prior is actually not the L1 norm, but the indicator function of the wavelet components ($ind(\Psi x)$). But plugging this prior into the objective function \eqref{intro:linear:compressed} leads to a difficult objective to optimize, because the indicator function is both non-convex and non-differentiable. But the L1 norm is convex and is virtually guaranteed to lead to the same result in practice\cite{lustig2008compressed}.}, which in practice is the L1 norm in some space where our signal is sparse. 
+
+When we assume our image is sparse in some known space, taking as many samples as required by the Nyquist-Shannon theorem seems wasteful. We acquire a large amount of data just to then save the most significant sparse components. Can we measure the sparse component directly? The answer is yes, with a compressive sampling regime. In this regime, we need to know a space where our reconstructed image is sparse, and we take measurements in a different, incoherent space. We now show an example of how compressive sampling works with an idealized radio interferometer together with an idealized signal.
+
+\subsubsection{Compressive sampling of the sky}
+For the sake of demonstration, let us assume the radio interferometer observes a patch of sky containing ten stars. It measures an incomplete set of random Fourier components of the ten stars, and we would like to reconstruct an image of size $256^2$ pixels. The emissions from stars are concentrated into a single pixel. For compressive sampling, we need to know an space in which our reconstructed image is sparse, and we need to take measurements in a different, incoherent space.
+
+Our reconstructed image contains only zero pixels except at the ten locations of the stars, meaning the image space for this patch of the sky is already sparse. In this case, we do not need any additional sparse space like wavelets. We can reconstruct directly in the sparse image space, and we have the first requirement met for compressive sampling. 
+
+The next requirement is that the measurement and reconstruction space (which is the image in this example), are as incoherent as possible. 
+
+Yes, incoherence.
+\begin{equation}\label{intro:linear:compressed2}
+\underset{x}{minimize} \: \left \| V - Fx \right \|_2^2 + \lambda \left \| x \right \|_1
+\end{equation}
+
+
+Intuitively, this can work.
+
+
+At what point are we guaranteed? The matrix $A$ needs to fullfil the Restricted Isometry Porperty (RIP) \cite{candes2006robust,donoho2006compressed}.
+Approximately orthonormal on sparse signals. (If we randomly choose ten columns of $F$, how much do they correlate. We want as little correlation as possible.)
+Calculate the RIP is NP-hard\cite{tillmann2013computational}. Approximations are also difficult to compute\cite{natarajan2014computational}.
+So we can only talk about how likely a given matrix fullfils the RIP. Matrix where each element is sampled from a random Gaussian distributîon has the highest change.
+
+Random samples in the Fourier space also have a high chance to fulfill the RIP \cite{haviv2017restricted}.
+
+Not possible for Radio interferometers, because they sample in the Fourier space. Not random.
+
+There are also extended emissions, clouds etc. Resulting in a lot of non-zero pixels. There may be better sparse spaces for radio astronomy.
+
+But also RIP may be too strict. Exact reconstruction can also work under less strict conditions\cite{candes2011probabilistic} active field of research.
+
+\subsubsection{Reconstruction guarantees in the real world}
+
+What does this all mean for image reconstruction?
+For us, we design reconstruction algorithms and cannot influence the matrix $F$. We do not know if it actually 
+
+The theory of compressed sensing gives us a framework. There is a data modelling task, and a task for finding efficient algorithms.
+
+So there is a data modelling task in finding a good sparse prior.
+We also do not know the proper sparse space in which radio interferometric images. We know several spaces, Curvelets \cite{starck2003astronomical} Starlets \cite{starck2015starlet}, Daubechies wavelets \cite{carrillo2012sparsity}. As of the time of writing, it is currently unknown which leads to the best reconstruction.
+We can also learn dictionaries.
+
+The task for efficient algorithms is finding the best way to optimize the objective with a given prior on real hardware. Fast convergence. Also difficult, because in practice the choice of prior can also influence convergence.
+
+
+Compressed sensing based reconstruction algorithm. In radio astronomy.
+
+
+\subsection{Fast image reconstruction in practice}\label{intro:major}
+We know how to solve the ill-posed image reconstruction problem in theory. We formulate a minimization problem \eqref{intro:linear:compressed}, specify a prior function that capture our prior knowledge, and find the optimum image with an appropriate optimization algorithm. In practice however we have a hard time representing the dense Fourier Transform matrix $F$ in the equation \eqref{intro:linear:compressed}. It is the size of number of visibilities times pixels in the reconstruction. Even older radio interferometers easily produce several million visibilities, with a million pixels in the reconstructed image. We cannot represent $F$ explicitly in memory. 
+
+The major/minor cycle architecture is widely used for reconstruction algorithms in radio astronomy.
+We know the image is magnitudes smaller than the original measurements. 
+The major cycle is responsible for an efficient transform from visibility in image space, while the minor cycle solves the ill-posed inverse problem in the image space.
+Turns out the ill-posed inverse problem of finding an image for the incomplete set of visibilities is equal to a deconvolution in image space. A deconvolution is still ill posed.  We show the derivation in section \ref{intro:major:reformulation}, and discuss the major/minor cycle architecture in more details.
+
+\subsubsection{The major/minor cycle}
+The major/minor cycle architecture shown in figure \ref{intro:major:fig} consists of three operations: Gridding, Fast Fourier Transform (FFT) and the minor cycle.
+
+ of two parts: The minor cycle, which iteratively deconvolves the dirty image with the $PSF$ (it minimizes \eqref{intro:major:reformulation:deconv}). The first half of the major cycle estimates the dirty image. It consists of two steps: the gridding and the Fast Fourier Transformation (FFT). The gridding step takes the incomplete and non-uniformly sampled visibilities and interpolates them on a uniform grid. Then the inverse FFT can be calculated on the interpolated visibilities and we arrive at the dirty image.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.90\linewidth]{./chapters/02.hypo/Major-Minor3.png}
+	\caption{The Major/Minor Cycle Architecture}
+	\label{intro:major:fig}
+\end{figure}
+
+Minor Cycle deconvolution. Creates the deconvolved "model" image.
+
+After the Minor Cycle, the second half of the Major Cycle continues. It takes the model image and transforms it back to the original measurement space. FFT and de-gridding. Arriving at the model visibilities.
+
+Then we subtract the model visibilities from the original measurements and start the next Major Cycle with the residual visibilities. The final reconstructed image is the result of several major cycles. Depending on the observation and deconvolution algorithm we require more or fewer major cycles. Expected number around 5
+
+
+Most expensive operations is the gridding and de-gridding followed by the deconvolution. Gridding is also where we do corrections like the $w$-term. So interpolation becomes specific for the field of radio astronomy.
+
+Depending on the observation, the second most expensive step is the deconvolution.
+
+\subsubsection{Reformulating as a deconvolution problem}\label{intro:major:reformulation}
+The Fourier transform matrix $F$ in \eqref{intro:linear:compressed} is a product of two operations: The Fourier transform $F$, and the masking operator $M$. The masking operator is a matrix with zero entries for all Fourier components invisible to the instrument. So far, $M$ was implicitly contained in $F$ of \eqref{intro:linear:compressed}. To derive the deconvolution problem, we represent $M$ explicitly. For the sake of demonstration, let us assume our visibility measurements $V(u, v ,w)$ lie on a discrete grid. $V(u, v, w)$ is zero for all components that the interferometer could not measure. We then can represent the transformation from image to visibility space with the Fourier transform $F$ followed by a masking operation $M$, and we arrive at the image reconstruction problem \eqref{intro:major:reformulation:factor}. This is identical to \eqref{intro:linear:compressed}, except for the factorization of $F$.
+
+\begin{alignat}{2}
+\text{original:} \quad \underset{x}{minimize}\:& \left \| V - M Fx \right \|_2^2 + &\lambda P(x) \label{intro:major:reformulation:factor}\\ 
+\text{in-painting:} \quad\underset{V_2}{minimize}\:& \left \| V - M V_2 \right \|_2^2 + &\lambda P(F^{-1}V_2) \label{intro:major:reformulation:fourier} \\
+\text{deconvolution:} \quad \underset{x}{minimize}\:& \left \| I_{dirty} - x * PSF \right \|_2^2 + &\lambda P(x) \label{intro:major:reformulation:deconv}
+\end{alignat}
+
+Note that $M$ represents the degradation, the corruption introduced by incomplete sampling in the visibility space. $M$ is the important operator. The measurements $V$, or the reconstructed image $x$ can be in any space we wish. For example, we do not actually need to reconstruct the image in image space. In theory, we can reformulate an equivalent problem \eqref{intro:major:reformulation:fourier}, in which we in-paint the missing visibilities. Or, we can use the Fourier transform on the visibility measurements $V$ and the masking operator $M$, which leads us to the deconvolution problem \eqref{intro:major:reformulation:deconv}. 
+
+Since the deconvolution formulation is vital for the major/minor cycle architecture, we have a closer look at \eqref{intro:major:reformulation:deconv}. The effect of incomplete sampling in Fourier space is equal to a convolution with a Point Spread Function $PSF$ in image space. I.e. $PSF = F^{-1}M$. The measurements are now represented as the "dirty" image, $I_{dirty} = F^{-1}V$. We try to find the deconvolved image $x$, while only knowing the convolution kernel $PSF$ and the convolved, dirty image $I_{dirty}$. This is still an ill-posed inverse problem. We have potentially many different deconvolutions that fit the dirty image, and we search the most likely candidate according to some prior $P(x)$. 
+
+The deconvolution \eqref{intro:major:reformulation:deconv} and the original image reconstruction problem \eqref{intro:linear:compressed} are equivalent. Both arrive at the same result. But the deconvolution problem is easier to handle in practice: $I_{dirty}$ and $PSF$ are generally more compact representations of $V$ and $M$. There is one last issue: Calculating the dirty image from the measurements ($I_{dirty} = F^{-1}V$) again needs the impractically large Fourier transform matrix $F$. This is solved in the major/minor cycle algorithm.
+
+\subsubsection{Approximations under the major cycle} \label{intro:major:approximations}
+Why is the major cycle even necessary. At first glance, it seems like we may be done after the first major cycle. Because the deconvolution problem.
+
+But the $PSF$ is actually just an approximation. The $PSF$ changes over the image.
+
+Plus the gridding also introduces an error which gets reduced over several Major Cycles.
+
+
+
+
+
+\subsubsection{Alternatives to the major/minor cycle}
+Not formulating as a deconvolution, but takes the gridding and FFT step. Fastest approximation. Tends to use many major cycles.

@@ -3,8 +3,4 @@ The style file: unsrt.bst
 Database file #1: mybib.bib
 Warning--entry type for "briggsWeighting" isn't style-file defined
 --line 247 of file mybib.bib
-Warning--entry type for "ilgpu" isn't style-file defined
---line 747 of file mybib.bib
-Warning--entry type for "keplerShuffle" isn't style-file defined
---line 754 of file mybib.bib
-(There were 3 warnings)
+(There was 1 warning)

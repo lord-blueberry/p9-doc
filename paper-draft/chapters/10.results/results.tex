@@ -30,8 +30,6 @@ We compare our serial coordinate descent algorithm with the state-of-the-art alg
 
 We first compare the model and the residual images of the three algorithms. The reconstruction algorithm should detect all sources (we have a non-zero pixels for all point- and extended sources) and leave as little of the true emissions in the residuals. Meaning we should not see any remaining structures of the image \ref{results:cutout} in the residuals. The Figure \ref{results:cleancomp:figure} shows the model- and residual image of multi-scale CLEAN, serial coordinate descent and MORESANE.
 
-\newpage
-
 \begin{figure*}[!htp]
 	\centering
 	\begin{subfigure}[b]{0.82\linewidth}
@@ -56,19 +54,11 @@ We first compare the model and the residual images of the three algorithms. The 
 		\caption{Coordinate descent with elastic net.}
 		\label{results:comp:clean}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.82\linewidth}
-		\centering
-		\includegraphics[width=0.490\linewidth]{./chapters/10.results/iuwt/iuwt-model.png}
-		\includegraphics[width=0.490\linewidth]{./chapters/10.results/iuwt/iuwt-residuals.png}
-		\caption{MORESANE (IUWT).}
-		\label{results:comp:clean}
-	\end{subfigure}
 
 	\caption{Comparison of the whole image}
 	\label{results:cleancomp:figure}
 \end{figure*}
 
-\newpage
 
 Multi-scale CLEAN detects all extended emissions (we have non-zero pixels in the model for every source). It has the smallest residual magnitudes of the three algorithms, and has barely visible structures left in the residual image. Multi-scale CLEAN has reconstructed the image close to the noise level. The serial coordinate descent reconstruction does not contain any non-zero pixels in the model image, but its residual image contains still visible structures. The MORESANE reconstruction surprisingly has the largest magnitudes in the residual image. It still has clear structures belonging to the extended sources in the residuals. Also note that MORESANE has not detected the top-right extended emission. It is missing in the model image.
 
@@ -79,9 +69,9 @@ Even with an auto-masking strategy, the MORESANE algorithm left notable emission
 We now compare two extended emissions in the image in detail: We compare the N132D supernova-remnant, the bright radio source in the center of the image. We also compare the extended emission at the right-hand side of the image, since it contains significant calibration errors. First, we compare the three algorithms on the N132D supernova-remnant
 
 \subsubsection{Super-resolution of the N132D supernova-remnant}
-\begin{figure*}[!ht]
+\begin{figure*}[!h]
 	\centering
-	\begin{subfigure}[b]{1.0\linewidth}
+	\begin{subfigure}[b]{0.8\linewidth}
 		\centering
 		\begin{subfigure}{0.40\linewidth}
 			\centering
@@ -95,7 +85,7 @@ We now compare two extended emissions in the image in detail: We compare the N13
 		\end{subfigure}
 		\caption{Multi-scale CLEAN.}
 	\end{subfigure}
-	\begin{subfigure}[b]{1.0\linewidth}
+	\begin{subfigure}[b]{0.8\linewidth}
 		\centering
 		\begin{subfigure}{0.40\linewidth}
 			\includegraphics[width=1.00\linewidth]{./chapters/10.results/SerialCD/CD-N132.png}
@@ -104,16 +94,6 @@ We now compare two extended emissions in the image in detail: We compare the N13
 			\includegraphics[width=1.00\linewidth]{./chapters/10.results/SerialCD/CD-image-N132.png}
 		\end{subfigure}
 		\caption{Coordinate descent with elastic net.}
-	\end{subfigure}
-	\begin{subfigure}[b]{1.0\linewidth}
-		\centering
-		\begin{subfigure}{0.40\linewidth}
-			\includegraphics[width=1.00\linewidth]{./chapters/10.results/iuwt/iuwt-N132.png}
-		\end{subfigure}
-		\begin{subfigure}{0.40\linewidth}
-			\includegraphics[width=1.00\linewidth]{./chapters/10.results/iuwt/iuwt-image-N132.png}
-		\end{subfigure}
-		\caption{MORESANE (IUWT).}
 	\end{subfigure}
 
 	\caption{Comparison on the N132D supernova-remnant.}
@@ -132,23 +112,19 @@ To ensure the structures of the coordinate descent and MORESANE model images are
 
 We compare the coordinate descent and MORESANE reconstruction with the briggs-weighted multi-scale CLEAN restored image in Figure \ref{results:cleancomp:N132:truth}. Here, we compare if the structures of the MORESANE and coordinate descent model images are plausible, and therefore a super-resolved reconstruction of the N132D supernova-remnant.
 
-\begin{figure*}[h]
+\begin{figure}[h]
 	\centering
-	\begin{subfigure}{0.3\linewidth}
+	\begin{subfigure}{0.49\linewidth}
 		\includegraphics[width=1.00\linewidth]{./chapters/10.results/SerialCD/CD-N132.png}
 		\caption{CD}
 	\end{subfigure}
-	\begin{subfigure}{0.3\linewidth}
-		\includegraphics[width=1.00\linewidth]{./chapters/10.results/iuwt/iuwt-N132.png}
-		\caption{IUWT}
-	\end{subfigure}
-	\begin{subfigure}{0.3\linewidth}
+	\begin{subfigure}{0.49\linewidth}
 		\includegraphics[width=1.00\linewidth]{./chapters/10.results/MSClean/Briggs-N132.png}
 		\caption{Briggs MS-CLEAN}
 	\end{subfigure}
 	\caption{Comparison with briggs-weighted multi-scale CLEAN as Ground Truth.}
 	\label{results:cleancomp:N132:truth}
-\end{figure*}
+\end{figure}
 
 The model image of the coordinate descent reconstruction closely resembles the structures in the briggs-weighted multi-scale CLEAN restored image. Coordinate descent reconstructed a bright core and a distinct 'horizontal' arm, similar to briggs-weighted CLEAN. The MORESANE (IUWT) model image contains roughly similar structures, but adds more details. In this work, we cannot verify the more detailed structures of the MORESANE model image of the N132D supernova-remnant.
 
@@ -176,12 +152,6 @@ The model image of the coordinate descent reconstruction closely resembles the s
 		\includegraphics[width=0.45\linewidth]{./chapters/10.results/SerialCD/CD-image-Calibration.png}
 		\caption{Coordinate Descent with elastic net.}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.82\linewidth}
-		\centering
-		\includegraphics[width=0.45\linewidth]{./chapters/10.results/iuwt/iuwt-Calibration.png}
-		\includegraphics[width=0.45\linewidth]{./chapters/10.results/iuwt/iuwt-image-Calibration.png}
-		\caption{MORESANE (IUWT)}
-	\end{subfigure}
 	\caption{Influence of calibration errors}
 	\label{results:cleancomp::calib:figure}
 \end{figure*}
@@ -196,24 +166,20 @@ These differences in the model images also result in variations of the restored 
 
 \newpage
 
-\begin{figure*}[h]
+\begin{figure}[h]
 	\centering
-	\begin{subfigure}[b]{0.3\linewidth}
+	\begin{subfigure}[b]{0.49\linewidth}
 		\includegraphics[width=1.00\linewidth]{./chapters/10.results/SerialCD/CD-Calibration.png}
 		\caption{Coordinate Descent}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=1.00\linewidth]{./chapters/10.results/iuwt/iuwt-Calibration.png}
-		\caption{IUWT}
-	\end{subfigure}
-	\begin{subfigure}[b]{0.3\linewidth}
+	\begin{subfigure}[b]{0.49\linewidth}
 		\includegraphics[width=1.00\linewidth]{./chapters/10.results/MSClean/Briggs-Calibration.png}
 		\caption{Briggs CLEAN}
 	\end{subfigure}
 
 	\caption{Comparison to briggs-weighted multi-scale CLEAN as Ground Truth.}
 	\label{results:cleancomp::calib:figure}
-\end{figure*}
+\end{figure}
 
 Lastly, we again compare the model images of coordinate descent and MORESANE (IUWT) with the restored image of briggs-weighted multi-scale CLEAN. The briggs-weighted restored image has reconstructed more details in the two extended emissions. The left-hand-side emission contains two point sources at its border, while the right-hand-side emission contains a crescent. The model image of the coordinate descent algorithm has detected structures of the crescent, but has missed the two point sources. MORESANE did detected the point sources and the crescent in the extended emission, but did miss large parts of the actual emission.
 

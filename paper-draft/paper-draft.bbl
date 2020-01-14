@@ -1,49 +1,25 @@
 \begin{thebibliography}{10}
 
-\bibitem{ferrari2014distributed}
-Andr{\'e} Ferrari, David Mary, R{\'e}mi Flamary, and C{\'e}dric Richard.
-\newblock Distributed image reconstruction for very large arrays in radio
-  astronomy.
-\newblock In {\em 2014 IEEE 8th Sensor Array and Multichannel Signal Processing
-  Workshop (SAM)}, pages 389--392. IEEE, 2014.
+\bibitem{clark1980efficient}
+BG~Clark.
+\newblock An efficient implementation of the algorithm'clean'.
+\newblock {\em Astronomy and Astrophysics}, 89:377, 1980.
 
-\bibitem{mcewen2011compressed}
-Jason~D McEwen and Yves Wiaux.
-\newblock Compressed sensing for wide-field radio interferometric imaging.
-\newblock {\em Monthly Notices of the Royal Astronomical Society},
-  413(2):1318--1332, 2011.
+\bibitem{friedman2010regularization}
+Jerome Friedman, Trevor Hastie, and Rob Tibshirani.
+\newblock Regularization paths for generalized linear models via coordinate
+  descent.
+\newblock {\em Journal of statistical software}, 33(1):1, 2010.
 
-\bibitem{nesterov2012efficiency}
-Yu~Nesterov.
-\newblock Efficiency of coordinate descent methods on huge-scale optimization
-  problems.
-\newblock {\em SIAM Journal on Optimization}, 22(2):341--362, 2012.
+\bibitem{richtarik2016parallel}
+Peter Richt{\'a}rik and Martin Tak{\'a}{\v{c}}.
+\newblock Parallel coordinate descent methods for big data optimization.
+\newblock {\em Mathematical Programming}, 156(1-2):433--484, 2016.
 
-\bibitem{nesterov2013gradient}
-Yu~Nesterov.
-\newblock Gradient methods for minimizing composite functions.
-\newblock {\em Mathematical Programming}, 140(1):125--161, 2013.
-
-\bibitem{kenyon2019pymoresane}
-Jonathan~S Kenyon.
-\newblock Pymoresane: Python model reconstruction by synthesis-analysis
-  estimators.
-\newblock {\em Astrophysics Source Code Library}, 2019.
-
-\bibitem{ilgpu}
-Marcel Koester.
-\newblock Ilgpu: A modern, lightweight and fast gpu compiler for
-  high-performance .net programs, 2019.
-
-\bibitem{keplerShuffle}
-Justin Luitjens.
-\newblock Faster parallel reductions on kepler, 2014.
-
-\bibitem{bock1999sumss}
-DC-J Bock, MI~Large, and Elaine~M Sadler.
-\newblock Sumss: A wide-field radio imaging survey of the southern sky. i.
-  science goals, survey design, and instrumentation.
-\newblock {\em The Astronomical Journal}, 117(3):1578, 1999.
+\bibitem{fercoq2015accelerated}
+Olivier Fercoq and Peter Richt{\'a}rik.
+\newblock Accelerated, parallel, and proximal coordinate descent.
+\newblock {\em SIAM Journal on Optimization}, 25(4):1997--2023, 2015.
 
 \bibitem{offringa2014wsclean}
 AR~Offringa, Benjamin McKinley, Natasha Hurley-Walker, FH~Briggs, RB~Wayth,
@@ -70,16 +46,6 @@ AR~Offringa and O~Smirnov.
   astronomical images.
 \newblock {\em Monthly Notices of the Royal Astronomical Society},
   471(1):301--316, 2017.
-
-\bibitem{fercoq2015accelerated}
-Olivier Fercoq and Peter Richt{\'a}rik.
-\newblock Accelerated, parallel, and proximal coordinate descent.
-\newblock {\em SIAM Journal on Optimization}, 25(4):1997--2023, 2015.
-
-\bibitem{richtarik2016parallel}
-Peter Richt{\'a}rik and Martin Tak{\'a}{\v{c}}.
-\newblock Parallel coordinate descent methods for big data optimization.
-\newblock {\em Mathematical Programming}, 156(1-2):433--484, 2016.
 
 \bibitem{richtarik2016distributed}
 Peter Richt{\'a}rik and Martin Tak{\'a}{\v{c}}.

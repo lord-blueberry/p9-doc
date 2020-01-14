@@ -1,25 +1,18 @@
-\section{Methods}
+\section{Serial coordinate descent deconvolution}\label{cd}
+In this section, we introduce the serial coordinate descent algorithm, which can replace CLEAN in the Major/Minor cycle architecture. We call this algorithm 'serial', because it minimizes exactly a single pixel in each iteration. Later in In Section \ref{pcdm} we introduce the parallel coordinate descent algorithm, which optimizes multiple pixels in a single iteration (multiple pixels in parallel).
 
-\section{Coordinate descent deconvolution}\label{cd}
-In this section introduces the coordinate descent methods. We derive a coordinate descent deconvolution algorithm which replaces CLEAN in the Major/Minor cycle architecture.
-
-Coordinate descent is a group of numerical minimization algorithm. In each iteration, they minimize the problem along a single coordinate. In our deconvolution problem, a coordinate descent method minimizes the objective function along a single pixel in each iteration. Over several iterations, possibly minimizing the same pixel multiple times, the coordinate descent method converges to a deconvolved image.
-
-We call the algorithm derived in this section 'serial coordinate descent'. In each iteration, the serial coordinate descent algorithm minimizes exactly one pixel. Although it is called serial, we can use multiple processors for minimizing a single pixel. In Section \ref{pcdm} we introduce more sophisticated parallel coordinate descent deconvolution algorithm. Parallel coordinate descent methods update multiple pixels in parallel in each iteration.
-
-As we mentioned before, a deconvolution algorithm in radio astronomy has three components: An objective function, a regularization and a numerical optimization algorithm, which is based on coordinate descent. The objective function we use for our method is: 
+In this project, the serial and parallel coordinate descent algorithm minimize the following convex objective function:
 
 \begin{equation}\label{cd:deconv}
 \underset{x}{minimize} \: \frac{1}{2} \left \| I_{dirty} - x * PSF \right \|_2^2 + \lambda ElasticNet(x)
 \end{equation}
 
-We want to find the minimum deconvolved image $x$, which is as close to the dirty image (remember the dirty image results from the visibilities, which get gridded and transformed to image space), but also has the smallest regularization penalty. The parameter $\lambda$ is a weight that either forces more or less regularization. It is left to the user to define $\lambda$ for each image. 
+We want to find the minimum deconvolved image $x$, which is as close to the dirty image (remember the dirty image results from the visibilities, which get gridded and transformed to image space), but also has the smallest regularization penalty. The parameter $\lambda$ is a weight that either forces more or less regularization. It is either left to the user to define for each image, or can be estimated from the data \cite{miller1970least}. In this project, we leave $\lambda$ for the user to define. The objective function \eqref{cd:deconv} is convex, and we can use convex optimization methods to find a reconstructed image $x$. 
 
-We introduce the elastic net regularization in the next Section, and then continue with the serial coordinate descent deconvolution algorithm in Section \ref{cd:serial}. We then go over the efficient CPU, GPU and distributed implementations of the serial coordinate descent algorithm.
-
+First, dive deeper into the elastic net regularization, and then continue with introducing the serial coordinate descent algorithm in Section \ref{cd:serial}. Although we call the algorithm 'serial', its implementation can use multiple processors in certain steps of the algorithm: For example updating a rectangle of pixels in the residual image can be trivially performed with multiple processors. We also created a GPU-accelerated and a distributed implementation of the serial coordinate descent algorithm. They can be found in the attachments, since both GPU-accelerated and distributed implementations were slower than the final CPU implementation of the parallel coordinate descent algorithm.
 
 \subsection{Elastic net regularization} \label{cd:reg}
-This regularization is a mixture between the L1 and L2 regularization.  The L1 regularization is the absolute value of all pixels ($\left \| x \right \| = \sum_i \sum_j \left \| x_{ij} \right \|$), and the L2 norm is the squared sum of all pixels ($\left \| x \right \|_2 = \sum_i \sum_j \left \| x_{ij} \right \|^2$). he Figure \ref{cd:elastic} shows the effect of the L1 and L2 norm on a single star. The L1 regularization forces the image to contain few non-zero pixels as possible. It encodes our prior knowledge that the image will contain stars. The L2 regularization on the other hand "spreads" the single star across multiple pixels. 
+This regularization is a mixture between the L1 and L2 norm. The L1 norm is the absolute value of all pixels ($\left \| x \right \| = \sum_i \sum_j \left \| x_{ij} \right \|$), and the L2 norm is the squared sum of all pixels ($\left \| x \right \|_2 = \sum_i \sum_j \left \| x_{ij} \right \|^2$). The Figure \ref{cd:elastic} shows the effect of the L1 and L2 norm on a single star. The L1 norm forces the image to contain few non-zero pixels as possible. It encodes our prior knowledge that the image will contain stars. The L2 regularization on the other hand "spreads" the single star across multiple pixels, which helps reconstructing extended emissions.
 
 \begin{figure}[h]
 	\centering
@@ -38,10 +31,7 @@ This regularization is a mixture between the L1 and L2 regularization.  The L1 r
 	\label{cd:elastic}
 \end{figure}
 
- 
-The L1 regularization alone models an image that consists of points sources. For extended emissions like hydrogen clouds, the L1 regularization often leads the reconstructed image to become a cluster of point sources, instead of a real extended emission.
-
-The L2 norm alone was already used in other image reconstruction algorithms in radio astronomy\cite{ferrari2014distributed}, with the downside that the resulting image will not be sparse. I.e. all pixels in the reconstruction will be non-zero, even though all they contain is noise. 
+The L1 regularization alone models an image that consists of points sources. For extended emissions like hydrogen clouds, the L1 norm alone may force the algorithm to approximate the cloud with point sources. The L1 norm alone is not a good model for radio interferometric images that contain extended emissions. The L2 norm alone was already used in other image reconstruction algorithms in radio astronomy\cite{ferrari2014distributed}, with the downside that the resulting image will not be sparse. I.e. all pixels in the reconstruction will be non-zero, even though some of them only contain noise. 
 
 Elastic net mixes the L1 and L2 norm together, becoming "sparsifying L2 norm". It retains the sparsifying property of the L1 norm, while also keeping extended emissions in the image. Formally, elastic net regularization is defined as the following regularization function:
 
@@ -49,25 +39,23 @@ Elastic net mixes the L1 and L2 norm together, becoming "sparsifying L2 norm". I
 ElasticNet(x, \alpha) = \: \alpha \left \|x \right \|_1 + \frac{1-\alpha}{2}  \left \|x \right \|_2
 \end{equation}
 
-The parameter $\alpha$ is between 0 and 1, and mixes the two norms together. A value of 1 leads to L1 regularization only, and a value of 0 leads to L2 only. The elastic net regularization has two properties, which are relevant later for the serial coordinate descent deconvolution: It is separable, and has a proximal operator.
+The parameter $\alpha$ is between 0 and 1, and mixes the two norms together. A value of 1 leads to L1 regularization only, and a value of 0 leads to L2 only. The elastic net regularization has two properties, which are relevant later for the serial coordinate descent algorithm: It is separable, and has a proximal operator.
 
-Separability means that we can calculate the elastic net regularization penalty independently for each pixel. We arrive at the same result if we evaluate \eqref{cd:elastic:formula} for each pixel and sum up the results, or if we evaluate \eqref{cd:elastic:formula} for the whole image. This is an important property when one tries to minimize the the elastic net penalty (as we will with the serial coordinate descent deconvolution algorithm). We can also calculate how much any pixel change reduces the elastic net penalty independently its neighbors.
+Separability means that we can calculate the elastic net regularization penalty independently for each pixel. We arrive at the same result if we evaluate \eqref{cd:elastic:formula} for each pixel and sum up the results, or if we evaluate \eqref{cd:elastic:formula} for the whole image. This is an important property when one tries to minimize the objective function \eqref{cd:deconv} used in this project. We can minimize a single pixel at a time, and do not need to account for the whole neighborhood.
 
-The proximal operator of elastic net allows us to minimize the regularization penalty. Notice that the elastic net regularization \eqref{cd:elastic:formula} is not differentiable (the L1 norm is not continuous). We cannot calculate a gradient, and cannot use methods like gradient descent to minimize the regularization penalty. However, it has a proximal operator defined:
+The proximal operator of elastic net allows us to minimize the regularization penalty. Notice that the elastic net regularization \eqref{cd:elastic:formula} is not differentiable (the L1 norm is not continuous). We cannot calculate a gradient. However, it has a proximal operator defined:
 
 \begin{equation}\label{cd:elastic:proximal}
 ElasticNetProximal(x, \lambda ,\alpha) = \: \frac{max(x - \lambda \alpha, 0)}{1+\lambda(1 - \alpha)}
 \end{equation}
 
-In our deconvolution problem, we can apply the proximal operator \eqref{cd:elastic:proximal} on each pixel, and we minimize the elastic net penalty. Again, the proximal operator can be applied on each pixel independently, as neighboring pixels do not influence its result.
-
-The elastic net regularization is separable. We can calculate its penalty for each pixel independently of its neighbors. As such, its proximal operator is also independent of the neighbors. It is the only regularization we use in this project. We now derive a coordinate descent based deconvolution algorithm that uses the proximal operator to efficiently reconstruct an image.
+The proximal operator allows us to minimize the deconvolution problem with an elastic net regularization. We can calculate the gradient of the data term of \eqref{cd:deconv}, which is differentiable. Then, we apply the proximal operator on the gradients. Descending these modified gradients minimizes the objective function \eqref{cd:deconv}. The proximal operator of elastic net can be applied on the gradient of each pixel independently. Neighboring pixels do not influence the regularization.
 
 A side note on the proximal operator used in this project \eqref{cd:elastic:proximal}: The numerator always clamps negative pixels to zero. This is a conscious design decision. In radio astronomy, it is usual to constrain the reconstruction to be non-negative (because we cannot receive negative radio emissions from any direction). It is widely used in radio astronomy image reconstruction and may lead to improved reconstruction quality \cite{mcewen2011compressed}.
 
 
 \subsection{Serial coordinate descent algorithm}\label{cd:serial}
-Our serial coordinate descent deconvolution algorithm minimizes the deconvolution objective \eqref{cd:deconv}. It is a convex optimization algorithm that optimizes a single pixel (coordinate) at each iteration. Each iteration consists of two steps. Step 1: Find the best pixel to optimize. Step 2: Calculate the gradient for this pixel, take a descent step and apply the elastic net proximal operator. We repeat these steps in each iteration until coordinate descent converges to a solution.
+Our serial coordinate descent deconvolution algorithm minimizes the deconvolution objective \eqref{cd:deconv} for a single pixel at each iteration. Each iteration consists of two steps. Step 1: Find the best pixel to optimize. Step 2: Calculate the gradient for this pixel, apply the elastic net proximal operator, and take the descent s take a descent step for the single pixel. The algorithm iterates over all pixel multiple times to converge to a reconstructed image.
 
 We demonstrate the serial deconvolution algorithm with the help of a simulated MeerKAT reconstruction problem of two point sources. Figure \ref{cd:serial:aid:dirty} shows the dirty image of two point sources, and Figure \ref{cd:serial:aid:psf} the $PSF$. The deconvolved image with elastic net regularization is shown in Figure \ref{cd:serial:aid:elastic}. I.e. Figure \ref{cd:serial:aid:elastic} is the optimum $x$ of the objective function \eqref{cd:deconv}.
 
@@ -93,28 +81,23 @@ We demonstrate the serial deconvolution algorithm with the help of a simulated M
 	\label{cd:serial:aid:figure}
 \end{figure}
 
-Note that our algorithm calculates the gradient for the current pixel. This may raise the question: What exactly is the difference between gradient- and coordinate descent is that gradient descent optimizes all pixels in each iteration, while coordinate descent optimizes (generally) a single pixel at a time\footnote{There are block coordinate descent methods that optimize a block of coordinates at each iteration. They are also discussed together with parallel coordinate descent methods in Section \ref{pcdm}}. Also, Coordinate descent methods are not bound to use the gradient. It could use a line search approach, where we try different values and decide on the one leading to the lowest objective value.
-
-Because coordinate descent methods only optimize a single pixel at a time, they generally need a large number of iterations to converge compared to other methods. But when each iteration is cheap to compute, coordinate descent methods can converge to a result in less time than competing methods\cite{nesterov2012efficiency, nesterov2013gradient}. We discuss the efficient implementation in Section \ref{cd:efficient}. First, we explain each step in the serial coordinate descent algorithm in more detail.
-
 \subsubsection{Step 1: Choosing single a pixel}
-Our serial coordinate descent algorithm uses a greedy strategy. From all possible pixels, it searches the pixel whose gradient has the largest magnitude. In each iteration, it chooses the pixel which reduces the objective function the most. There are two other strategies that are used in coordinate descent: Random and Cyclic.
+For coordinate descent methods, there are several strategies to choose a single coordinate (pixel). Our serial coordinate descent algorithm uses a greedy strategy. In the first step, we iterate over all pixels and calculate its gradient. We select the pixel with which has the largest gradient magnitude. In each iteration, the greedy strategy chooses the pixel, which results in the largest decrease of our objective function \eqref{cd:deconv}. There are two other strategies that are often used in coordinate descent methods: Random and Cyclic.
+%with the maximum possible difference in this iteration
 
-A random strategy chooses, as the name implies, each pixel at random. Usually, the pixels are chosen from a uniform distribution. The greedy strategy leads to cheaper iteration compared to the greedy strategy, because we do not check the gradient of each pixel.
+A random strategy chooses, as the name implies, a pixel at random. Usually, the pixels are chosen from a uniform distribution. The random strategy leads to cheaper iteration compared to the greedy strategy, because we do not check the gradient of each pixel.
 
 A cyclic strategy iterates over a subset of pixels until the subset converges. It then chooses another subset. Each iteration of the cyclic strategy is also cheaper than the greedy strategy. 
 
-For our image deconvolution problem, we choose the greedy strategy. Even though it is more expensive, it tends to be faster to converge. Our reconstructed image is sparse, meaning most pixels in the image will be zero. The greedy strategy tends to iterate on pixels which will be non-zero in the final reconstructed image. While the random or cyclic strategy add pixels in the intermediate image that will eventually have to be removed. For the deconvolution problem, removing pixels from an intermediate solution seems to slow down convergence significantly. We explore the different strategies systematically for the parallel coordinate descent methods.
+For our image deconvolution problem, we choose the greedy strategy. Even though it is more expensive, it tends to be faster to converge on the deconvolution problem in radio astronomy. Our reconstructed image is sparse, meaning most pixels in the image will be zero. The greedy strategy tends to choose pixels which will be non-zero in the final reconstructed image. While the random or cyclic strategy will set pixels to a non-zero value, which will eventually become zero in the final image. For the deconvolution problem, removing pixels from an intermediate solution seems to slow down the time to converge. We will discuss the different selection strategies in detail for the parallel coordinate descent methods.
 
 
 \subsubsection{Step 2: Optimizing a single pixel}
-At this point, the greedy strategy has selected a pixel at a location to optimize. Now, our deconvolution objective \eqref{cd:deconv} is reduced to a one dimensional problem:  
+At this point, the greedy strategy has selected a pixel at a specific location to minimize. The serial coordinate descent algorithm minimizes a single pixel at each iteration, and our deconvolution objective \eqref{cd:deconv} is reduced from a large number of dimensions (pixels), to a one dimensional problem\footnote{The reason why this reduces nicely to one dimension is the elastic net regularization is separable. I.e. the regularization can be calculated independently of the surrounding pixels.}:  
 
 \begin{equation}\label{cd:serial:step2:onedim}
 \underset{x}{minimize} \: \frac{1}{2} \left \| I_{dirty} - x_{location} * PSF \right \|_2^2 + \lambda ElasticNet(x_{location})
 \end{equation}
-
-Side note: The reason why this reduces nicely to one dimension is the elastic net regularization is separable. I.e. the regularization can be calculated independently of the surrounding pixels.
 
 Optimizing the one dimensional problem \eqref{cd:serial:step2:onedim} is a lot simpler. In essence, we calculate the gradient for the pixel at the selected location, and apply the proximal operator of elastic net. First, let us look at how the gradient is calculated and ignore the regularization. The gradient arises from the data term of the one dimensional objective \eqref{cd:serial:step2:onedim} ($\left \| I_{dirty} - x_{location} * PSF \right \|_2^2$). After simplifying the partial derivative, we arrive at the calculation:
 
@@ -127,13 +110,13 @@ pixel_{opt} &= \frac{gradient_{location}}{Lipschitz_{location}}
 \end{split}
 \end{equation}
 
-First, we calculate the residuals by convolving the current solution $x$ with the $PSF$. Then, the gradient for the selected pixel location is the inner product(element-wise multiplication followed by a sum over all elements) of the residuals and the $PSF$, shifted at the current location. calculate the gradient for the selected location. The next step is to calculate the Lipschitz constant at the current location. Finally, we arrive at the optimal pixel value by dividing the gradient by the Lipschitz constant. Note, that we currently ignore the elastic net regularization.
+First, we calculate the residuals by convolving the current solution $x$ with the $PSF$. Then, the gradient for the selected pixel location is the inner product(element-wise multiplication followed by a sum over all elements) of the residuals and the $PSF$, shifted at the current location. The next step is to calculate the Lipschitz constant at the current location. Finally, we arrive at the optimal pixel value by dividing the gradient with the Lipschitz constant (The optimal deconvolved pixel value, ignoring the regularization).
 
-The Lipschitz constant describes how fast a function $f(x)$ changes with $x$. If $f(x)$ changes slowly, we can descend larger distances along the gradient without the fear for divergence. The Lipschitz constant can be looked at as a data-defined step size.
+The Lipschitz constant can be thought of as the step size. It defines how far we can descend towards the direction of the gradient. The Lipschitz constant describes how fast a function $f(x)$ changes with $x$. If $f(x)$ changes slowly, we can descend larger distances along the gradient without the fear for divergence. The Lipschitz constant can be looked at as a data-defined step size.
 
 An interesting point is that the update rule $pixel_{opt} = \frac{gradient_{location}}{Lipschitz_{location}}$ finds the optimal pixel value, if the pixel is independent. Remember that our objective function is convex. The data term of our one dimensional objective \eqref{cd:serial:step2:onedim} actually forms a parabola, with the parameters: $x^2 \langle PSF, PSF \rangle - 2x \langle resdiuals, PSF_{location}\rangle + c$. Calculating the optimum of the parabola $\frac{-b}{2a}$, is identical to calculating the gradient update \eqref{cd:serial:step2:gradient}. Note that $b = -2 gradient_{location}$ and $a = Lipschitz_{location}$, and both the minimum of the parabola $\frac{-b}{2a}$ and the update rule based on partial derivatives \eqref{cd:serial:step2:gradient} are identical.
 
-This means if our reconstruction problem has point sources which are far away, such that their $PSF$s do not overlap, then the update rule finds the optimal value for each point source with one iteration. But when the $PSF$s overlap as in our example problem, shown in Figure \ref{cd:serial:aid:figure}, then we need several iterations over the same pixel until coordinate descent converges.
+This means if our reconstruction problem has point sources which are far away, such that their $PSF$s do not overlap, then the update rule finds the optimal value for each point source with one iteration. But when the $PSF$s overlap as in our example problem, shown in Figure \ref{cd:serial:aid:figure}, then we need several iterations to sort out the correlated pixels. The serial coordinate descent algorithm needs to iterate over the same pixel several times until it converges.
 
 \textbf{Including the elastic net regularization}\\
 So far, we ignored the regularization. We can calculate the optimal pixel value without elastic net regularization. The last step is to combine the proximal operator of the elastic net regularization \eqref{cd:elastic:proximal} with the gradient calculation, and we arrive at the following update step:
@@ -144,10 +127,10 @@ pixel_{opt} = \frac{max(gradient_{location} - \lambda\alpha, 0)}{Lipschitz_{loca
 
 This update rule now finds the optimal pixel value with elastic net regularization. If the $PSF$s do not overlap, we still only need one iteration per source.
 
-%Good for sparsity
+Note that our algorithm calculates the gradient for a single pixel in each iteration. This may raise the question: What exactly is the difference between gradient- and coordinate descent? The difference is that gradient descent optimizes all pixels in each iteration, while coordinate descent optimizes (generally) a single pixel at a time\footnote{There are block coordinate descent methods that optimize a block of coordinates at each iteration. They are also discussed together with parallel coordinate descent methods in Section \ref{pcdm}}. Also, Coordinate descent methods are not bound to use the gradient. It could use a line search approach, where we try different values and decide on the one leading to the lowest objective value.
 
+Optimizing a single pixel at a time can be an advantage for the deconvolution problem. There is a trade-off between descending a single pixel at a time, or a group of pixels: A gradient based algorithm can change a large value of a single pixel, or a smaller value for a group of pixels without the danger of diverging. The more pixels are changed in every iteration, the smaller the change can be for each pixel. In the deconvolution problem, large parts of the reconstructed image will be zero. We want the optimization algorithm to focus its changes on pixels, which are non-zero in the final reconstruction.
 
-\subsubsection{Inefficient implementation pseudo-code}
 Now we put together our serial coordinate descent algorithm, and show where the bottleneck lies. In each iteration, the serial coordinate descent algorithm selects the pixel with the maximum gradient magnitude, and optimizes the selected pixel with the update rule \eqref{cd:serial:step2:update}.
 
 \begin{lstlisting}
@@ -179,15 +162,15 @@ do
 while epsilon < Abs(diff) 
 \end{lstlisting}
 
-The actual update step (line 19) is cheap to compute. We are only dealing with 4 one dimensional variables. The expensive calculations are the inner products. The gradient calculation, the Lipschitz constant and the objective value. The residuals and $PSF$ generally contain millions of pixels. Calculating the inner product of those becomes expensive. 
+The actual update step is cheap to compute. We are only dealing with 4 one dimensional variables. The expensive calculations are the inner products: The gradient calculation, the Lipschitz constant and the objective value. The residuals and $PSF$ generally contain millions of pixels. Calculating the inner product of those becomes expensive. 
 
 Also note that the greedy strategy needs to calculate the gradient for each pixel. As it is, the greedy strategy has a quadratic runtime complexity. 
 
-
 \subsection{Efficient implementation}\label{cd:efficient}
-The bottleneck of the serial coordinate descent algorithm are all the inner products that need to be calculated in each iteration. In each iteration, we need to know the gradient for every pixel, and the Lipschitz constant of the current pixel. Luckily, we can cache a map of gradients, where we save the gradient for every pixel and skip all of the inner products associated with the gradient. Also, we can efficiently calculate and cache the Lipschitz constants. We can greatly reduce the runtime cost for each iteration.
+Because coordinate descent methods only optimize a single pixel at a time, they generally need a large number of iterations to converge compared to other methods. But when each iteration is cheap to compute, coordinate descent methods can converge to a result in less time than competing methods\cite{nesterov2012efficiency, nesterov2013gradient}. We now discuss the efficient implementation.
 
-This section shows the implementation details on how we can calculate the map of gradients and the Lipschitz constant efficiently. But first we need to define another implementation detail: How we handle the edges of the convolution.
+The bottleneck of the serial coordinate descent algorithm are all the inner products that need to be calculated in each iteration. In each iteration, we need to know the gradient for every pixel, and the Lipschitz constant of the current pixel. Luckily, we can cache a map of gradients, where we save the gradient for every pixel and skip all of the inner products associated with the gradient. The Lipschitz constants are, as the name implies, constant for the whole deconvolution. They can be pre-calculated and cached for each pixel. The efficient calculation of Lipschitz constants can be found in the Attachments. We can greatly reduce the runtime cost for each iteration.
+
 
 \subsubsection{Edge handling of the convolution}
 As the reader is probably aware, there are several ways to define the convolution in image processing, depending on how we handle the edges on the image. Two possibilities are relevant for radio interferometric image reconstruction: Circular and zero padded.
@@ -215,51 +198,11 @@ Zero padding assumes that after the edge, the image is zero. Non-zero pixels at 
 In designing a deconvolution algorithm, we have the choice between the circular and the zero-padded convolution scheme. Circular convolution is more efficient to calculate, while zero-padded convolution is closer to the reality. Both choices are possible. Some implementations leave this choice to the user \cite{kenyon2019pymoresane}. We decide on using the zero-padded convolution. This choice influences how we calculate the Lipschitz and gradients efficiently.
 
 
-\subsubsection{Efficient calculation of the Lipschitz constants}
-In each iteration, we need the Lipschitz constant of the current pixel. I.e. we need the inner product $\langle PSF_{location}, PSF_{location} \rangle$ for every pixel. We can pre-calculate the Lipschitz constant before we run the serial coordinate descent algorithm. The naive way to calculate the Lipschitz constant for every pixel results in quadratic runtime(each inner product costs us $O(n)$ operations, and we do it for all $n$ pixels). But this is not necessary. We can pre-calculate the Lipschitz constant for every pixel in linear time.
-
-Figure \ref{cd:efficient:lipschitz:padded} shows the $PSF$ shifted to a pixel location. The Lipschitz constant is by squaring all values of Figure \ref{cd:efficient:lipschitz:padded} and summing up the values. Or in another way: We sum up all the squared values of the $PSF$ inside a specific rectangle. All that changes for a Lipschitz calculation between different pixels is the specific rectangle.
-
-\begin{figure}[h]
-	\centering
-	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=\linewidth, clip, trim= 0.25in 0.25in 0.25in 0.25in]{./chapters/03.cd/simulated/psfZeroPadding.png}
-		\caption{Shifted $PSF$.}
-		\label{cd:efficient:lipschitz:padded}
-	\end{subfigure}
-	\begin{subfigure}[b]{0.3\linewidth}
-		\includegraphics[width=\linewidth, clip, trim= 0.25in 0.25in 0.25in 0.25in]{./chapters/03.cd/simulated/psf.png}
-		\caption{Sum of squared values.}
-		\label{cd:efficient:lipschitz:rectangle}
-	\end{subfigure}
-	\caption{Sum of squared values for the Lipschitz constant.}
-	\label{cd:efficient:lipschitz:figure}
-\end{figure}
-
-This can be exploited with a scan algorithm: We first calculate the result of every rectangle we can draw from the origin, up to some pixel value. We end up with an array we call $scan[,]$. It is the same size as the $PSF$, but contains the sum of squares inside a specific rectangle.
-
-\begin{lstlisting}
-var scan = new double[,];
-for (i in (0, PSF.Length(0))
-	for (j in (0, PSF.Length(1))
-		var iBefore = scan[i - 1, j];
-		var jBefore = scan[i, j - 1];
-		var ijBefore = scan[i - 1, j - 1];
-		var current = PSF[i, j] * PSF[i, j];
-		scan[i, j] = current + iBefore + jBefore - ijBefore;
-\end{lstlisting}
-
-Every Lipschitz constant can be now calculated by combining the sums of different rectangles. Our example is shown in Figure \ref{cd:efficient:lipschitz:rectangle}. We start with the total sum of all values, and subtract two rectangles. Because the subtractions overlap, we need to add the third rectangle again. we take the total value. In short, we can calculate each Lipschitz constant by at most 4 lookups in the $scan[,]$ array.
-
-
 \subsubsection{Using a map of gradients}
-For an efficient greedy strategy, we need to know the gradient for each pixel.  We show how to calculate the initial map of gradients in linearithmic time($O(n log n)$ and how to update it directly after a change in the reconstructed image $x$. As we will see, we can use a map of gradients and drop the residual calculation from the algorithm. The gradient map implicitly contains the information of the residuals.
+For an efficient greedy strategy, we need to know the gradient for each pixel.  We show how to calculate the initial map of gradients efficiently with the FFT, and how to update it directly after a change in the reconstructed image $x$. As we will see, we can use a map of gradients and drop the residual image from the algorithm. The gradient map implicitly contains the information of the residuals.
 
-
-\textbf{Efficient calculation}\\
-Calculating the gradient for each pixel results again in a quadratic runtime. We need to calculate $\langle residuals, PSF_{location} \rangle$ for every pixel (Similarly to the Lipschitz constants, each inner product costs us $O(n)$ operations, and we do it for all $n$ pixels). But we can use the FFT to calculate the map of gradients in linearithmic time.
-
-Note that the inner product is actually a correlation: We correlate the $PSF$ with the residuals. The correlation and the convolution are related. The convolution is simply a correlation with a flipped kernel. This means we can use the $FFT$ to efficiently calculate the correlation of the residuals and the $PSF$:
+\textbf{Efficient initialization }\\
+Calculating the gradient for each pixel results again in a quadratic runtime. We need to calculate $\langle residuals, PSF_{location} \rangle$ for every pixel. But we can use the FFT to efficiently calculate the map of gradients in time. Note that the inner product is actually a correlation: We correlate the $PSF$ with the residuals. The correlation and the convolution are related. The convolution is simply a correlation with a flipped kernel. This means we can use the $FFT$ to efficiently calculate the correlation of the residuals and the $PSF$:
 
 \begin{equation}\label{cd:efficient:gradients:correlation}
 \begin{split}
@@ -313,13 +256,9 @@ Note that if we add pixel in the reconstruction $x$, we subtract the $PSF$ (mult
 	\label{cd:efficient:update:figure}
 \end{figure}
 
-This means we can update the gradient map directly with the product of $(PSF \star PSF)$. We can simply shift $(PSF \star PSF)$ at the correct pixel location and subtract it from the gradient map directly.
+This means we can update the gradient map directly with the product of $(PSF \star PSF)$. We can simply shift $(PSF \star PSF)$ at the correct pixel location and subtract it from the gradient map directly. Although there is one issue: We use zero padded convolution. The $PSF$ at the edges of the image is masked. This means that the product $(PSF \star PSF)$ actually changes with the pixel location. If we update a pixel in the corner of the image, the actual update $(PSF \star PSF)$ at that location looks different than what was shown in Figure \ref{cd:efficient:update:psf}.
 
-There is one issue though: We use zero padded convolution. The $PSF$ at the edges of the image is masked. This means that the product $(PSF \star PSF)$ actually changes with the pixel location. If we update a pixel in the corner of the image, the actual update $(PSF \star PSF)$ at that location looks different than what was shown in Figure \ref{cd:efficient:update:psf}.
-
-The exact update is again expensive to calculate. We need to correlate the $PSF$ with itself for every pixel location. This is as repeating equation \eqref{cd:efficient:gradients:correlation} in each iteration (re-calculating the $PSF$ correlation with the residuals in each iteration). However, the exact gradient update only changes significantly at the edges of the image, when large parts of the $PSF$ are masked by the edges. Otherwise the difference between the exact update and simply shifting $(PSF \star PSF)$ at the pixel location is small.
-
-This is the reason why we chose to accept that the gradient update is only an approximation. The approximation only becomes inaccurate at the edges, and we use the algorithm in the major cycle framework: Every major cycle removes any inaccuracies we introduced during the previous cycle. This may potentially lead to more major cycles until the algorithm converge to the solution. But in practice the serial coordinate descent algorithm did not need more major cycles than CLEAN. We compare CLEAN and the serial coordinate descent algorithm on a real-world observation in Section \ref{results}.
+The exact update is again expensive to calculate. We need to shift the $PSF$ at its correct location and again calculate the correlation with itself. However, the exact gradient update only changes significantly at the edges of the image, when large parts of the $PSF$ are masked by the edges. Otherwise the difference between the exact update and simply shifting $(PSF \star PSF)$ at the pixel location is small. This is the reason why we chose to accept that the gradient update is only an approximation. The approximation only becomes inaccurate at the edges, and we use the algorithm in the Major cycle framework: Every Major cycle removes any inaccuracies we introduced during the previous cycle.  
 
 \subsection{Efficient implementation pseudo-code}
 Now we put all the run time improvements discussed before into the new implementation of the serial coordinate descent algorithm. We pre-calculate the Lipschitz constants and the gradient map. Then during iterations, we update the gradient map directly.
@@ -372,70 +311,16 @@ In step 1, we replaced the gradient and Lipschitz calculation with lookups, redu
 The two most time consuming parts of this implementation are step 1, and updating the gradient map. Our implementation in .Net Core uses parallel computing for both parts. We search for the maximum pixel in parallel, and update the gradient map in parallel.
 
 
-\subsection{GPU implementation}
-We implemented the serial coordinate descent algorithm on the GPU. It is implemented in .Net Core with ILGPU\cite{ilgpu}. ILGPU is a Just-In-Time compiler for high performance GPU programs written in .Net Core.
+\subsection{Serial coordinate descent and similarities to the CLEAN algorithm}\label{cd:similarities}
+When we look back at the CLEAN algorithm described in Section \ref{intro2:CLEAN}, we can see similarities in their structures: In the first step, CLEAN searches the location of the maximum pixel in the residuals, while serial coordinate descent searches the location of the absolute maximum change. In the second step, CLEAN subtracts a fraction of the $PSF$ at that location, while coordinate descent calculates the optimal pixel value and subtracts the product of $PSF \star PSF$ from the gradient map. 
 
-GPU programs are split into kernels. Each kernel consists of a single routine optimized for executing on the GPU. Our serial coordinate descent algorithm consists of Step 1, find the best pixel to optimize, step 2, optimize pixel and then updating the gradient map. The GPU implementation of the Serial coordinate descent algorithm uses three kernels: Kernel 1 is equivalent to step 1. Kernel 2 updates the reconstruction $x$ and kernel 3 updates the gradient map.
+CLEAN and serial coordinate descent have the same overall structure. But serial coordinate descent uses the gradient map instead of explicit residuals (the gradient map contains the information of the residuals implicitly). In a sense, the serial coordinate descent can be looked at as a CLEAN algorithm, which uses the gradient map instead of the residual map, and the product of $PSF \star PSF$ instead of the $PSF$. Both algorithms use essentially use the same operations, but the content in their memory is different. As such, one iteration of standard CLEAN is roughly as expensive as an iteration of serial coordinate descent. 
 
-Kernel 2 and 3 are straight forward to implement. The implementation of kernel 1, searching for the best pixel, is more interesting. Essentially, this step is a max reduce operation: We want to find the pixel with the maximum absolute step. We implemented the step 1 kernel with an atomic-max instruction:
-\begin{lstlisting}
-MaxPixelKernel(x, gradienstMap, lipschitz, location, maxPixel)
-	oldValue = x[location]
-	tmp = gradientsMap[location] + oldValue * lipschitzMap[location]
-	optimalValue = Max(tmp - lambda*alpha) / (lipschitz[location] + (1 - alpha)*lambda)
-	diff = optimalValue - oldValue
-	currentPixel = (absDiff = Abs(diff), diff = diff, location = location)
-	AtomicMax(maxPixel, currentPixel)
-\end{lstlisting}
+The side effect of their similar structure is that any speedup we achieve by using GPU acceleration for serial coordinate descent can plausibly be used to speedup CLEAN to a similar amount. Our distribution scheme for serial coordinate descent can also be used for a distributed standard CLEAN. 
 
-The kernel is executed on multiple processors in parallel on the GPU. Each processor is checking a single pixel. Communication is done with the atomic-max instruction. The atomic-max writes on a global variable, which keeps track of the current maximum pixel. This implementation turned out to be the fastest for the MaxPixelKernel. Warp shuffle\cite{keplerShuffle} was also tested, but resulted in a slower kernel.
+The main difference between the two algorithms is that serial coordinate descent does not need the blurring step typically used in CLEAN algorithms. In Section \ref{intro2:CLEAN}, we introduced the CLEAN concept of the model image. Standard CLEAN detects point sources, and puts them in the model image. When the observation shows an extended emission, the standard CLEAN approximates it as a set of point sources. After CLEAN has finished finding all the point sources, it blurs the model image with the clean-beam, a 2d Gaussian representing the accuracy of the instrument, resulting in the reconstructed image.
 
-Synchronization
+In this project, we use the elastic net regularization, which has a simple model for extended emissions, namely the L2 norm. As such our serial coordinate descent algorithm can find the reconstructed image directly without any blurring. This may result in super-resolved reconstructions: The serial coordinate descent algorithm may find structures which are smaller than the accuracy limit of the instrument. We will show plausible super-resolved reconstructions by the serial coordinate descent algorithm with elastic net regularization in Section \ref{results}.
 
-Synchronization between the kernels. It is a serial coordinate descent method. We need to wait for all kernels to finish before we can continue.
-
-
-\begin{lstlisting}
-do 
-	//Step 1: Search pixel
-	maxPixel = (absDiff = 0, diff = 0, location = (-1, -1))
-	ExecuteMaxPixelKernel(x, gradienstMap, lipschitz, maxPixel)
-	SynchronizeKernels()
-	
-	//Step 2: Optimize
-	ExecuteUpdateXKernel(x, maxPixel.diff, maxPixel.location)
-	ExecuteUpdateGradientsKernel(gradientsMap, gradientUpdate, maxPixel.diff, maxPixel.location)
-	SynchronizeKernels()
-	
-while maxPixel.absDiff  < epsilon
-\end{lstlisting}
-
-ILGPU implementation finished. 
-
-
-\subsection{Distributed implementaion MPI}
-How we distribute it with MPI.
-
-Message pasing interface (MPI)
-
-
-We split up the image and the gradient map into patches.
-
-Each simply updates its patch.
-
-MPI Allreduce
-
-
-\subsection{Serial coordinate descent and similarities to the CLEAN algorithm}
-When we look back at the CLEAN algorithm, we start to see similarities to the serial coordinate descent algorithm. 
-
-CLEAN finds the maximum in the residual image. Serial Coordinate descent finds the maximum in the gradient map.
-
-CLEAN then removes a fixed fraction of the $PSF$ at that point. Serial coordinate descent uses the Lipschitz constant, and subtracts the $PSF$ correlated with itself at that point.
-
-The main difference is that serial coordinate descent calculates the gradient, and CLEAN does not. CLEAN is more a matching pursuit algorithm. But the structure is the same. We can use the serial coordinate descent GPU and MPI implementation. With a few tweaks, we would arrive at the CLEAN algorithm.
-
-By accident, we also found a GPU and MPI implementation for standard CLEAN.
-
-Multi-scale CLEAN is what is used. Difficulty with MPI implementation because of a distributed convolution.
+%Multi-scale CLEAN is what is used. Difficulty with MPI implementation because of a distributed convolution.
 
