@@ -19,7 +19,7 @@ A deconvolution algorithm in the Major/Minor cycle works with a $PSF$, which is 
 
 An approximation of the full $PSF$ has already been developed for CLEAN: The Clark CLEAN algorithm \cite{clark1980efficient} uses only a window of the full $PSF$ for the deconvolution. Figure \ref{gradients:clark} shows the full $PSF$ and the approximate $PSF$ used typically in Clark CLEAN. During deconvolution, it only uses a window around the center of the full $PSF$. Typically, the sides of the window is $\frac{1}{2}$ of the image size. By using only a $\frac{1}{2} PSF$ window around the center, a Clark CLEAN iteration is significantly faster than standard CLEAN. With $\frac{1}{2} PSF$, Clark CLEAN has to subtract only the $\frac{1}{2} PSF$ window from the residuals, which is 4 times smaller than the full $PSF$.
 
-Using only a fraction fo the true $PSF$ speeds up the deconvolution. But it also introduces sparsity in the deconvolution problem which, to our knowledge, has not been explored for radio interferometers. The full $PSF$ shown in Figure \ref{gradients:clark} has significant values around the center, but they quickly approach zero the further away we move from the center. If we only use a window around the center $\frac{1}{2} PSF$ and set the rest to zero, we are using a sparse $PSF$. For a CLEAN algorithm, the sparse approximated $PSF$ ignores the influence of far away pixel. If we increase the approximation, the deconvolution problem becomes increasingly separable into image facets.
+Using only a fraction fo the true $PSF$ speeds up the deconvolution. But it also introduces sparsity in the deconvolution problem which, to our knowledge, has not been explored for radio interferometers. The full $PSF$ shown in Figure \ref{gradients:clark} has significant values around the center, but they quickly approach zero the further away we move from the center. If we only use a window around the center $\frac{1}{2} PSF$ and set the rest to zero, we are using a sparse $PSF$. For a CLEAN algorithm, the sparse approximated $PSF$ ignores the influence of far away pixel.
 
 The important question is, how small can the center window be? Can we guarantee that the algorithm converges to the same solution, even with an approximated $PSF$? We will test the effect of an approximate $PSF$ on our serial and parallel coordinate descent algorithm in Section \ref{results:gradients}. In this section, we show how we can incorporate an approximate $PSF$ into our coordinate descent algorithms. We discuss only the serial coordinate descent algorithm in this section. The approximation works identical for the parallel coordinate descent algorithm.
 
@@ -78,10 +78,8 @@ The two approximation methods developed here have opposing downsides: Method 1 i
 The obvious question is, what happens when we combine the two approximation method. Indeed, this is our final solution in this project. We start out with method 2, the approximate deconvolution for a few Major cycles, and then switch to method 1, approximate update. When combining both methods, we decided to switch from method 2 to method 1 when the serial or parallel coordinate descent has converged.
 
 
-\subsection{Major Cycle convergence and implicit path regularization}\label{gradients:pathreg}
-There is one problem with the approximate $PSF$ which is left to solve: When does the serial coordinate descent algorithm decide to use a Major cycle. Or when we combine the $PSF$ approximation methods, how many Major cycles do we use for each method?
-
-When we use an approximate $PSF$, the deconvolution algorithm will at a certain iteration start to include 'side lobes' of the $PSF$. The Figure \ref{gradient:convergence:sidelobe} shows an example of the side lobes we introduce by approximating the $PSF$ with $\frac{1}{2}$ of the center window. At a certain point, the deconvolution with an approximate $PSF$ has to decide whether the emission is real, or whether it is an artifact from the $PSF$ approximation, and will be removed with the next major cycle.
+\subsection{Implicit path regularization}\label{gradients:pathreg}
+When we use an approximate $PSF$, the deconvolution algorithm will at a certain iteration start to include 'side lobes' of the $PSF$. The Figure \ref{gradient:convergence:sidelobe} shows an example of the side lobes we introduce by approximating the $PSF$ with $\frac{1}{2}$ of the center window. At a certain point, the deconvolution with an approximate $PSF$ has to decide whether the emission is real, or whether it is an artifact from the $PSF$ approximation. If the emission is from the $PSF$ approximation, then the deconvolution algorithm should wait for another Major cycle, which will remove the artifact emission.
 
 %re-introduce residuals
 
@@ -101,22 +99,21 @@ When we use an approximate $PSF$, the deconvolution algorithm will at a certain 
 	\label{gradient:convergence:sidelobe}
 \end{figure}
 
-For example: if we have an observation with a single point source in the center, the first iteration of Clark CLEAN will subtract the approximate $PSF$ from the residuals. But the residual image is left with the $PSF$ side lobes shown in Figure \ref{gradient:convergence:reverseCut}. The next iteration may detect 'fake' point sources at the significant side lobes of the $PSF$. Our serial coordinate descent algorithm does not explicitly use the residual image, but has a similar problem. The information of the residual image is implicitly contained in the gradient map. Our serial coordinate descent algorithm with an approximate $PSF$ leaves significant gradients in the map.
+For example: If we have an observation with a single point source in the center, the first iteration of serial coordinate descent will detect the point source, and subtract the approximate gradient update from the gradient map. However, because it is an approximate update, it still leaves significant gradients in the map. But these gradients do not belong to a real emission, but to the $PSF$ sidelobes shown in Figure \ref{gradient:convergence:reverseCut}. The next iteration of serial coordinate descent may detect 'fake' point sources at the significant side lobes of the $PSF$. 
 
-This is a problem for deconvolving an image with the Major cycle. If we let our serial coordinate descent algorithm converge to a result in each Major cycle, it will include emission from the $PSF$ side lobes. In the next Major cycle, the serial coordinate descent algorithm has to remove the side lobes from the reconstruction, but this again leaves significant side lobes in the gradient map. This can lead to an oscillation of the algorithm, where it adds and removes the same side lobes several times over different Major cycles. In extreme cases (for example when we use an aggressive approximation of the $PSF$), this may even lead to a diverging behavior. But even if the deconvolution algorithm converges over several Major cycles, if the algorithm spends too much time on $PSF$ side lobes, it may become significantly slower.
+This is a problem for deconvolving an image with the Major cycle. If we do not account for the $PSF$ side lobes, then in each Major cycle the coordinate descent algorithm will include artifacts from the $PSF$ approximation. In the next Major cycle, the serial coordinate descent algorithm has to remove the side lobes from the reconstruction, but this again leaves significant side lobes in the gradient map. This can lead to an oscillation behavior of the deconvolution, where it adds and removes the same side lobes several times over different Major cycles. In extreme cases (for example when we use an aggressive approximation of the $PSF$), this may even lead to a divergence. But even if the deconvolution algorithm converges over several Major cycles, it may waste computing resources on including and excluding $PSF$ side lobes.
 
-To solve this problem, we use the following strategy for our serial coordinate descent algorithm: We estimate the $PSF$ side lobes introduced by the approximation. We increase the regularization parameter $\lambda$, until the elastic net regularization excludes all side lobes from the reconstruction. Note that real emission may also be regularized away in the current Major cycle iteration. The serial coordinate descent algorithm reconstructs the image with the current $\lambda$, and lets the Major cycle remove the side lobes. It then estimates the current $PSF$ side lobes for this Major cycle, sets a lower regularization parameter $\lambda$ and again deconvolves the image.
+To solve this problem, we use the following strategy for our serial and parallel coordinate descent algorithm: We increase the elastic net regularization parameter $\lambda$ until the $PSF$ sidelobes are excluded from the reconstruction. We estimate the side lobes introduced by the $PSF$ approximation, and estimate by how much the parameter $\lambda$ has to be increased in this Major cycle. The serial and parallel coordinate descent algorithm reconstructs the image with the current $\lambda$, and lets the Major cycle remove the side lobes. It then estimates the current $PSF$ side lobes for the next Major cycle, sets a lower regularization parameter $\lambda$ and again deconvolves the image.
 
-This is known as a path regularization in optimization. We let our optimization algorithm converge on intermediate solution, decrease the $\lambda$ parameter and use the intermediate solution as a 'warm start'. Coordinate descent methods may benefit from path regularization\cite{friedman2010regularization}. Converging on all intermediate solutions may result in a lower wall-clock time than converging directly on the final solution.
+This is known as a path regularization in optimization. We let our serial and parallel coordinate descent algorithm converge on intermediate solution, decrease the $\lambda$ parameter and use the intermediate solution as a 'warm start'. Coordinate descent methods may benefit from path regularization\cite{friedman2010regularization}. Converging on all intermediate solutions may result in a lower wall-clock time than converging directly on the final solution.
 
-We use the path regularization to stop the algorithm from wasting computing resources on side lobes. There may be different strategies that result in an overall lower wall-clock time for the serial coordinate descent algorithm, but they were not explored in this project. We set the regularization parameter $\lambda$ for each Major cycle according to the following estimate:
+We use the path regularization to stop the algorithm from wasting computing resources on side lobes. There may be different strategies that result in an overall lower wall-clock time for the serial and parallel coordinate descent algorithm, but they were not explored in this project. We set the regularization parameter $\lambda$ for each Major cycle according to the following estimate:
 
 \begin{equation}
 \begin{split}
 maxSidelobe &= Max(PSF - Cut(PSF)) \\
 gradients &= residuals \star PSF \\
-maxLobeGradient &= Max(gradients) * maxSidelobe \\
-\lambda_{cycle} &= \frac{maxLobeGradient}{\alpha}\\
+\lambda_{cycle} &= \frac{Max(gradients) * maxSidelobe}{\alpha}\\
 \lambda_{cycle} &= Max(\lambda, \lambda_{cycle})
 \end{split}
 \end{equation}
@@ -130,8 +127,7 @@ This estimate works, but it has one problem for radio interferometric imaging: I
 maxSidelobe &= Max(PSF - cut(PSF)) \\
 gradients &= residuals \star PSF \\
 \textbf{correction} &= Max \left [1, \frac{Max(gradients)}{Max(residuals) * Lipschitz} \right ] \\
-maxLobeGradient &= Max(gradients) * maxSidelobe * correction \\
-\lambda_{cycle} &= \frac{maxLobeGradient}{\alpha}\\
+\lambda_{cycle} &= \frac{ Max(gradients) * maxSidelobe * correction}{\alpha}\\
 \lambda_{cycle} &= Max(\lambda, \lambda_{cycle})
 \end{split}
 \end{equation}
