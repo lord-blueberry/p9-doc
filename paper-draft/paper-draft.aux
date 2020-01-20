@@ -17,90 +17,151 @@
 \providecommand\HyField@AuxAddToFields[1]{}
 \providecommand\HyField@AuxAddToCoFields[2]{}
 \AC@reset@newl@bel
-\citation{ferrari2014distributed}
-\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}{section.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {2}Methods}{1}{section.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {3}Coordinate descent deconvolution}{1}{section.3}\protected@file@percent }
-\newlabel{cd}{{3}{1}{Coordinate descent deconvolution}{section.3}{}}
-\newlabel{cd:deconv}{{3.1}{1}{Coordinate descent deconvolution}{equation.3.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Elastic net regularization}{1}{subsection.3.1}\protected@file@percent }
-\newlabel{cd:reg}{{3.1}{1}{Elastic net regularization}{subsection.3.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {1}The image reconstruction problem of radio interferometers}{1}{section.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Center of the Milky Way galaxy at radio wavelengths. Observed by the MeerKAT interferometer.\relax }}{1}{figure.caption.1}\protected@file@percent }
 \providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
-\newlabel{cd:elastic:L1}{{1a}{1}{Effect of the pure L1 norm ($\lambda $ = 1.0) on a single point source.\relax }{figure.caption.1}{}}
-\newlabel{sub@cd:elastic:L1}{{a}{1}{Effect of the pure L1 norm ($\lambda $ = 1.0) on a single point source.\relax }{figure.caption.1}{}}
-\newlabel{cd:elastic:L2}{{1b}{1}{Effect of the pure L2 norm ($\lambda $ = 1.0) on a single point source.\relax }{figure.caption.1}{}}
-\newlabel{sub@cd:elastic:L2}{{b}{1}{Effect of the pure L2 norm ($\lambda $ = 1.0) on a single point source.\relax }{figure.caption.1}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Effect of the L1 and L2 Norm separately.\relax }}{1}{figure.caption.1}\protected@file@percent }
-\newlabel{cd:elastic}{{1}{1}{Effect of the L1 and L2 Norm separately.\relax }{figure.caption.1}{}}
-\citation{mcewen2011compressed}
-\newlabel{cd:elastic:formula}{{3.2}{2}{Elastic net regularization}{equation.3.2}{}}
-\newlabel{cd:elastic:proximal}{{3.3}{2}{Elastic net regularization}{equation.3.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Serial coordinate descent algorithm}{2}{subsection.3.2}\protected@file@percent }
-\newlabel{cd:serial}{{3.2}{2}{Serial coordinate descent algorithm}{subsection.3.2}{}}
-\newlabel{cd:serial:aid:dirty}{{2a}{2}{Dirty Image.\relax }{figure.caption.2}{}}
-\newlabel{sub@cd:serial:aid:dirty}{{a}{2}{Dirty Image.\relax }{figure.caption.2}{}}
-\newlabel{cd:serial:aid:psf}{{2b}{2}{Point Spread Function.\relax }{figure.caption.2}{}}
-\newlabel{sub@cd:serial:aid:psf}{{b}{2}{Point Spread Function.\relax }{figure.caption.2}{}}
-\newlabel{cd:serial:aid:elastic}{{2c}{2}{Elastic net reconstruction\relax }{figure.caption.2}{}}
-\newlabel{sub@cd:serial:aid:elastic}{{c}{2}{Elastic net reconstruction\relax }{figure.caption.2}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Example problem with two point sources.\relax }}{2}{figure.caption.2}\protected@file@percent }
-\newlabel{cd:serial:aid:figure}{{2}{2}{Example problem with two point sources.\relax }{figure.caption.2}{}}
-\citation{nesterov2012efficiency,nesterov2013gradient}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.1}Step 1: Choosing single a pixel}{3}{subsubsection.3.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.2}Step 2: Optimizing a single pixel}{3}{subsubsection.3.2.2}\protected@file@percent }
-\newlabel{cd:serial:step2:onedim}{{3.4}{3}{Step 2: Optimizing a single pixel}{equation.3.4}{}}
-\newlabel{cd:serial:step2:gradient}{{3.5}{3}{Step 2: Optimizing a single pixel}{equation.3.5}{}}
-\newlabel{cd:serial:step2:update}{{3.6}{4}{Step 2: Optimizing a single pixel}{equation.3.6}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.3}Inefficient implementation pseudo-code}{4}{subsubsection.3.2.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Efficient implementation}{4}{subsection.3.3}\protected@file@percent }
-\newlabel{cd:efficient}{{3.3}{4}{Efficient implementation}{subsection.3.3}{}}
-\citation{kenyon2019pymoresane}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.1}Edge handling of the convolution}{5}{subsubsection.3.3.1}\protected@file@percent }
-\newlabel{cd:efficient:convolution:padded}{{3a}{5}{Zero padded convolution.\relax }{figure.caption.3}{}}
-\newlabel{sub@cd:efficient:convolution:padded}{{a}{5}{Zero padded convolution.\relax }{figure.caption.3}{}}
-\newlabel{cd:efficient:convolution:circular}{{3b}{5}{Circular convolution.\relax }{figure.caption.3}{}}
-\newlabel{sub@cd:efficient:convolution:circular}{{b}{5}{Circular convolution.\relax }{figure.caption.3}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Comparison of the two convolution schemes.\relax }}{5}{figure.caption.3}\protected@file@percent }
-\newlabel{cd:efficient:convolution:figure}{{3}{5}{Comparison of the two convolution schemes.\relax }{figure.caption.3}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.2}Efficient calculation of the Lipschitz constants}{5}{subsubsection.3.3.2}\protected@file@percent }
-\newlabel{cd:efficient:lipschitz:padded}{{4a}{5}{Shifted $PSF$.\relax }{figure.caption.4}{}}
-\newlabel{sub@cd:efficient:lipschitz:padded}{{a}{5}{Shifted $PSF$.\relax }{figure.caption.4}{}}
-\newlabel{cd:efficient:lipschitz:rectangle}{{4b}{5}{Sum of squared values.\relax }{figure.caption.4}{}}
-\newlabel{sub@cd:efficient:lipschitz:rectangle}{{b}{5}{Sum of squared values.\relax }{figure.caption.4}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Sum of squared values for the Lipschitz constant.\relax }}{5}{figure.caption.4}\protected@file@percent }
-\newlabel{cd:efficient:lipschitz:figure}{{4}{5}{Sum of squared values for the Lipschitz constant.\relax }{figure.caption.4}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.3.3}Using a map of gradients}{6}{subsubsection.3.3.3}\protected@file@percent }
-\newlabel{cd:efficient:gradients:correlation}{{3.7}{6}{Using a map of gradients}{equation.3.7}{}}
-\newlabel{cd:efficient:gradients:dirty}{{5a}{6}{Dirty Image.\relax }{figure.caption.5}{}}
-\newlabel{sub@cd:efficient:gradients:dirty}{{a}{6}{Dirty Image.\relax }{figure.caption.5}{}}
-\newlabel{cd:efficient:gradients:psf}{{5b}{6}{Point Spread Function.\relax }{figure.caption.5}{}}
-\newlabel{sub@cd:efficient:gradients:psf}{{b}{6}{Point Spread Function.\relax }{figure.caption.5}{}}
-\newlabel{cd:efficient:gradients:gradients}{{5c}{6}{Gradient map.\relax }{figure.caption.5}{}}
-\newlabel{sub@cd:efficient:gradients:gradients}{{c}{6}{Gradient map.\relax }{figure.caption.5}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Example of the gradient calculation.\relax }}{6}{figure.caption.5}\protected@file@percent }
-\newlabel{cd:efficient:gradients:figure}{{5}{6}{Example of the gradient calculation.\relax }{figure.caption.5}{}}
-\newlabel{cd:efficient:update:dirty}{{6a}{7}{Point Spread Function.\relax }{figure.caption.6}{}}
-\newlabel{sub@cd:efficient:update:dirty}{{a}{7}{Point Spread Function.\relax }{figure.caption.6}{}}
-\newlabel{cd:efficient:update:psf}{{6b}{7}{Gradient update: $(PSF \star PSF)$.\relax }{figure.caption.6}{}}
-\newlabel{sub@cd:efficient:update:psf}{{b}{7}{Gradient update: $(PSF \star PSF)$.\relax }{figure.caption.6}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Example problem with two point sources.\relax }}{7}{figure.caption.6}\protected@file@percent }
-\newlabel{cd:efficient:update:figure}{{6}{7}{Example problem with two point sources.\relax }{figure.caption.6}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Efficient implementation pseudo-code}{7}{subsection.3.4}\protected@file@percent }
-\citation{ilgpu}
-\citation{keplerShuffle}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}GPU implementation}{8}{subsection.3.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.6}Distributed implementaion MPI}{8}{subsection.3.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.7}Serial coordinate descent and similarities to the CLEAN algorithm}{8}{subsection.3.7}\protected@file@percent }
+\newlabel{intro:milky}{{1}{1}{Center of the Milky Way galaxy at radio wavelengths. Observed by the MeerKAT interferometer.\relax }{figure.caption.1}{}}
+\newlabel{intro:inversefig:uv}{{2a}{1}{Measured visibilities (Fourier components) of the N132 supernova-remnant.\relax }{figure.caption.2}{}}
+\newlabel{sub@intro:inversefig:uv}{{a}{1}{Measured visibilities (Fourier components) of the N132 supernova-remnant.\relax }{figure.caption.2}{}}
+\newlabel{intro:inversefig:rev}{{2b}{1}{Observed image of the N132 supernova-remnant.\relax }{figure.caption.2}{}}
+\newlabel{sub@intro:inversefig:rev}{{b}{1}{Observed image of the N132 supernova-remnant.\relax }{figure.caption.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Example of an image reconstruction problem of radio interferometers\relax }}{1}{figure.caption.2}\protected@file@percent }
+\newlabel{intro:inversefig}{{2}{1}{Example of an image reconstruction problem of radio interferometers\relax }{figure.caption.2}{}}
+\citation{candes2006robust,donoho2006compressed}
+\citation{dabbech2018cygnus,dabbech2015moresane}
+\citation{hogbom1974aperture,rau2011multi}
+\citation{offringa2017optimized}
+\citation{bouman1996unified}
+\citation{felix2017compressed}
+\citation{richtarik2016parallel}
+\citation{mcgaffin2015edge}
+\citation{fercoq2014fast}
+\citation{clark1980efficient}
+\citation{clark1980efficient}
+\citation{clark1980efficient}
+\@writefile{toc}{\contentsline {section}{\numberline {2}$PSF$ approximation for fast and distributed deconvolution}{3}{section.2}\protected@file@percent }
+\newlabel{gradients}{{2}{3}{$PSF$ approximation for fast and distributed deconvolution}{section.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces $PSF$ approximation typically used in Clark CLEAN\relax }}{3}{figure.caption.3}\protected@file@percent }
+\newlabel{gradients:clark}{{3}{3}{$PSF$ approximation typically used in Clark CLEAN\relax }{figure.caption.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}$PSF$ approximation and approximate gradient calculation}{4}{subsection.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Major Cycle convergence and implicit path regularization}{4}{subsection.2.2}\protected@file@percent }
+\newlabel{gradients:pathreg}{{2.2}{4}{Major Cycle convergence and implicit path regularization}{subsection.2.2}{}}
+\newlabel{gradient:convergence:reverseCut}{{4b}{4}{$PSF$ Sidelobes\relax }{figure.caption.4}{}}
+\newlabel{sub@gradient:convergence:reverseCut}{{b}{4}{$PSF$ Sidelobes\relax }{figure.caption.4}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Maximum sidelobe of the $PSF$ cutoff.\relax }}{4}{figure.caption.4}\protected@file@percent }
+\newlabel{gradient:convergence:sidelobe}{{4}{4}{Maximum sidelobe of the $PSF$ cutoff.\relax }{figure.caption.4}{}}
+\citation{friedman2010regularization}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Parallel coordinate descent methods}{6}{section.3}\protected@file@percent }
+\newlabel{pcdm}{{3}{6}{Parallel coordinate descent methods}{section.3}{}}
+\citation{richtarik2016parallel}
+\citation{richtarik2016parallel}
+\citation{fercoq2015accelerated}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.0.1}Estimated Separability Overapproximation (ESO)}{7}{subsubsection.3.0.1}\protected@file@percent }
+\newlabel{pcdm:pcdm:eso}{{3.0.1}{7}{Estimated Separability Overapproximation (ESO)}{subsubsection.3.0.1}{}}
+\newlabel{pcdm:pcdm:eso}{{3.1}{7}{Estimated Separability Overapproximation (ESO)}{equation.3.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Asynchronous parallel coordinate descent algorithm.}{7}{subsection.3.1}\protected@file@percent }
+\newlabel{pcdm:async}{{3.1}{7}{Asynchronous parallel coordinate descent algorithm}{subsection.3.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}The problem with random selection for deconvolution}{9}{subsection.3.2}\protected@file@percent }
+\newlabel{pcdm:adaption}{{3.2}{9}{The problem with random selection for deconvolution}{subsection.3.2}{}}
+\citation{offringa2014wsclean}
+\newlabel{pcdm:adaption:randomProblem:block11}{{5a}{10}{8k iterations\relax }{figure.caption.5}{}}
+\newlabel{sub@pcdm:adaption:randomProblem:block11}{{a}{10}{8k iterations\relax }{figure.caption.5}{}}
+\newlabel{pcdm:adaption:randomProblem:block12}{{5b}{10}{80k iterations\relax }{figure.caption.5}{}}
+\newlabel{sub@pcdm:adaption:randomProblem:block12}{{b}{10}{80k iterations\relax }{figure.caption.5}{}}
+\newlabel{pcdm:adaption:randomProblem:block81}{{5c}{10}{8k iterations, $8^2$ block\relax }{figure.caption.5}{}}
+\newlabel{sub@pcdm:adaption:randomProblem:block81}{{c}{10}{8k iterations, $8^2$ block\relax }{figure.caption.5}{}}
+\newlabel{pcdm:adaption:randomProblem:block82}{{5d}{10}{80k iterations, $8^2$ block\relax }{figure.caption.5}{}}
+\newlabel{sub@pcdm:adaption:randomProblem:block82}{{d}{10}{80k iterations, $8^2$ block\relax }{figure.caption.5}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Random parallel deconvolutions on the LMC N132D supernova remnant.\relax }}{10}{figure.caption.5}\protected@file@percent }
+\newlabel{pcdm:adaption:randomProblem}{{5}{10}{Random parallel deconvolutions on the LMC N132D supernova remnant.\relax }{figure.caption.5}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Tests on MeerKAT LMC observation}{10}{section.4}\protected@file@percent }
+\newlabel{results}{{4}{10}{Tests on MeerKAT LMC observation}{section.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Comparison with state-of-the-art reconstruction algorithms}{10}{subsection.4.1}\protected@file@percent }
+\newlabel{results:cleancomp}{{4.1}{10}{Comparison with state-of-the-art reconstruction algorithms}{subsection.4.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Narrow band image section used.\relax }}{11}{figure.caption.6}\protected@file@percent }
+\newlabel{results:cutout}{{6}{11}{Narrow band image section used.\relax }{figure.caption.6}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.1}Super-resolution of the N132D supernova-remnant}{11}{subsubsection.4.1.1}\protected@file@percent }
+\newlabel{results:comp:clean}{{7a}{12}{Multi-scale CLEAN.\relax }{figure.caption.7}{}}
+\newlabel{sub@results:comp:clean}{{a}{12}{Multi-scale CLEAN.\relax }{figure.caption.7}{}}
+\newlabel{results:comp:clean}{{7b}{12}{Coordinate descent with elastic net.\relax }{figure.caption.7}{}}
+\newlabel{sub@results:comp:clean}{{b}{12}{Coordinate descent with elastic net.\relax }{figure.caption.7}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Comparison of the whole image\relax }}{12}{figure.caption.7}\protected@file@percent }
+\newlabel{results:cleancomp:figure}{{7}{12}{Comparison of the whole image\relax }{figure.caption.7}{}}
+\citation{briggsWeighting}
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Comparison on the N132D supernova-remnant.\relax }}{13}{figure.caption.8}\protected@file@percent }
+\newlabel{results:cleancomp::N132:figure}{{8}{13}{Comparison on the N132D supernova-remnant.\relax }{figure.caption.8}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces Comparison with briggs-weighted multi-scale CLEAN as Ground Truth.\relax }}{14}{figure.caption.9}\protected@file@percent }
+\newlabel{results:cleancomp:N132:truth}{{9}{14}{Comparison with briggs-weighted multi-scale CLEAN as Ground Truth.\relax }{figure.caption.9}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.2}Influence of calibration errors}{14}{subsubsection.4.1.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces Influence of calibration errors\relax }}{15}{figure.caption.10}\protected@file@percent }
+\newlabel{results:cleancomp::calib:figure}{{10}{15}{Influence of calibration errors\relax }{figure.caption.10}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {11}{\ignorespaces Comparison to briggs-weighted multi-scale CLEAN as Ground Truth.\relax }}{15}{figure.caption.11}\protected@file@percent }
+\newlabel{results:cleancomp::calib:figure}{{11}{15}{Comparison to briggs-weighted multi-scale CLEAN as Ground Truth.\relax }{figure.caption.11}{}}
+\citation{dabbech2015moresane,offringa2017optimized}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}$PSF$ approximation with parallel coordinate descent}{16}{subsection.4.2}\protected@file@percent }
+\newlabel{pcdm:results}{{4.2}{16}{$PSF$ approximation with parallel coordinate descent}{subsection.4.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {12}{\ignorespaces Convergence times with $PSF$ approximation\relax }}{16}{figure.caption.12}\protected@file@percent }
+\newlabel{pcdm:results:psf}{{12}{16}{Convergence times with $PSF$ approximation\relax }{figure.caption.12}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.1}Pseudo-random strategy and the Search Factor}{17}{subsubsection.4.2.1}\protected@file@percent }
+\newlabel{pcdm:results:fraction}{{4.2.1}{17}{Pseudo-random strategy and the Search Factor}{subsubsection.4.2.1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {13}{\ignorespaces Convergence times with different search percentages.\relax }}{17}{figure.caption.14}\protected@file@percent }
+\newlabel{pcdm:results:search}{{13}{17}{Convergence times with different search percentages.\relax }{figure.caption.14}{}}
+\citation{fercoq2015accelerated}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Comparison to the serial coordinate descent algorithm}{18}{subsection.4.3}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Speedup comparison of the serial and parallel coordinate descent algorithm. Both algorithms were compared on an Intel Xeon E3-1505M with 8 logical cores.\relax }}{18}{table.caption.16}\protected@file@percent }
+\newlabel{pcdm:comp:table}{{1}{18}{Speedup comparison of the serial and parallel coordinate descent algorithm. Both algorithms were compared on an Intel Xeon E3-1505M with 8 logical cores.\relax }{table.caption.16}{}}
+\citation{richtarik2016parallel}
+\citation{richtarik2016distributed}
+\citation{fercoq2014fast}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Scalability of the parallel coordinate descent algorithm}{19}{subsection.4.4}\protected@file@percent }
+\newlabel{pcdm:scale}{{4.4}{19}{Scalability of the parallel coordinate descent algorithm}{subsection.4.4}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {14}{\ignorespaces Comparison of the serial and parallel coordinate descent reconstruction of the LMC observation.\relax }}{20}{figure.caption.17}\protected@file@percent }
+\newlabel{pcdm:comparison:figure}{{14}{20}{Comparison of the serial and parallel coordinate descent reconstruction of the LMC observation.\relax }{figure.caption.17}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {15}{\ignorespaces Speedup comparison with increasing number of asynchronous processors.\relax }}{20}{figure.caption.18}\protected@file@percent }
+\newlabel{pcdm:scalability:proc}{{15}{20}{Speedup comparison with increasing number of asynchronous processors.\relax }{figure.caption.18}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Throughput of the parallel coordinate descent algorithms with additional processors.\relax }}{20}{table.caption.19}\protected@file@percent }
+\newlabel{pcdm:scalability:throughput}{{2}{20}{Throughput of the parallel coordinate descent algorithms with additional processors.\relax }{table.caption.19}{}}
+\citation{fercoq2015accelerated}
+\citation{fercoqfast}
+\citation{van2016lofar}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Speedup comparison for the parallel coordinate descent algorithm, once with increased ESO and once with increased Search Factor.\relax }}{22}{table.caption.20}\protected@file@percent }
+\newlabel{pcdm:scalability:table}{{3}{22}{Speedup comparison for the parallel coordinate descent algorithm, once with increased ESO and once with increased Search Factor.\relax }{table.caption.20}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Discussion}{22}{section.5}\protected@file@percent }
+\newlabel{discussion}{{5}{22}{Discussion}{section.5}{}}
+\citation{offringa2017optimized}
+\citation{starck2015starlet}
+\citation{carrillo2014purify}
+\citation{girard2015sparse,dabbech2018cygnus}
+\citation{ferrari2015multi}
+\citation{ferrari2015multi}
+\citation{veenboer2017image}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusion}{24}{section.6}\protected@file@percent }
 \bibdata{mybib}
-\bibcite{ferrari2014distributed}{{1}{}{{}}{{}}}
-\bibcite{mcewen2011compressed}{{2}{}{{}}{{}}}
-\bibcite{nesterov2012efficiency}{{3}{}{{}}{{}}}
-\bibcite{nesterov2013gradient}{{4}{}{{}}{{}}}
-\bibcite{kenyon2019pymoresane}{{5}{}{{}}{{}}}
-\bibcite{ilgpu}{{6}{}{{}}{{}}}
-\bibcite{keplerShuffle}{{7}{}{{}}{{}}}
+\bibcite{candes2006robust}{{1}{}{{}}{{}}}
+\bibcite{donoho2006compressed}{{2}{}{{}}{{}}}
+\bibcite{dabbech2018cygnus}{{3}{}{{}}{{}}}
+\bibcite{dabbech2015moresane}{{4}{}{{}}{{}}}
+\bibcite{hogbom1974aperture}{{5}{}{{}}{{}}}
+\bibcite{rau2011multi}{{6}{}{{}}{{}}}
+\bibcite{offringa2017optimized}{{7}{}{{}}{{}}}
+\bibcite{bouman1996unified}{{8}{}{{}}{{}}}
+\bibcite{felix2017compressed}{{9}{}{{}}{{}}}
+\bibcite{richtarik2016parallel}{{10}{}{{}}{{}}}
+\bibcite{mcgaffin2015edge}{{11}{}{{}}{{}}}
+\bibcite{fercoq2014fast}{{12}{}{{}}{{}}}
+\bibcite{clark1980efficient}{{13}{}{{}}{{}}}
+\bibcite{friedman2010regularization}{{14}{}{{}}{{}}}
+\bibcite{fercoq2015accelerated}{{15}{}{{}}{{}}}
+\bibcite{offringa2014wsclean}{{16}{}{{}}{{}}}
+\bibcite{briggsWeighting}{{17}{}{{}}{{}}}
+\bibcite{richtarik2016distributed}{{18}{}{{}}{{}}}
+\bibcite{starck2015starlet}{{19}{}{{}}{{}}}
+\bibcite{carrillo2014purify}{{20}{}{{}}{{}}}
+\bibcite{girard2015sparse}{{21}{}{{}}{{}}}
+\bibcite{ferrari2015multi}{{22}{}{{}}{{}}}
+\bibcite{veenboer2017image}{{23}{}{{}}{{}}}
 \bibstyle{unsrt}
 \providecommand\NAT@force@numbers{}\NAT@force@numbers
-\newlabel{LastPage}{{}{9}{}{page.9}{}}
-\xdef\lastpage@lastpage{9}
-\xdef\lastpage@lastpageHy{9}
+\newlabel{LastPage}{{}{26}{}{page.26}{}}
+\xdef\lastpage@lastpage{26}
+\xdef\lastpage@lastpageHy{26}

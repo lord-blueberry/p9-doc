@@ -1,16 +1,18 @@
-\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
-\BOOKMARK [1][-]{section.2}{Methods}{}% 2
-\BOOKMARK [1][-]{section.3}{Coordinate descent deconvolution}{}% 3
-\BOOKMARK [2][-]{subsection.3.1}{Elastic net regularization}{section.3}% 4
-\BOOKMARK [2][-]{subsection.3.2}{Serial coordinate descent algorithm}{section.3}% 5
-\BOOKMARK [3][-]{subsubsection.3.2.1}{Step 1: Choosing single a pixel}{subsection.3.2}% 6
-\BOOKMARK [3][-]{subsubsection.3.2.2}{Step 2: Optimizing a single pixel}{subsection.3.2}% 7
-\BOOKMARK [3][-]{subsubsection.3.2.3}{Inefficient implementation pseudo-code}{subsection.3.2}% 8
-\BOOKMARK [2][-]{subsection.3.3}{Efficient implementation}{section.3}% 9
-\BOOKMARK [3][-]{subsubsection.3.3.1}{Edge handling of the convolution}{subsection.3.3}% 10
-\BOOKMARK [3][-]{subsubsection.3.3.2}{Efficient calculation of the Lipschitz constants}{subsection.3.3}% 11
-\BOOKMARK [3][-]{subsubsection.3.3.3}{Using a map of gradients}{subsection.3.3}% 12
-\BOOKMARK [2][-]{subsection.3.4}{Efficient implementation pseudo-code}{section.3}% 13
-\BOOKMARK [2][-]{subsection.3.5}{GPU implementation}{section.3}% 14
-\BOOKMARK [2][-]{subsection.3.6}{Distributed implementaion MPI}{section.3}% 15
-\BOOKMARK [2][-]{subsection.3.7}{Serial coordinate descent and similarities to the CLEAN algorithm}{section.3}% 16
+\BOOKMARK [1][-]{section.1}{The image reconstruction problem of radio interferometers}{}% 1
+\BOOKMARK [1][-]{section.2}{PSF approximation for fast and distributed deconvolution}{}% 2
+\BOOKMARK [2][-]{subsection.2.1}{PSF approximation and approximate gradient calculation}{section.2}% 3
+\BOOKMARK [2][-]{subsection.2.2}{Major Cycle convergence and implicit path regularization}{section.2}% 4
+\BOOKMARK [1][-]{section.3}{Parallel coordinate descent methods}{}% 5
+\BOOKMARK [2][-]{subsubsection.3.0.1}{Estimated Separability Overapproximation \(ESO\)}{section.3}% 6
+\BOOKMARK [2][-]{subsection.3.1}{Asynchronous parallel coordinate descent algorithm.}{section.3}% 7
+\BOOKMARK [2][-]{subsection.3.2}{The problem with random selection for deconvolution}{section.3}% 8
+\BOOKMARK [1][-]{section.4}{Tests on MeerKAT LMC observation}{}% 9
+\BOOKMARK [2][-]{subsection.4.1}{Comparison with state-of-the-art reconstruction algorithms}{section.4}% 10
+\BOOKMARK [3][-]{subsubsection.4.1.1}{Super-resolution of the N132D supernova-remnant}{subsection.4.1}% 11
+\BOOKMARK [3][-]{subsubsection.4.1.2}{Influence of calibration errors}{subsection.4.1}% 12
+\BOOKMARK [2][-]{subsection.4.2}{PSF approximation with parallel coordinate descent}{section.4}% 13
+\BOOKMARK [3][-]{subsubsection.4.2.1}{Pseudo-random strategy and the Search Factor}{subsection.4.2}% 14
+\BOOKMARK [2][-]{subsection.4.3}{Comparison to the serial coordinate descent algorithm}{section.4}% 15
+\BOOKMARK [2][-]{subsection.4.4}{Scalability of the parallel coordinate descent algorithm}{section.4}% 16
+\BOOKMARK [1][-]{section.5}{Discussion}{}% 17
+\BOOKMARK [1][-]{section.6}{Conclusion}{}% 18

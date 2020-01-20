@@ -3,4 +3,6 @@ The style file: unsrt.bst
 Database file #1: mybib.bib
 Warning--entry type for "briggsWeighting" isn't style-file defined
 --line 247 of file mybib.bib
-(There was 1 warning)
+Warning--I didn't find a database entry for "fercoqfast"
+Warning--I didn't find a database entry for "van2016lofar"
+(There were 3 warnings)

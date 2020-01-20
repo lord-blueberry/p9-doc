@@ -1,5 +1,79 @@
 \begin{thebibliography}{10}
 
+\bibitem{candes2006robust}
+Emmanuel~J Cand{\`e}s, Justin Romberg, and Terence Tao.
+\newblock Robust uncertainty principles: Exact signal reconstruction from
+  highly incomplete frequency information.
+\newblock {\em IEEE Transactions on information theory}, 52(2):489--509, 2006.
+
+\bibitem{donoho2006compressed}
+David~L Donoho.
+\newblock Compressed sensing.
+\newblock {\em IEEE Transactions on information theory}, 52(4):1289--1306,
+  2006.
+
+\bibitem{dabbech2018cygnus}
+Arwa Dabbech, Alexandru Onose, Abdullah Abdulaziz, Richard~A Perley, Oleg~M
+  Smirnov, and Yves Wiaux.
+\newblock Cygnus a super-resolved via convex optimization from vla data.
+\newblock {\em Monthly Notices of the Royal Astronomical Society},
+  476(3):2853--2866, 2018.
+
+\bibitem{dabbech2015moresane}
+Arwa Dabbech, Chiara Ferrari, David Mary, Eric Slezak, Oleg Smirnov, and
+  Jonathan~S Kenyon.
+\newblock Moresane: Model reconstruction by synthesis-analysis estimators-a
+  sparse deconvolution algorithm for radio interferometric imaging.
+\newblock {\em Astronomy \& Astrophysics}, 576:A7, 2015.
+
+\bibitem{hogbom1974aperture}
+JA~H{\"o}gbom.
+\newblock Aperture synthesis with a non-regular distribution of interferometer
+  baselines.
+\newblock {\em Astronomy and Astrophysics Supplement Series}, 15:417, 1974.
+
+\bibitem{rau2011multi}
+Urvashi Rau and Tim~J Cornwell.
+\newblock A multi-scale multi-frequency deconvolution algorithm for synthesis
+  imaging in radio interferometry.
+\newblock {\em Astronomy \& Astrophysics}, 532:A71, 2011.
+
+\bibitem{offringa2017optimized}
+AR~Offringa and O~Smirnov.
+\newblock An optimized algorithm for multiscale wideband deconvolution of radio
+  astronomical images.
+\newblock {\em Monthly Notices of the Royal Astronomical Society},
+  471(1):301--316, 2017.
+
+\bibitem{bouman1996unified}
+Charles~A Bouman and Ken Sauer.
+\newblock A unified approach to statistical tomography using coordinate descent
+  optimization.
+\newblock {\em IEEE Transactions on image processing}, 5(3):480--492, 1996.
+
+\bibitem{felix2017compressed}
+Simon Felix, Roman Bolzern, and Marina Battaglia.
+\newblock A compressed sensing-based image reconstruction algorithm for solar
+  flare x-ray observations.
+\newblock {\em The Astrophysical Journal}, 849(1):10, 2017.
+
+\bibitem{richtarik2016parallel}
+Peter Richt{\'a}rik and Martin Tak{\'a}{\v{c}}.
+\newblock Parallel coordinate descent methods for big data optimization.
+\newblock {\em Mathematical Programming}, 156(1-2):433--484, 2016.
+
+\bibitem{mcgaffin2015edge}
+Madison~Gray McGaffin and Jeffrey~A Fessler.
+\newblock Edge-preserving image denoising via group coordinate descent on the
+  gpu.
+\newblock {\em IEEE Transactions on Image Processing}, 24(4):1273--1281, 2015.
+
+\bibitem{fercoq2014fast}
+Olivier Fercoq, Zheng Qu, Peter Richt{\'a}rik, and Martin Tak{\'a}{\v{c}}.
+\newblock Fast distributed coordinate descent for non-strongly convex losses.
+\newblock In {\em 2014 IEEE International Workshop on Machine Learning for
+  Signal Processing (MLSP)}, pages 1--6. IEEE, 2014.
+
 \bibitem{clark1980efficient}
 BG~Clark.
 \newblock An efficient implementation of the algorithm'clean'.
@@ -10,11 +84,6 @@ Jerome Friedman, Trevor Hastie, and Rob Tibshirani.
 \newblock Regularization paths for generalized linear models via coordinate
   descent.
 \newblock {\em Journal of statistical software}, 33(1):1, 2010.
-
-\bibitem{richtarik2016parallel}
-Peter Richt{\'a}rik and Martin Tak{\'a}{\v{c}}.
-\newblock Parallel coordinate descent methods for big data optimization.
-\newblock {\em Mathematical Programming}, 156(1-2):433--484, 2016.
 
 \bibitem{fercoq2015accelerated}
 Olivier Fercoq and Peter Richt{\'a}rik.
@@ -29,23 +98,9 @@ AR~Offringa, Benjamin McKinley, Natasha Hurley-Walker, FH~Briggs, RB~Wayth,
 \newblock {\em Monthly Notices of the Royal Astronomical Society},
   444(1):606--619, 2014.
 
-\bibitem{dabbech2015moresane}
-Arwa Dabbech, Chiara Ferrari, David Mary, Eric Slezak, Oleg Smirnov, and
-  Jonathan~S Kenyon.
-\newblock Moresane: Model reconstruction by synthesis-analysis estimators-a
-  sparse deconvolution algorithm for radio interferometric imaging.
-\newblock {\em Astronomy \& Astrophysics}, 576:A7, 2015.
-
 \bibitem{briggsWeighting}
 Dan Briggs.
 \newblock High fidelity deconvolution of moderately resolved sources, 2019.
-
-\bibitem{offringa2017optimized}
-AR~Offringa and O~Smirnov.
-\newblock An optimized algorithm for multiscale wideband deconvolution of radio
-  astronomical images.
-\newblock {\em Monthly Notices of the Royal Astronomical Society},
-  471(1):301--316, 2017.
 
 \bibitem{richtarik2016distributed}
 Peter Richt{\'a}rik and Martin Tak{\'a}{\v{c}}.
@@ -53,10 +108,36 @@ Peter Richt{\'a}rik and Martin Tak{\'a}{\v{c}}.
 \newblock {\em The Journal of Machine Learning Research}, 17(1):2657--2681,
   2016.
 
-\bibitem{fercoq2014fast}
-Olivier Fercoq, Zheng Qu, Peter Richt{\'a}rik, and Martin Tak{\'a}{\v{c}}.
-\newblock Fast distributed coordinate descent for non-strongly convex losses.
-\newblock In {\em 2014 IEEE International Workshop on Machine Learning for
-  Signal Processing (MLSP)}, pages 1--6. IEEE, 2014.
+\bibitem{starck2015starlet}
+Jean-Luc Starck, Fionn Murtagh, and Mario Bertero.
+\newblock Starlet transform in astronomical data processing.
+\newblock {\em Handbook of Mathematical Methods in Imaging}, pages 2053--2098,
+  2015.
+
+\bibitem{carrillo2014purify}
+Rafael~E Carrillo, Jason~D McEwen, and Yves Wiaux.
+\newblock Purify: a new approach to radio-interferometric imaging.
+\newblock {\em Monthly Notices of the Royal Astronomical Society},
+  439(4):3591--3604, 2014.
+
+\bibitem{girard2015sparse}
+Julien~N Girard, Hugh Garsden, Jean~Luc Starck, St{\'e}phane Corbel, Arnaud
+  Woiselle, Cyril Tasse, John~P McKean, and J{\'e}r{\^o}me Bobin.
+\newblock Sparse representations and convex optimization as tools for lofar
+  radio interferometric imaging.
+\newblock {\em Journal of Instrumentation}, 10(08):C08013, 2015.
+
+\bibitem{ferrari2015multi}
+Andr{\'e} Ferrari, J{\'e}r{\'e}my Deguignet, Chiara Ferrari, David Mary, Antony
+  Schutz, and Oleg Smirnov.
+\newblock Multi-frequency image reconstruction for radio interferometry. a
+  regularized inverse problem approach.
+\newblock {\em arXiv preprint arXiv:1504.06847}, 2015.
+
+\bibitem{veenboer2017image}
+Bram Veenboer, Matthias Petschow, and John~W Romein.
+\newblock Image-domain gridding on graphics processors.
+\newblock In {\em 2017 IEEE International Parallel and Distributed Processing
+  Symposium (IPDPS)}, pages 545--554. IEEE, 2017.
 
 \end{thebibliography}
