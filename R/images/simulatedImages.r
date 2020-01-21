@@ -3,6 +3,7 @@ library(pals)
 library(ggplot2)
 library(plotly)
 library(orca)
+library(stringr)
 
 asinh <- scales::trans_new(name = 'asinh', transform = function(x) asinh(x*1000), 
                            inverse = function(x) sinh(x)/1000)
@@ -225,3 +226,67 @@ for (y in 1:nrow(single_pixel))
       single_pixel[y, x] = 0.0
     }
 plot_ly(z=single_pixel, type="surface", colors="Blues")
+
+
+
+
+
+data <- read.table(paste(inputFolder, "cd-example/", "gradients_CD_0.csv", sep=""), sep=";", header=TRUE, dec=",")
+data2 <- read.table(paste(inputFolder, "cd-example/", "gradients_CD_1.csv", sep=""), sep=";", header=TRUE, dec=",")
+maxLimit <- max(data2$intensity)
+minLimit <- min(data2$intensity)
+png(paste(outputfolder, "cd-example/","gradients_CD_00.png", sep=""),
+    width = 3.0,
+    height = 3.0,
+    units = "in",
+    res = 200)
+ggplot(data, aes(x=x, y=y, fill=intensity))  +
+  geom_tile() +
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.5), guide=FALSE) + 
+  theme_void()
+dev.off()
+for(i in 1:100) {
+  print(i)
+  data <- read.table(paste(inputFolder, "cd-example/", "gradients_CD_",i, ".csv", sep=""), sep=";", header=TRUE, dec=",")
+  png(paste(outputfolder, "cd-example/","gradients_CD_", str_pad(i, 3, pad="0"),".png", sep=""),
+      width = 3.0,
+      height = 3.0,
+      units = "in",
+      res = 200)
+  plot = ggplot(data, aes(x=x, y=y, fill=intensity))  +
+    geom_tile() +
+    scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.5), limit=c(NA, maxLimit),  guide=FALSE) + 
+    theme_void()
+  print(plot)
+  dev.off()
+}
+
+data <- read.table(paste(inputFolder, "cd-example/", "model_CD_1.csv", sep=""), sep=";", header=TRUE, dec=",")
+maxLimit <- max(data$intensity)
+minLimit <- min(data$intensity)
+data <- read.table(paste(inputFolder, "cd-example/", "model_CD_0.csv", sep=""), sep=";", header=TRUE, dec=",")
+png(paste(outputfolder, "cd-example/","model_CD_000.png", sep=""),
+    width = 3.0,
+    height = 3.0,
+    units = "in",
+    res = 200)
+ggplot(data, aes(x=x, y=y, fill=intensity))  +
+  geom_tile() +
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.5), limit=c(NA, maxLimit),  guide=FALSE) + 
+  theme_void()
+dev.off()
+for(i in 1:100) {
+  print(i)
+  data <- read.table(paste(inputFolder, "cd-example/", "model_CD_", i, ".csv", sep=""), sep=";", header=TRUE, dec=",")
+  png(paste(outputfolder, "cd-example/","model_CD_",str_pad(i, 3, pad="0"),".png", sep=""),
+      width = 3.0,
+      height = 3.0,
+      units = "in",
+      res = 200)
+  plot = ggplot(data, aes(x=x, y=y, fill=intensity))  +
+    geom_tile() +
+    scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.5, hue = 1.0, gamma = 0.5),  guide=FALSE) + 
+    theme_void()
+  print(plot)
+  dev.off()
+}
