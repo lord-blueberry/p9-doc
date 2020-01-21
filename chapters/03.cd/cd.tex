@@ -12,7 +12,7 @@ We want to find the minimum deconvolved image $x$, which is as close to the dirt
 First, dive deeper into the elastic net regularization, and then continue with introducing the serial coordinate descent algorithm in Section \ref{cd:serial}. Although we call the algorithm 'serial', its implementation can use multiple processors in certain steps of the algorithm: For example updating a rectangle of pixels in the residual image can be trivially performed with multiple processors. We also created a GPU-accelerated and a distributed implementation of the serial coordinate descent algorithm. They can be found in the attachments, since both GPU-accelerated and distributed implementations were slower than the final CPU implementation of the parallel coordinate descent algorithm.
 
 \subsection{Elastic net regularization} \label{cd:reg}
-This regularization is a mixture between the L1 and L2 norm. The L1 norm is the absolute value of all pixels ($\left \| x \right \| = \sum_i \sum_j \left \| x_{ij} \right \|$), and the L2 norm is the squared sum of all pixels ($\left \| x \right \|_2 = \sum_i \sum_j \left \| x_{ij} \right \|^2$). The Figure \ref{cd:elastic} shows the effect of the L1 and L2 norm on a single star. The L1 norm forces the image to contain few non-zero pixels as possible. It encodes our prior knowledge that the image will contain stars. The L2 regularization on the other hand "spreads" the single star across multiple pixels, which helps reconstructing extended emissions.
+This regularization is a mixture between the L1 and L2 norm. The L1 norm is the absolute value of all pixels ($\left \| x \right \| = \sum_i \sum_j \left \| x_{ij} \right \|$), and the L2 norm is the squared sum of all pixels ($\left \| x \right \|_2 = \sum_i \sum_j \left \| x_{ij} \right \|^2$). The Figure \ref{cd:elastic} shows the effect of the L1 and L2 norm on a single star. The L1 norm forces the image to contain as few non-zero pixels as possible. It encodes our prior knowledge that the image will contain stars. The L2 regularization on the other hand "spreads" the single star across multiple pixels, which helps reconstructing extended emissions.
 
 \begin{figure}[h]
 	\centering
@@ -55,7 +55,7 @@ A side note on the proximal operator used in this project \eqref{cd:elastic:prox
 
 
 \subsection{Serial coordinate descent algorithm}\label{cd:serial}
-Our serial coordinate descent deconvolution algorithm minimizes the deconvolution objective \eqref{cd:deconv} for a single pixel at each iteration. Each iteration consists of two steps. Step 1: Find the best pixel to optimize. Step 2: Calculate the gradient for this pixel, apply the elastic net proximal operator, and take the descent s take a descent step for the single pixel. The algorithm iterates over all pixel multiple times to converge to a reconstructed image.
+Our serial coordinate descent deconvolution algorithm minimizes the deconvolution objective \eqref{cd:deconv} for a single pixel at each iteration. Each iteration consists of two steps. Step 1: Find the best pixel to optimize. Step 2: Calculate the gradient for this pixel, apply the elastic net proximal operator, and take a descent step for the single pixel. The algorithm iterates over all pixel multiple times to converge to a reconstructed image.
 
 We demonstrate the serial deconvolution algorithm with the help of a simulated MeerKAT reconstruction problem of two point sources. Figure \ref{cd:serial:aid:dirty} shows the dirty image of two point sources, and Figure \ref{cd:serial:aid:psf} the $PSF$. The deconvolved image with elastic net regularization is shown in Figure \ref{cd:serial:aid:elastic}. I.e. Figure \ref{cd:serial:aid:elastic} is the optimum $x$ of the objective function \eqref{cd:deconv}.
 
@@ -82,14 +82,14 @@ We demonstrate the serial deconvolution algorithm with the help of a simulated M
 \end{figure}
 
 \subsubsection{Step 1: Choosing single a pixel}
-For coordinate descent methods, there are several strategies to choose a single coordinate (pixel). Our serial coordinate descent algorithm uses a greedy strategy. In the first step, we iterate over all pixels and calculate its gradient. We select the pixel with which has the largest gradient magnitude. In each iteration, the greedy strategy chooses the pixel, which results in the largest decrease of our objective function \eqref{cd:deconv}. There are two other strategies that are often used in coordinate descent methods: Random and Cyclic.
+For coordinate descent methods, there are several strategies to choose a single coordinate (pixel). Our serial coordinate descent algorithm uses a greedy strategy. In the first step, we iterate over all pixels and calculate its gradient. We select the pixel which has the largest gradient magnitude. In each iteration, the greedy strategy chooses the pixel, which results in the largest decrease of our objective function \eqref{cd:deconv}. There are two other strategies that are often used in coordinate descent methods: Random and Cyclic.
 %with the maximum possible difference in this iteration
 
 A random strategy chooses, as the name implies, a pixel at random. Usually, the pixels are chosen from a uniform distribution. The random strategy leads to cheaper iteration compared to the greedy strategy, because we do not check the gradient of each pixel.
 
 A cyclic strategy iterates over a subset of pixels until the subset converges. It then chooses another subset. Each iteration of the cyclic strategy is also cheaper than the greedy strategy. 
 
-For our image deconvolution problem, we choose the greedy strategy. Even though it is more expensive, it tends to be faster to converge on the deconvolution problem in radio astronomy. Our reconstructed image is sparse, meaning most pixels in the image will be zero. The greedy strategy tends to choose pixels which will be non-zero in the final reconstructed image. While the random or cyclic strategy will set pixels to a non-zero value, which will eventually become zero in the final image. For the deconvolution problem, removing pixels from an intermediate solution seems to slow down the time to converge. We will discuss the different selection strategies in detail for the parallel coordinate descent methods.
+For our image deconvolution problem, we choose the greedy strategy. Even though it is more expensive, it tends to be faster to converge on the deconvolution problem in radio astronomy. Our reconstructed image is sparse, meaning most pixels in the image will be zero. The greedy strategy tends to choose pixels which will be non-zero in the final reconstructed image. The random or cyclic strategy will set pixels to a non-zero value, which will eventually become zero in the final image. For the deconvolution problem, removing pixels from an intermediate solution seems to slow down the time to converge. We will discuss the different selection strategies in detail for the parallel coordinate descent methods.
 
 
 \subsubsection{Step 2: Optimizing a single pixel}
@@ -110,7 +110,7 @@ pixel_{opt} &= \frac{gradient_{location}}{Lipschitz_{location}}
 \end{split}
 \end{equation}
 
-First, we calculate the residuals by convolving the current solution $x$ with the $PSF$. Then, the gradient for the selected pixel location is the inner product(element-wise multiplication followed by a sum over all elements) of the residuals and the $PSF$, shifted at the current location. The next step is to calculate the Lipschitz constant at the current location. Finally, we arrive at the optimal pixel value by dividing the gradient with the Lipschitz constant (The optimal deconvolved pixel value, ignoring the regularization).
+First, we calculate the residuals by convolving the current solution $x$ with the $PSF$. Then, the gradient for the selected pixel location is the inner product (element-wise multiplication followed by a sum over all elements) of the residuals and the $PSF$, shifted at the current location. The next step is to calculate the Lipschitz constant at the current location. Finally, we arrive at the optimal pixel value by dividing the gradient with the Lipschitz constant (The optimal deconvolved pixel value, ignoring the regularization).
 
 The Lipschitz constant can be thought of as the step size. It defines how far we can descend towards the direction of the gradient. The Lipschitz constant describes how fast a function $f(x)$ changes with $x$. If $f(x)$ changes slowly, we can descend larger distances along the gradient without the fear for divergence. The Lipschitz constant can be looked at as a data-defined step size.
 
@@ -162,7 +162,7 @@ do
 while epsilon < Abs(diff) 
 \end{lstlisting}
 
-The actual update step is cheap to compute. We are only dealing with 4 one dimensional variables. The expensive calculations are the inner products: The gradient calculation, the Lipschitz constant and the objective value. The residuals and $PSF$ generally contain millions of pixels. Calculating the inner product of those becomes expensive. 
+The actual update step is cheap to compute. We are only dealing with four one dimensional variables. The expensive calculations are the inner products: The gradient calculation, the Lipschitz constant and the objective value. The residuals and $PSF$ generally contain millions of pixels. Calculating the inner product of those becomes expensive. 
 
 Also note that the greedy strategy needs to calculate the gradient for each pixel. As it is, the greedy strategy has a quadratic runtime complexity. 
 
@@ -239,7 +239,7 @@ A convolution in image space is a multiplication in Fourier space. This fact can
 \textbf{Direct update of gradient map}\\
 Thanks to the FFT, we can efficiently calculate the map of gradients at the start of the serial coordinate descent algorithm. After we update a pixel in the reconstruction $x$, the map changes. We could repeat the correlation in the Fourier space from equation \eqref{cd:efficient:gradients:correlation} at each iteration. But this is wasteful. We can update the map of gradients directly.
 
-Note that if we add pixel in the reconstruction $x$, we subtract the $PSF$ (multiplied with the pixel value) from the specific location in the residuals. The gradient map is then calculated by again correlating the $PSF$ with the residuals. We update the residuals by subtracting the $PSF$ at the correct location. And we update the gradient map by subtracting the $PSF$ correlated with itself at the correct position ($PSF \star PSF$). In our simulated example, the $PSF$ and the gradient update map is shown in Figure \ref{cd:efficient:update:psf}.
+Note that if we add a pixel in the reconstruction $x$, we subtract the $PSF$ (multiplied with the pixel value) from the specific location in the residuals. The gradient map is then calculated by again correlating the $PSF$ with the residuals. We update the residuals by subtracting the $PSF$ at the correct location. And we update the gradient map by subtracting the $PSF$ correlated with itself at the correct position ($PSF \star PSF$). In our simulated example, the $PSF$ and the gradient update map is shown in Figure \ref{cd:efficient:update:psf}.
 \begin{figure}[!h]
 	\centering
 	\begin{subfigure}[b]{0.3\linewidth}
