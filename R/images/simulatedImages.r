@@ -152,14 +152,14 @@ dev.off()
 
 #----------------------------------------------- CLEAN images--------------------------------------------------------
 inputFolder <- "./images/simulated/exampleCLEAN/"
-outputfolder <- "./images/output/simulated/"
+outputfolder <- "./images/output/simulated/exampleCLEAN/"
 
 data <- read.table(paste(inputFolder, "dirty_CLEAN_0.csv", sep=""), sep=";", header=TRUE, dec=",")
 minD <- min(data$intensity)
 maxD <- max(data$intensity)
-for(i in 0:3) {
+for(i in 0:9) {
   data <- read.table(paste(inputFolder, "dirty_CLEAN_", i, ".csv", sep=""), sep=";", header=TRUE, dec=",")
-  png(paste(outputfolder, paste("dirty_CLEAN_", i, ".png",sep=""), sep=""),
+  png(paste(outputfolder, paste("dirty_CLEAN_", str_pad(i, 2, pad="0"), ".png",sep=""), sep=""),
       width = 4.0,
       height = 4.0,
       units = "in",
@@ -187,20 +187,37 @@ plot <- ggplot(data, aes(x=x, y=y, fill=intensity))  +
 print(plot)
 dev.off()
 
-for(i in 0:3) {
+i <- 0
+data <- read.table(paste(inputFolder, "model_CLEAN_", i, ".csv", sep=""), sep=";", header=TRUE, dec=",")
+png(paste(outputfolder, paste("model_CLEAN_", str_pad(i, 2, pad="0"), ".png",sep=""), sep=""),
+    width = 4.0,
+    height = 4.0,
+    units = "in",
+    res = 192)
+plot <- ggplot(data, aes(x=x, y=y, fill=intensity))  +
+  geom_tile() +
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -1.5, hue = 1.0, gamma = 0.8), guide=FALSE, limits=c(minR, maxR)) + 
+  theme_void()
+print(plot)
+dev.off()
+
+for(i in 1:9) {
   data <- read.table(paste(inputFolder, "model_CLEAN_", i, ".csv", sep=""), sep=";", header=TRUE, dec=",")
-  png(paste(outputfolder, paste("model_CLEAN_", i, ".png",sep=""), sep=""),
+  png(paste(outputfolder, paste("model_CLEAN_", str_pad(i, 2, pad="0"), ".png",sep=""), sep=""),
       width = 4.0,
       height = 4.0,
       units = "in",
       res = 192)
   plot <- ggplot(data, aes(x=x, y=y, fill=intensity))  +
     geom_tile() +
-    scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -1.5, hue = 1.0, gamma = 0.8), guide=FALSE, limits=c(minR, maxR)) + 
+    scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.50, r = -1.5, hue = 1.0, gamma = 0.8), guide=FALSE) + 
     theme_void()
   print(plot)
   dev.off()
 }
+
+
+
 
 png(paste(outputfolder, "L2Norm.png", sep=""),
     width = 4.0,

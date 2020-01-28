@@ -223,3 +223,16 @@ ggplot(data, aes(x=x, y=y, fill=intensity))  +
   ylab("y (arc minutes)") +
   theme(legend.position = c(0.92, 0.2))
 dev.off()
+
+data <- read.table(paste(inputFolder, "natclean-PSF.csv", sep=""), sep=";", header=TRUE, dec=",")
+#data$intensity[data$intensity < negLimit] = negLimit
+png(paste(outputfolder, "natclean-PSF.png", sep=""),
+    width = 6.0,
+    height = 6.0,
+    units = "in",
+    res = 200)
+ggplot(data, aes(x=x, y=y, fill=intensity))  +
+  geom_tile() +
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.50, hue = 1.0, gamma = 0.5), guide=FALSE) +
+  theme_void()
+dev.off()
