@@ -21,21 +21,15 @@ An approximation of the full $PSF$ has already been developed for CLEAN: The Cla
 
 Using only a fraction fo the true $PSF$ speeds up the deconvolution. But it also introduces sparsity in the deconvolution problem which, to our knowledge, has not been explored for radio interferometers. The full $PSF$ shown in Figure \ref{gradients:clark} has significant values around the center, but they quickly approach zero the further away we move from the center. If we only use a window around the center $\frac{1}{2} PSF$ and set the rest to zero, we are using a sparse $PSF$. For a CLEAN algorithm, the sparse approximated $PSF$ ignores the influence of far away pixel.
 
-\subsection{$PSF$ approximation and approximate gradient calculation}
+\subsection{$PSF$ approximation}
 Our coordinate descent algorithm minimizes a single pixel in each iteration. It selects a pixel to minimize, calculates its gradient, and descends the towards the gradient direction. In our coordinate descent deconvolution algorithm, the $PSF$ is central to the gradient calculation: The gradient for each pixel can be calculated by correlating the residual image with the $PSF$. 
 Calculation of gradients.
-
-Approximate gradients
-
-T
 
 The serial coordinate descent algorithm keeps the gradient map, the product $PSF \star PSF$ and the current reconstruction in memory. In each iteration, the algorithm first finds the pixel, which has the maximum possible difference in this iteration. In the second step, it subtracts the product $PSF \star PSF$ at the correct location of the gradient map. The gradient map is now updated for the next iteration of the serial coordinate descent algorithm.
 
 We approximate the $PSF$ by only using a window around the center. Each side is only a fraction of the full $PSF$ size. From now on, we use the method $Cut()$, which cuts out the center window of the $PSF$. If we use a cut fraction of $\frac{1}{4}$, we cut out a window of the $PSF$, each side being  $\frac{1}{4}$ the length of the full $PSF$.
 
 Using an approximate $PSF$ influences three parts of the serial coordinate descent algorithm: The gradient map, the Lipschitz map and the product $PSF \star PSF$. At the beginning of the algorithm, we calculate the gradient map by correlating the dirty image with the $PSF$ ($I_{dirty} \star PSF$) We also calculate the Lipschitz constants for each pixel. The product $PSF \star PSF$ is used to update the gradient map in each iteration. We developed two approximation methods for the serial coordinate descent algorithm. Method 1 is called 'approximate update', and method 2 is called 'approximate deconvolution'.
-
-T
 
 
 \subsection{Major Cycle convergence and implicit path regularization}\label{gradients:pathreg}

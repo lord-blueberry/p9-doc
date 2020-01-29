@@ -1,6 +1,6 @@
 \BOOKMARK [1][-]{section.1}{The image reconstruction problem of radio interferometers}{}% 1
 \BOOKMARK [1][-]{section.2}{PSF approximation for fast and distributed deconvolution}{}% 2
-\BOOKMARK [2][-]{subsection.2.1}{PSF approximation and approximate gradient calculation}{section.2}% 3
+\BOOKMARK [2][-]{subsection.2.1}{PSF approximation}{section.2}% 3
 \BOOKMARK [2][-]{subsection.2.2}{Major Cycle convergence and implicit path regularization}{section.2}% 4
 \BOOKMARK [1][-]{section.3}{Parallel coordinate descent methods}{}% 5
 \BOOKMARK [2][-]{subsubsection.3.0.1}{Estimated Separability Overapproximation \(ESO\)}{section.3}% 6
