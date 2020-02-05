@@ -58,6 +58,19 @@ ggplot(data, aes(x=x, y=y, fill=intensity))  +
   theme_void()
 dev.off()
 
+
+data <- read.table(paste(inputFolder, "pseudo__block1_10k.csv", sep=""), sep=";", header=TRUE, dec=",")
+png(paste(outputfolder, "pseudo__block1_10k.png", sep=""),
+    width = 4.0,
+    height = 4.0,
+    units = "in",
+    res = 200)
+ggplot(data, aes(x=x, y=y, fill=intensity))  +
+  geom_tile() +
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.00, r = -1.5, hue = 1.0, gamma = 0.9), guide=FALSE) +
+  theme_void()
+dev.off()
+
 #--------------------------------------------------------------PCDM Comparison----------------------------------------------------------------------
 data <- read.table(paste(inputFolder, "SerialCD-N132.csv", sep=""), sep=";", header=TRUE, dec=",")
 data$x <- (data$x - min(data$x)) * 1.5 / 60.0

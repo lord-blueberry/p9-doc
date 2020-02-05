@@ -163,7 +163,7 @@ png(paste(outputfolder, "Natural-N132.png", sep=""),
     res = 200)
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
-  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.50, hue = 1.0, gamma = 0.5), name="mJy/Pixel") +
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.50, hue = 1.0, gamma = 0.9), name="mJy/Pixel") +
   xlab("x (arc minutes)") +
   ylab("y (arc minutes)")
 dev.off()
@@ -179,7 +179,7 @@ png(paste(outputfolder, "Natural-image-N132.png", sep=""),
     res = 200)
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
   geom_tile() +
-  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.50, hue = 1.0, gamma = 0.5), name="Jy/PSF", limit = c(0, maximum)) +
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.50, hue = 1.0, gamma = 0.9), name="Jy/PSF", limit = c(0, maximum)) +
   xlab("x (arc minutes)") +
   ylab("y (arc minutes)")
 dev.off()
@@ -229,6 +229,33 @@ data <- read.table(paste(inputFolder, "natclean-PSF.csv", sep=""), sep=";", head
 png(paste(outputfolder, "natclean-PSF.png", sep=""),
     width = 6.0,
     height = 6.0,
+    units = "in",
+    res = 200)
+ggplot(data, aes(x=x, y=y, fill=intensity))  +
+  geom_tile() +
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.50, hue = 1.0, gamma = 0.5), guide=FALSE) +
+  theme_void()
+dev.off()
+
+data <- read.table(paste(inputFolder, "natclean-PSF-full.csv", sep=""), sep=";", header=TRUE, dec=",")
+#data$intensity[data$intensity < negLimit] = negLimit
+png(paste(outputfolder, "natclean-PSF-full.png", sep=""),
+    width = 8.0,
+    height = 8.0,
+    units = "in",
+    res = 256)
+ggplot(data, aes(x=x, y=y, fill=intensity))  +
+  geom_tile() +
+  scale_fill_gradientn(colors=cubehelix(n = 200, start = 0.0, r = -1.50, hue = 1.0, gamma = 0.5), guide=FALSE) +
+  theme_void()
+dev.off()
+
+
+data <- read.table(paste(inputFolder, "natclean-PSF-cut32.csv", sep=""), sep=";", header=TRUE, dec=",")
+#data$intensity[data$intensity < negLimit] = negLimit
+png(paste(outputfolder, "natclean-PSF-cut32.png", sep=""),
+    width = 4.0,
+    height = 4.0,
     units = "in",
     res = 200)
 ggplot(data, aes(x=x, y=y, fill=intensity))  +
